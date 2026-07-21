@@ -194,6 +194,54 @@
     color:var(--text-faint);
     margin-top:6px;
   }
+  .card-action{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:11.5px;
+    line-height:1.4;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid var(--line-soft);
+    color:var(--text-dim);
+  }
+  .card-action:empty{display:none; border-top:none; padding-top:0; margin-top:0;}
+  .card.status-warn .card-action{color:var(--warn);}
+  .card.status-crit .card-action{color:var(--crit);}
+
+  /* ---------- Selector de vista ---------- */
+  #viewToggle{
+    background:var(--panel-alt);
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.03em;
+    padding:5px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  #viewToggle:hover{border-color:var(--accent); color:var(--accent);}
+
+  /* ---------- Vista operario: grande, directa, sin detalle técnico ---------- */
+  body.view-operario .flow-hero,
+  body.view-operario .lower-grid{display:none;}
+  body.view-operario .cards-grid{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;}
+  body.view-operario .card{padding:22px 22px 18px; border-left-width:6px;}
+  body.view-operario .card-label{font-size:16px;}
+  body.view-operario .pill{font-size:13px; padding:5px 11px;}
+  body.view-operario .card-value{font-size:46px;}
+  body.view-operario .card-value .unit{font-size:18px;}
+  body.view-operario .trend-svg{display:none;}
+  body.view-operario .card-action{
+    font-size:16px;
+    font-weight:600;
+    margin-top:14px;
+    padding:10px 12px;
+    border-top:none;
+    border-radius:8px;
+    background:rgba(255,255,255,0.05);
+  }
+  body.view-operario .card.status-ok .card-action{display:none;}
+  body.view-operario .card-foot{font-size:12px; margin-top:12px;}
 
   /* ---------- Lower grid ---------- */
   .lower-grid{
@@ -253,6 +301,7 @@
       <span class="sep">·</span>
       <span>Último dato: <strong id="lastLoadTime">—</strong></span>
       <button id="refreshBtn" title="Actualizar ahora" aria-label="Actualizar ahora">⟳</button>
+      <button id="viewToggle" title="Alternar entre vista operario y supervisor">Vista operario</button>
     </div>
   </header>
 
@@ -307,33 +356,33 @@
    ========================================================================= */
 
 function evalHumedadSalida(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 10)     return {status:'crit', note:'Crítico — bajo: riesgo de rotura de laminado / exceso de finos'};
-  if (v <= 11.5)  return {status:'ok',   note:'Normal'};
-  if (v <= 12)    return {status:'warn', note:'Advertencia — encender quemador de secadora'};
-  return               {status:'crit', note:'Crítico — alto'};
+  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
+  if (v < 10)     return {status:'crit', note:'Crítico — bajo', action:'Reducir quemador de secadora: riesgo de rotura de laminado y exceso de finos.'};
+  if (v <= 11.5)  return {status:'ok',   note:'Normal', action:''};
+  if (v <= 12)    return {status:'warn', note:'Advertencia', action:'Encender quemador de secadora para bajar la humedad al rango normal.'};
+  return               {status:'crit', note:'Crítico — alto', action:'Encender / aumentar quemador de secadora de inmediato.'};
 }
 
 // NOTA: bandas de advertencia (62–65 y 70–75) inferidas por continuidad con
 // el esquema de humedad; confirmar con Iadin si corresponde otro valor.
 function evalAcondTemp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 62)     return {status:'crit', note:'Crítico — bajo: corregir temperatura de cocina'};
-  if (v < 65)     return {status:'warn', note:'Advertencia — por debajo del óptimo'};
-  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)'};
-  if (v <= 75)    return {status:'warn', note:'Advertencia — por encima del óptimo'};
-  return               {status:'crit', note:'Crítico — alto: corregir temperatura de cocina'};
+  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
+  if (v < 62)     return {status:'crit', note:'Crítico — bajo', action:'Corregir urgente: revisar trampas de vapor y purgas de la cocina antes de aumentar caudal.'};
+  if (v < 65)     return {status:'warn', note:'Advertencia', action:'Verificar trampas de vapor y aumentar levemente el aporte de vapor.'};
+  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)', action:''};
+  if (v <= 75)    return {status:'warn', note:'Advertencia', action:'Reducir aporte de vapor a la cocina.'};
+  return               {status:'crit', note:'Crítico — alto', action:'Corregir urgente: reducir vapor a la cocina, riesgo de sobrecocción.'};
 }
 
 // NOTA: bandas de advertencia (0.23–0.25 y 0.40–0.42 mm) son un margen de
 // +/-0.02mm inferido cerca de los límites dados; ajustar si corresponde.
 function evalEspesor(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 0.23)   return {status:'crit', note:'Crítico — muy fino: exceso de finos'};
-  if (v < 0.25)   return {status:'warn', note:'Advertencia — cerca del límite fino'};
-  if (v <= 0.40)  return {status:'ok',   note:'Normal'};
-  if (v <= 0.42)  return {status:'warn', note:'Advertencia — cerca del límite grueso'};
-  return               {status:'crit', note:'Crítico — grueso: MG remanente elevado'};
+  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
+  if (v < 0.23)   return {status:'crit', note:'Crítico — muy fino', action:'Cerrar apertura de rodillos: está generando exceso de finos.'};
+  if (v < 0.25)   return {status:'warn', note:'Advertencia', action:'Revisar apertura de rodillos, cerca del límite fino.'};
+  if (v <= 0.40)  return {status:'ok',   note:'Normal', action:''};
+  if (v <= 0.42)  return {status:'warn', note:'Advertencia', action:'Revisar apertura de rodillos, cerca del límite grueso.'};
+  return               {status:'crit', note:'Crítico — grueso', action:'Abrir apertura de rodillos. Si no corrige, verificar conicidad de rodillos.'};
 }
 
 const PARAMS = {
@@ -595,7 +644,8 @@ function renderCards(rows){
       <div class="card-foot">
         <span>${last ? fmtTime(last.ts) : '—'}</span>
         <span>${last ? last.operador : ''}</span>
-      </div>`;
+      </div>
+      <div class="card-action">${res.action || ''}</div>`;
     grid.appendChild(card);
   }
 }
@@ -668,6 +718,31 @@ async function loadData(){
     setConn('error', err.message);
   }
 }
+
+/* =========================================================================
+   VISTA OPERARIO / SUPERVISOR
+   El estado de la vista se guarda en la URL (?vista=operario), no en
+   localStorage, para que el link sea el mismo mecanismo de "memoria":
+   se puede guardar como favorito distinto para cada pantalla/usuario.
+   ========================================================================= */
+
+function getViewFromURL(){
+  const params = new URLSearchParams(location.search);
+  return params.get('vista') === 'operario' ? 'operario' : 'supervisor';
+}
+function setView(view){
+  document.body.classList.toggle('view-operario', view === 'operario');
+  document.getElementById('viewToggle').textContent = view === 'operario' ? 'Vista supervisor' : 'Vista operario';
+  const url = new URL(location.href);
+  url.searchParams.set('vista', view);
+  history.replaceState(null, '', url);
+}
+let currentView = getViewFromURL();
+setView(currentView);
+document.getElementById('viewToggle').addEventListener('click', () => {
+  currentView = currentView === 'operario' ? 'supervisor' : 'operario';
+  setView(currentView);
+});
 
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData();
