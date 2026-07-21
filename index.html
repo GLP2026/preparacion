@@ -38,7 +38,6 @@
     min-height:100vh;
   }
   #app{max-width:1180px;margin:0 auto;padding:20px 20px 60px;}
-
   a{color:var(--accent);}
 
   /* ---------- Topbar ---------- */
@@ -52,6 +51,9 @@
     padding-bottom:16px;
     margin-bottom:22px;
   }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .logo{height:42px; width:auto; max-width:170px; object-fit:contain; display:block;}
+  .brand-text{display:flex; flex-direction:column;}
   .brand-eyebrow{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
@@ -90,19 +92,45 @@
   @media (prefers-reduced-motion: reduce){ .conn-dot.conn-loading{animation:none;} }
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
   .sep{color:var(--text-faint);}
-  #refreshBtn{
+  #refreshBtn, #viewToggle, #logoutBtn{
     background:var(--panel-alt);
     border:1px solid var(--line);
     color:var(--text);
-    width:28px;height:28px;
     border-radius:6px;
     cursor:pointer;
-    font-size:14px;
+    font-family:'IBM Plex Mono', monospace;
     line-height:1;
-    display:inline-flex;align-items:center;justify-content:center;
   }
-  #refreshBtn:hover{border-color:var(--accent); color:var(--accent);}
-  #refreshBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  #refreshBtn{width:28px;height:28px; font-size:14px; display:inline-flex;align-items:center;justify-content:center;}
+  #viewToggle, #logoutBtn{font-size:11px; letter-spacing:0.03em; padding:6px 10px;}
+  #logoutBtn{display:none; color:var(--text-dim);}
+  body:not(.view-operario) #logoutBtn{display:inline-block;}
+  #refreshBtn:hover, #viewToggle:hover, #logoutBtn:hover{border-color:var(--accent); color:var(--accent);}
+  #refreshBtn:focus-visible, #viewToggle:focus-visible, #logoutBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* ---------- Login overlay (NO es seguridad real, solo un filtro de UX) ---------- */
+  .login-overlay{
+    display:none; position:fixed; inset:0; background:rgba(8,10,13,0.78);
+    align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .login-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px; width:280px; display:flex; flex-direction:column; gap:12px;
+  }
+  .login-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
+  .login-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+  .login-box input{
+    background:var(--panel-alt); border:1px solid var(--line); color:var(--text);
+    padding:8px 10px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px;
+  }
+  .login-box input:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .login-error{color:var(--crit); font-size:11.5px; min-height:14px; margin:0;}
+  .login-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px;}
+  .login-actions button{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer;
+  }
+  #loginCancel{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  .login-actions button[type="submit"]{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
   /* ---------- Hero flow ---------- */
   .flow-hero{
@@ -136,140 +164,77 @@
     border-left:3px solid var(--nodata);
     border-radius:var(--radius);
     padding:14px 16px 12px;
+    transition:box-shadow .3s ease;
   }
   .card.status-ok{border-left-color:var(--ok);}
-  .card.status-warn{border-left-color:var(--warn);}
-  .card.status-crit{border-left-color:var(--crit);}
-  .card-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:8px;
-    margin-bottom:6px;
+  .card.status-warn{border-left-color:var(--warn); background:linear-gradient(180deg, rgba(232,163,61,0.10), transparent 60%);}
+  .card.status-crit{
+    border-left-width:6px; border-left-color:var(--crit);
+    background:linear-gradient(180deg, rgba(225,85,79,0.22), rgba(225,85,79,0.06) 70%);
+    box-shadow:0 0 0 1px rgba(225,85,79,0.35);
   }
+  @media (prefers-reduced-motion: no-preference){
+    .card.status-crit{ animation:critPulse 2.2s ease-in-out infinite; }
+  }
+  @keyframes critPulse{
+    0%,100%{ box-shadow:0 0 0 1px rgba(225,85,79,0.35); }
+    50%{ box-shadow:0 0 0 5px rgba(225,85,79,0.20); }
+  }
+  .card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;}
   .card-label{
-    font-family:'Oswald', sans-serif;
-    font-size:13.5px;
-    text-transform:uppercase;
-    letter-spacing:0.03em;
-    color:var(--text-dim);
-    line-height:1.25;
+    font-family:'Oswald', sans-serif; font-size:13.5px; text-transform:uppercase;
+    letter-spacing:0.03em; color:var(--text-dim); line-height:1.25;
   }
   .pill{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.05em;
-    padding:3px 7px;
-    border-radius:20px;
-    white-space:nowrap;
-    flex-shrink:0;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.03em;
+    padding:3px 7px; border-radius:20px; white-space:nowrap; flex-shrink:0;
   }
   .pill-ok{background:var(--ok-bg); color:var(--ok);}
   .pill-warn{background:var(--warn-bg); color:var(--warn);}
-  .pill-crit{background:var(--crit-bg); color:var(--crit);}
-  .pill-nodata{background:var(--nodata-bg); color:var(--text-faint);}
-  .card-value{
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:600;
-    font-size:28px;
-    margin:4px 0 8px;
-  }
-  .card-value .unit{
-    font-size:13px;
-    font-weight:400;
-    color:var(--text-dim);
-    margin-left:3px;
-  }
+  .pill-crit{background:var(--crit-bg); color:var(--crit); font-weight:600;}
+  .pill-nodata, .pill-unset{background:var(--nodata-bg); color:var(--text-faint);}
+  .card-value{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; margin:4px 0 8px;}
+  .card-value .unit{font-size:13px; font-weight:400; color:var(--text-dim); margin-left:3px;}
+
   .trend-svg{width:100%; height:70px; display:block;}
-  .band-ok{fill:var(--ok-bg);}
-  .band-warn{fill:var(--warn-bg);}
-  .band-crit{fill:var(--crit-bg);}
+  .trend-operario{display:none;}
+  body.view-operario .trend-supervisor{display:none;}
+  body.view-operario .trend-operario{display:block;}
+  .trend-caption-op{
+    display:none; font-family:'IBM Plex Mono', monospace; font-size:10px;
+    color:var(--text-faint); text-align:right; margin-top:2px; letter-spacing:0.03em;
+  }
+  body.view-operario .trend-caption-op{display:block;}
+
+  .band-ok{fill:var(--ok-bg);} .band-warn{fill:var(--warn-bg);} .band-crit{fill:var(--crit-bg);}
   .trend-line{fill:none; stroke:var(--text); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:0.85;}
   .dot-last{fill:var(--accent); stroke:var(--bg); stroke-width:1.5;}
   .card-foot{
-    display:flex;
-    justify-content:space-between;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
-    color:var(--text-faint);
-    margin-top:6px;
+    display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; color:var(--text-faint); margin-top:6px;
   }
   .card-action{
-    font-family:'IBM Plex Sans', sans-serif;
-    font-size:11.5px;
-    line-height:1.4;
-    margin-top:8px;
-    padding-top:8px;
-    border-top:1px solid var(--line-soft);
-    color:var(--text-dim);
+    font-family:'IBM Plex Sans', sans-serif; font-size:11.5px; line-height:1.4;
+    margin-top:8px; padding-top:8px; border-top:1px solid var(--line-soft); color:var(--text-dim);
   }
   .card-action:empty{display:none; border-top:none; padding-top:0; margin-top:0;}
   .card.status-warn .card-action{color:var(--warn);}
-  .card.status-crit .card-action{color:var(--crit);}
+  .card.status-crit .card-action{color:var(--crit); font-weight:600;}
 
-  /* ---------- Selector de vista ---------- */
-  #viewToggle{
-    background:var(--panel-alt);
-    border:1px solid var(--line);
-    color:var(--text-dim);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.03em;
-    padding:5px 10px;
-    border-radius:6px;
-    cursor:pointer;
-  }
-  #viewToggle:hover{border-color:var(--accent); color:var(--accent);}
-
-  /* ---------- Vista operario: grande, directa, sin detalle técnico ---------- */
-  body.view-operario .flow-hero,
-  body.view-operario .lower-grid{display:none;}
-  body.view-operario .cards-grid{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;}
-  body.view-operario .card{padding:22px 22px 18px; border-left-width:6px;}
-  body.view-operario .card-label{font-size:16px;}
-  body.view-operario .pill{font-size:13px; padding:5px 11px;}
-  body.view-operario .card-value{font-size:46px;}
-  body.view-operario .card-value .unit{font-size:18px;}
-  body.view-operario .trend-svg{display:none;}
-  body.view-operario .card-action{
-    font-size:16px;
-    font-weight:600;
-    margin-top:14px;
-    padding:10px 12px;
-    border-top:none;
-    border-radius:8px;
-    background:rgba(255,255,255,0.05);
-  }
-  body.view-operario .card.status-ok .card-action{display:none;}
-  body.view-operario .card-foot{font-size:12px; margin-top:12px;}
-
-  /* ---------- Lower grid ---------- */
-  .lower-grid{
-    display:grid;
-    grid-template-columns:1.5fr 1fr;
-    gap:14px;
-  }
+  /* ---------- Lower grid (solo supervisor) ---------- */
+  .lower-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:14px;}
   @media (max-width:820px){ .lower-grid{grid-template-columns:1fr;} }
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:16px;
-  }
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px;}
   .panel h2{
-    font-family:'Oswald', sans-serif;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    color:var(--text-dim);
-    margin:0 0 12px;
+    font-family:'Oswald', sans-serif; font-size:14px; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--text-dim); margin:0 0 12px;
   }
   table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:11.5px;}
   th,td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--line-soft); white-space:nowrap;}
   th{color:var(--text-faint); font-weight:500; text-transform:uppercase; font-size:10px; letter-spacing:0.05em;}
   td{color:var(--text-dim);}
   .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
-  .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata{background:var(--nodata);}
+  .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata,.dot-unset{background:var(--nodata);}
   .table-wrap{overflow-x:auto;}
 
   #qualityList{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
@@ -278,13 +243,23 @@
   #qualityList .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
   #qualityList .qty.warn-count{color:var(--warn);}
 
-  footer{
-    margin-top:22px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
-    color:var(--text-faint);
-    text-align:center;
+  footer{margin-top:22px; font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--text-faint); text-align:center;}
+
+  /* ---------- Vista operario: grande, directa, sin detalle técnico ---------- */
+  body.view-operario .flow-hero,
+  body.view-operario .lower-grid{display:none;}
+  body.view-operario .cards-grid{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;}
+  body.view-operario .card{padding:22px 22px 18px;}
+  body.view-operario .card-label{font-size:16px;}
+  body.view-operario .pill{font-size:13px; padding:5px 11px;}
+  body.view-operario .card-value{font-size:46px;}
+  body.view-operario .card-value .unit{font-size:18px;}
+  body.view-operario .card-action{
+    font-size:16px; font-weight:700; margin-top:14px; padding:10px 12px;
+    border-top:none; border-radius:8px; background:rgba(255,255,255,0.06);
   }
+  body.view-operario .card.status-ok .card-action{display:none;}
+  body.view-operario .card-foot{font-size:12px; margin-top:10px;}
 </style>
 </head>
 <body>
@@ -292,8 +267,11 @@
 
   <header class="topbar">
     <div class="brand">
-      <span class="brand-eyebrow">GLP S.A. · Molienda de Soja</span>
-      <h1>Preparación — Panel de Proceso</h1>
+      <img src="logo.png" alt="Gente de la Pampa" class="logo" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <span class="brand-eyebrow">GLP S.A. · Molienda de Soja</span>
+        <h1>Preparación — Panel de Proceso</h1>
+      </div>
     </div>
     <div class="status-cluster">
       <span id="connDot" class="conn-dot"></span>
@@ -301,7 +279,8 @@
       <span class="sep">·</span>
       <span>Último dato: <strong id="lastLoadTime">—</strong></span>
       <button id="refreshBtn" title="Actualizar ahora" aria-label="Actualizar ahora">⟳</button>
-      <button id="viewToggle" title="Alternar entre vista operario y supervisor">Vista operario</button>
+      <button id="viewToggle">Vista supervisor</button>
+      <button id="logoutBtn" title="Salir de vista supervisor">Cerrar sesión</button>
     </div>
   </header>
 
@@ -320,13 +299,8 @@
           <table id="recentTable">
             <thead>
               <tr>
-                <th>Fecha / hora</th>
-                <th>Operador</th>
-                <th>Estado</th>
-                <th>Hum. sal.</th>
-                <th>T° acond.</th>
-                <th>Lam1 I/D</th>
-                <th>Lam2 I/D</th>
+                <th>Fecha / hora</th><th>Operador</th><th>Estado</th>
+                <th>Hum. sal.</th><th>T° acond.</th><th>Lam1 I/D</th><th>Lam2 I/D</th>
               </tr>
             </thead>
             <tbody id="recentTbody"></tbody>
@@ -343,53 +317,69 @@
   <footer>
     Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios · umbrales configurables en CONFIG del código fuente
   </footer>
+</div>
 
+<div id="loginOverlay" class="login-overlay">
+  <form id="loginForm" class="login-box">
+    <h3>Acceso supervisor</h3>
+    <label>Usuario<input type="text" id="loginUser" autocomplete="username" required></label>
+    <label>Contraseña<input type="password" id="loginPass" autocomplete="current-password" required></label>
+    <p id="loginError" class="login-error"></p>
+    <div class="login-actions">
+      <button type="button" id="loginCancel">Cancelar</button>
+      <button type="submit">Ingresar</button>
+    </div>
+  </form>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 /* =========================================================================
-   CONFIG — acá se agregan nuevos parámetros a futuro.
-   Cada parámetro necesita: label, unit, column (nombre EXACTO de la columna
-   en la planilla), evalFn (devuelve {status, note}), domain (para el
-   gráfico), chartBands (para pintar las franjas de color en el gráfico).
+   CONFIG
    ========================================================================= */
 
 function evalHumedadSalida(v){
-  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
-  if (v < 10)     return {status:'crit', note:'Crítico — bajo', action:'Reducir quemador de secadora: riesgo de rotura de laminado y exceso de finos.'};
-  if (v <= 11.5)  return {status:'ok',   note:'Normal', action:''};
-  if (v <= 12)    return {status:'warn', note:'Advertencia', action:'Encender quemador de secadora para bajar la humedad al rango normal.'};
-  return               {status:'crit', note:'Crítico — alto', action:'Encender / aumentar quemador de secadora de inmediato.'};
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 10)     return {status:'crit', note:'Bajo — riesgo de rotura de laminado y exceso de finos'};
+  if (v <= 11.5)  return {status:'ok',   note:'Normal'};
+  if (v <= 12)    return {status:'warn', note:'Alto — considerar encender quemador de secadora'};
+  return               {status:'crit', note:'Alto — encender/aumentar quemador de secadora'};
 }
-
-// NOTA: bandas de advertencia (62–65 y 70–75) inferidas por continuidad con
-// el esquema de humedad; confirmar con Iadin si corresponde otro valor.
+// NOTA: bandas de advertencia (62–65 y 70–75) inferidas por continuidad; confirmar.
 function evalAcondTemp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
-  if (v < 62)     return {status:'crit', note:'Crítico — bajo', action:'Corregir urgente: revisar trampas de vapor y purgas de la cocina antes de aumentar caudal.'};
-  if (v < 65)     return {status:'warn', note:'Advertencia', action:'Verificar trampas de vapor y aumentar levemente el aporte de vapor.'};
-  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)', action:''};
-  if (v <= 75)    return {status:'warn', note:'Advertencia', action:'Reducir aporte de vapor a la cocina.'};
-  return               {status:'crit', note:'Crítico — alto', action:'Corregir urgente: reducir vapor a la cocina, riesgo de sobrecocción.'};
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 62)     return {status:'crit', note:'Bajo — revisar trampas de vapor y purgas de la cocina'};
+  if (v < 65)     return {status:'warn', note:'Bajo el óptimo — verificar trampas de vapor'};
+  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)'};
+  if (v <= 75)    return {status:'warn', note:'Por encima del óptimo — reducir vapor'};
+  return               {status:'crit', note:'Alto — reducir vapor, riesgo de sobrecocción'};
+}
+// NOTA: bandas de advertencia (0.23–0.25 y 0.40–0.42 mm) son un margen de +/-0.02mm inferido.
+function evalEspesor(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 0.23)   return {status:'crit', note:'Muy fino — exceso de finos'};
+  if (v < 0.25)   return {status:'warn', note:'Cerca del límite fino'};
+  if (v <= 0.40)  return {status:'ok',   note:'Normal'};
+  if (v <= 0.42)  return {status:'warn', note:'Cerca del límite grueso'};
+  return               {status:'crit', note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'};
+}
+// Sin umbral confirmado todavía — se muestra el valor pero sin semáforo.
+function evalUnclassified(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  return {status:'unset', note:'Umbral pendiente de confirmar'};
 }
 
-// NOTA: bandas de advertencia (0.23–0.25 y 0.40–0.42 mm) son un margen de
-// +/-0.02mm inferido cerca de los límites dados; ajustar si corresponde.
-function evalEspesor(v){
-  if (v === null) return {status:'nodata', note:'Sin dato', action:''};
-  if (v < 0.23)   return {status:'crit', note:'Crítico — muy fino', action:'Cerrar apertura de rodillos: está generando exceso de finos.'};
-  if (v < 0.25)   return {status:'warn', note:'Advertencia', action:'Revisar apertura de rodillos, cerca del límite fino.'};
-  if (v <= 0.40)  return {status:'ok',   note:'Normal', action:''};
-  if (v <= 0.42)  return {status:'warn', note:'Advertencia', action:'Revisar apertura de rodillos, cerca del límite grueso.'};
-  return               {status:'crit', note:'Crítico — grueso', action:'Abrir apertura de rodillos. Si no corrige, verificar conicidad de rodillos.'};
-}
+// Texto de acción genérico por severidad (no por parámetro específico).
+const GENERIC_ACTION = {
+  ok:'', nodata:'', unset:'',
+  warn:'Fuera del rango óptimo — controlar y ajustar.',
+  crit:'Estado crítico — corregir de inmediato o avisar al supervisor.'
+};
 
 const PARAMS = {
   hum_salida: {
     label:'Humedad salida secadora', unit:'%', group:'secadora',
-    column:'SECADORA HUMEDAD SALIDA (%)',
-    evalFn: evalHumedadSalida, decimals:1,
+    column:'SECADORA HUMEDAD SALIDA (%)', evalFn: evalHumedadSalida, decimals:1,
     domain:[8,14],
     chartBands:[
       {status:'crit', from:8,   to:10},
@@ -400,8 +390,7 @@ const PARAMS = {
   },
   temp_acond: {
     label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador',
-    column:'ACONDICIONADOR TEMPERATURA (°C)',
-    evalFn: evalAcondTemp, decimals:0,
+    column:'ACONDICIONADOR TEMPERATURA (°C)', evalFn: evalAcondTemp, decimals:0,
     domain:[55,80],
     chartBands:[
       {status:'crit', from:55, to:62},
@@ -413,65 +402,65 @@ const PARAMS = {
   },
   lam1_izq: {
     label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1',
-    column:'LAMINADOR 1 ESPESOR IZQUIERDA (0,XX)',
-    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    column:'LAMINADOR 1 ESPESOR IZQUIERDA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
-      {status:'crit', from:0.15, to:0.23},
-      {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40},
-      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
       {status:'crit', from:0.42, to:0.55},
     ]
   },
   lam1_der: {
     label:'Laminador 1 — Derecha', unit:'mm', group:'lam1',
-    column:'LAMINADOR 1 ESPESOR DERECHA (0,XX)',
-    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    column:'LAMINADOR 1 ESPESOR DERECHA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
-      {status:'crit', from:0.15, to:0.23},
-      {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40},
-      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
       {status:'crit', from:0.42, to:0.55},
     ]
   },
   lam2_izq: {
     label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2',
-    column:'LAMINADOR 2 ESPESOR IZQUIERDA (0,XX)',
-    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    column:'LAMINADOR 2 ESPESOR IZQUIERDA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
-      {status:'crit', from:0.15, to:0.23},
-      {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40},
-      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
       {status:'crit', from:0.42, to:0.55},
     ]
   },
   lam2_der: {
     label:'Laminador 2 — Derecha', unit:'mm', group:'lam2',
-    column:'LAMINADOR 2 ESPESOR DERECHA (0,XX)',
-    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    column:'LAMINADOR 2 ESPESOR DERECHA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
-      {status:'crit', from:0.15, to:0.23},
-      {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40},
-      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
       {status:'crit', from:0.42, to:0.55},
     ]
+  },
+  densidad_exp: {
+    label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander',
+    column:'Densidad expandido salida enfriador (g/L)', evalFn: evalUnclassified, decimals:0,
+    domain:[350,600], chartBands:[]
+  },
+  humedad_exp: {
+    label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander',
+    column:'Humedad de expandido en salida enfriador (%)', evalFn: evalUnclassified, decimals:1,
+    domain:[0,15], chartBands:[]
   },
 };
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
 const REFRESH_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 30;
+const OPERATOR_WINDOW_HOURS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
+const AUTH_KEY = 'glp_supervisor_auth';
 
-/* ========================================================================= 
+/* =========================================================================
    PARSEO
    ========================================================================= */
 
@@ -479,7 +468,7 @@ function parseNumber(raw){
   if (raw === undefined || raw === null) return null;
   let s = String(raw).trim();
   if (s === '') return null;
-  const invalid = new Set(['..','...','.','nose','no se','n/a','na','-','--','?','sin dato']);
+  const invalid = new Set(['..','...','.','nose','no se','n/a','na','-','--','?','sin dato','0','00','000']);
   if (invalid.has(s.toLowerCase())) return null;
   if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
   const n = parseFloat(s);
@@ -528,11 +517,9 @@ function fmtTime(d){
   const p = n => String(n).padStart(2,'0');
   return `${p(d.getDate())}/${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-function fmtValue(v, cfg){
-  return v === null ? '—' : v.toFixed(cfg.decimals);
-}
+function fmtValue(v, cfg){ return v === null ? '—' : v.toFixed(cfg.decimals); }
 function statusText(s){
-  return {ok:'NORMAL', warn:'ADVERTENCIA', crit:'CRÍTICO', nodata:'SIN DATO'}[s] || 'SIN DATO';
+  return {ok:'NORMAL', warn:'⚠ ADVERTENCIA', crit:'⛔ CRÍTICO', nodata:'SIN DATO', unset:'SIN CLASIFICAR'}[s] || 'SIN DATO';
 }
 function scaleY(v, min, max, h, pad=6){
   const c = Math.max(min, Math.min(max, v));
@@ -540,7 +527,7 @@ function scaleY(v, min, max, h, pad=6){
   return h - pad - ratio * (h - 2*pad);
 }
 
-function drawTrendSVG(cfg, points){
+function drawTrendSVG(cfg, points, extraClass){
   const W = 300, H = 70;
   const [min, max] = cfg.domain;
   const bands = cfg.chartBands.map(b=>{
@@ -560,14 +547,14 @@ function drawTrendSVG(cfg, points){
     const y = scaleY(valid[0].v, min, max, H);
     dot = `<circle cx="${W/2}" cy="${y.toFixed(1)}" r="3.5" class="dot-last"></circle>`;
   }
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg ${extraClass}" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
 }
 
 /* =========================================================================
    RENDER — hero esquema de línea
    ========================================================================= */
 
-const SEV = {nodata:0, ok:1, warn:2, crit:3};
+const SEV = {nodata:0, unset:0, ok:1, warn:2, crit:3};
 function worstStatus(statuses){
   return statuses.reduce((worst, s) => SEV[s] > SEV[worst] ? s : worst, 'nodata');
 }
@@ -584,8 +571,7 @@ function renderHero(last){
     { title:'LAMINADOR 1', sub: last ? `${fmtValue(last.values.lam1_izq, PARAMS.lam1_izq)} / ${fmtValue(last.values.lam1_der, PARAMS.lam1_der)} mm` : '—', status: lam1 },
     { title:'LAMINADOR 2', sub: last ? `${fmtValue(last.values.lam2_izq, PARAMS.lam2_izq)} / ${fmtValue(last.values.lam2_der, PARAMS.lam2_der)} mm` : '—', status: lam2 },
   ];
-
-  const colorVar = s => ({ok:'var(--ok)', warn:'var(--warn)', crit:'var(--crit)', nodata:'var(--nodata)'}[s]);
+  const colorVar = s => ({ok:'var(--ok)', warn:'var(--warn)', crit:'var(--crit)', nodata:'var(--nodata)', unset:'var(--nodata)'}[s]);
 
   const nodeW = 170, nodeH = 64, gap = 46, startX = 20, y = 30;
   let svgNodes = '', svgArrows = '';
@@ -599,24 +585,16 @@ function renderHero(last){
         <text x="${x+nodeW/2}" y="${y+45}" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="14" font-weight="600" fill="${c}">${n.sub}</text>
       </g>`;
     if (i < nodes.length-1){
-      const ax1 = x+nodeW, ax2 = x+nodeW+gap;
-      const ay = y+nodeH/2;
+      const ax1 = x+nodeW, ax2 = x+nodeW+gap, ay = y+nodeH/2;
       svgArrows += `<path d="M ${ax1+4} ${ay} L ${ax2-8} ${ay}" stroke="var(--line)" stroke-width="1.6" marker-end="url(#arrowhead)"></path>`;
     }
   });
-
   const totalW = startX*2 + nodes.length*nodeW + (nodes.length-1)*gap - gap;
-  const svg = `
+  document.getElementById('flowContainer').innerHTML = `
     <svg viewBox="0 0 ${totalW} ${y*2+nodeH}" width="100%" style="max-width:780px" role="img" aria-label="Estado actual de la línea de preparación">
-      <defs>
-        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 Z" fill="var(--line)"></path>
-        </marker>
-      </defs>
-      ${svgArrows}
-      ${svgNodes}
+      <defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--line)"></path></marker></defs>
+      ${svgArrows}${svgNodes}
     </svg>`;
-  document.getElementById('flowContainer').innerHTML = svg;
 }
 
 /* =========================================================================
@@ -626,11 +604,13 @@ function renderHero(last){
 function renderCards(rows){
   const grid = document.getElementById('cardsGrid');
   const last = rows[rows.length-1];
+  const cutoff = last ? new Date(last.ts.getTime() - OPERATOR_WINDOW_HOURS*3600*1000) : null;
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
     const currentVal = last ? last.values[id] : null;
     const res = cfg.evalFn(currentVal);
-    const pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
+    const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
+    const ptsOp = cutoff ? rows.filter(r=>r.ts >= cutoff).map(r=>({ts:r.ts, v:r.values[id]})) : [];
     const card = document.createElement('div');
     card.className = `card status-${res.status}`;
     card.title = res.note;
@@ -640,12 +620,14 @@ function renderCards(rows){
         <span class="pill pill-${res.status}">${statusText(res.status)}</span>
       </div>
       <div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>
-      ${drawTrendSVG(cfg, pts)}
+      ${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}
+      ${drawTrendSVG(cfg, ptsOp, 'trend-operario')}
+      <div class="trend-caption-op">Tendencia últimas 4 h</div>
       <div class="card-foot">
         <span>${last ? fmtTime(last.ts) : '—'}</span>
         <span>${last ? last.operador : ''}</span>
       </div>
-      <div class="card-action">${res.action || ''}</div>`;
+      <div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     grid.appendChild(card);
   }
 }
@@ -654,37 +636,79 @@ function statusDot(cfg, v){
   const s = cfg.evalFn(v).status;
   return `<span class="dot dot-${s}"></span>`;
 }
-
 function renderRecentTable(rows){
   const tbody = document.getElementById('recentTbody');
   const slice = rows.slice(-RECENT_ROWS).reverse();
   tbody.innerHTML = slice.map(r=>`
     <tr>
-      <td>${fmtTime(r.ts)}</td>
-      <td>${r.operador}</td>
-      <td>${r.estado}</td>
+      <td>${fmtTime(r.ts)}</td><td>${r.operador}</td><td>${r.estado}</td>
       <td>${statusDot(PARAMS.hum_salida, r.values.hum_salida)}${fmtValue(r.values.hum_salida, PARAMS.hum_salida)}</td>
       <td>${statusDot(PARAMS.temp_acond, r.values.temp_acond)}${fmtValue(r.values.temp_acond, PARAMS.temp_acond)}</td>
       <td>${statusDot(PARAMS.lam1_izq, r.values.lam1_izq)}${fmtValue(r.values.lam1_izq, PARAMS.lam1_izq)}/${fmtValue(r.values.lam1_der, PARAMS.lam1_der)}</td>
       <td>${statusDot(PARAMS.lam2_izq, r.values.lam2_izq)}${fmtValue(r.values.lam2_izq, PARAMS.lam2_izq)}/${fmtValue(r.values.lam2_der, PARAMS.lam2_der)}</td>
     </tr>`).join('');
 }
-
 function renderQuality(rows, parseStats){
   const list = document.getElementById('qualityList');
   const window = rows.slice(-QUALITY_WINDOW);
   const items = [];
   for (const [id, cfg] of Object.entries(PARAMS)){
     const missing = window.filter(r => r.values[id] === null).length;
-    if (missing > 0){
-      items.push(`<li><span>${cfg.label}</span><span class="qty ${missing > window.length*0.15 ? 'warn-count':''}">${missing} sin dato</span></li>`);
-    }
+    if (missing > 0) items.push(`<li><span>${cfg.label}</span><span class="qty ${missing > window.length*0.15 ? 'warn-count':''}">${missing} sin dato</span></li>`);
   }
-  if (parseStats.tsFailed > 0){
-    items.push(`<li><span>Filas con fecha/hora ilegible (todo el histórico)</span><span class="qty warn-count">${parseStats.tsFailed}</span></li>`);
-  }
+  if (parseStats.tsFailed > 0) items.push(`<li><span>Filas con fecha/hora ilegible (todo el histórico)</span><span class="qty warn-count">${parseStats.tsFailed}</span></li>`);
   list.innerHTML = items.length ? items.join('') : '<li><span>Sin problemas detectados en la ventana analizada</span><span class="qty">✓</span></li>';
 }
+
+/* =========================================================================
+   VISTA OPERARIO / SUPERVISOR + LOGIN
+   El login es un filtro de UX, no seguridad real: el código es visible
+   para cualquiera que abra "ver código fuente" en un repo público.
+   ========================================================================= */
+
+function isAuthed(){ return localStorage.getItem(AUTH_KEY) === '1'; }
+function setAuthed(v){ if (v) localStorage.setItem(AUTH_KEY,'1'); else localStorage.removeItem(AUTH_KEY); }
+
+function setView(view){
+  document.body.classList.toggle('view-operario', view === 'operario');
+  document.getElementById('viewToggle').textContent = view === 'operario' ? 'Vista supervisor' : 'Vista operario';
+}
+function showLoginModal(){
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginUser').focus();
+}
+function hideLoginModal(){
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('loginForm').reset();
+}
+
+let currentView = isAuthed() ? 'supervisor' : 'operario';
+setView(currentView);
+
+document.getElementById('viewToggle').addEventListener('click', () => {
+  if (currentView === 'operario'){
+    if (isAuthed()){ currentView = 'supervisor'; setView(currentView); }
+    else { showLoginModal(); }
+  } else {
+    currentView = 'operario'; setView(currentView);
+  }
+});
+document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  if (u === 'user' && p === 'user'){
+    setAuthed(true); hideLoginModal();
+    currentView = 'supervisor'; setView(currentView);
+  } else {
+    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos.';
+  }
+});
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  setAuthed(false); currentView = 'operario'; setView(currentView);
+});
 
 /* =========================================================================
    CONEXIÓN Y CARGA
@@ -718,31 +742,6 @@ async function loadData(){
     setConn('error', err.message);
   }
 }
-
-/* =========================================================================
-   VISTA OPERARIO / SUPERVISOR
-   El estado de la vista se guarda en la URL (?vista=operario), no en
-   localStorage, para que el link sea el mismo mecanismo de "memoria":
-   se puede guardar como favorito distinto para cada pantalla/usuario.
-   ========================================================================= */
-
-function getViewFromURL(){
-  const params = new URLSearchParams(location.search);
-  return params.get('vista') === 'operario' ? 'operario' : 'supervisor';
-}
-function setView(view){
-  document.body.classList.toggle('view-operario', view === 'operario');
-  document.getElementById('viewToggle').textContent = view === 'operario' ? 'Vista supervisor' : 'Vista operario';
-  const url = new URL(location.href);
-  url.searchParams.set('vista', view);
-  history.replaceState(null, '', url);
-}
-let currentView = getViewFromURL();
-setView(currentView);
-document.getElementById('viewToggle').addEventListener('click', () => {
-  currentView = currentView === 'operario' ? 'supervisor' : 'operario';
-  setView(currentView);
-});
 
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData();
