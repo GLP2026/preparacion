@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLP · Panel de Proceso — Preparación de Soja</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#12171C;
+    --panel:#1B2229;
+    --panel-alt:#212A32;
+    --line:#2B3540;
+    --line-soft:#232C34;
+    --text:#E7ECEF;
+    --text-dim:#8C99A6;
+    --text-faint:#5E6A75;
+    --accent:#E8A33D;
+    --ok:#4CAE79;
+    --ok-bg:rgba(76,174,121,0.14);
+    --warn:#E8A33D;
+    --warn-bg:rgba(232,163,61,0.14);
+    --crit:#E1554F;
+    --crit-bg:rgba(225,85,79,0.16);
+    --nodata:#5E6A75;
+    --nodata-bg:rgba(94,106,117,0.12);
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  #app{max-width:1180px;margin:0 auto;padding:20px 20px 60px;}
+
+  a{color:var(--accent);}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+    margin-bottom:22px;
+  }
+  .brand-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:block;
+    margin-bottom:4px;
+  }
+  .topbar h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:0.01em;
+    margin:0;
+    text-transform:uppercase;
+  }
+  .status-cluster{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--text-dim);
+    flex-wrap:wrap;
+  }
+  .conn-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--nodata);
+    display:inline-block;
+    box-shadow:0 0 0 3px rgba(255,255,255,0.02);
+  }
+  .conn-dot.conn-ok{background:var(--ok); box-shadow:0 0 8px rgba(76,174,121,0.6);}
+  .conn-dot.conn-loading{background:var(--accent); animation:pulse 1.1s ease-in-out infinite;}
+  .conn-dot.conn-error{background:var(--crit); box-shadow:0 0 8px rgba(225,85,79,0.6);}
+  @media (prefers-reduced-motion: reduce){ .conn-dot.conn-loading{animation:none;} }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .sep{color:var(--text-faint);}
+  #refreshBtn{
+    background:var(--panel-alt);
+    border:1px solid var(--line);
+    color:var(--text);
+    width:28px;height:28px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  #refreshBtn:hover{border-color:var(--accent); color:var(--accent);}
+  #refreshBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* ---------- Hero flow ---------- */
+  .flow-hero{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 16px 14px;
+    margin-bottom:24px;
+    overflow-x:auto;
+  }
+  .flow-hero svg{display:block; margin:0 auto;}
+  .flow-caption{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    text-align:center;
+    margin-top:8px;
+    letter-spacing:0.04em;
+  }
+
+  /* ---------- Cards ---------- */
+  .cards-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:14px;
+    margin-bottom:24px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--nodata);
+    border-radius:var(--radius);
+    padding:14px 16px 12px;
+  }
+  .card.status-ok{border-left-color:var(--ok);}
+  .card.status-warn{border-left-color:var(--warn);}
+  .card.status-crit{border-left-color:var(--crit);}
+  .card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .card-label{
+    font-family:'Oswald', sans-serif;
+    font-size:13.5px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    color:var(--text-dim);
+    line-height:1.25;
+  }
+  .pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.05em;
+    padding:3px 7px;
+    border-radius:20px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .pill-ok{background:var(--ok-bg); color:var(--ok);}
+  .pill-warn{background:var(--warn-bg); color:var(--warn);}
+  .pill-crit{background:var(--crit-bg); color:var(--crit);}
+  .pill-nodata{background:var(--nodata-bg); color:var(--text-faint);}
+  .card-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:28px;
+    margin:4px 0 8px;
+  }
+  .card-value .unit{
+    font-size:13px;
+    font-weight:400;
+    color:var(--text-dim);
+    margin-left:3px;
+  }
+  .trend-svg{width:100%; height:70px; display:block;}
+  .band-ok{fill:var(--ok-bg);}
+  .band-warn{fill:var(--warn-bg);}
+  .band-crit{fill:var(--crit-bg);}
+  .trend-line{fill:none; stroke:var(--text); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:0.85;}
+  .dot-last{fill:var(--accent); stroke:var(--bg); stroke-width:1.5;}
+  .card-foot{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--text-faint);
+    margin-top:6px;
+  }
+
+  /* ---------- Lower grid ---------- */
+  .lower-grid{
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:820px){ .lower-grid{grid-template-columns:1fr;} }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .panel h2{
+    font-family:'Oswald', sans-serif;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--text-dim);
+    margin:0 0 12px;
+  }
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:11.5px;}
+  th,td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--line-soft); white-space:nowrap;}
+  th{color:var(--text-faint); font-weight:500; text-transform:uppercase; font-size:10px; letter-spacing:0.05em;}
+  td{color:var(--text-dim);}
+  .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
+  .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata{background:var(--nodata);}
+  .table-wrap{overflow-x:auto;}
+
+  #qualityList{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
+  #qualityList li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
+  #qualityList li:last-child{border-bottom:none;}
+  #qualityList .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
+  #qualityList .qty.warn-count{color:var(--warn);}
+
+  footer{
+    margin-top:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-eyebrow">GLP S.A. · Molienda de Soja</span>
+      <h1>Preparación — Panel de Proceso</h1>
+    </div>
+    <div class="status-cluster">
+      <span id="connDot" class="conn-dot"></span>
+      <span id="connText" aria-live="polite">conectando…</span>
+      <span class="sep">·</span>
+      <span>Último dato: <strong id="lastLoadTime">—</strong></span>
+      <button id="refreshBtn" title="Actualizar ahora" aria-label="Actualizar ahora">⟳</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="flow-hero" aria-label="Esquema de línea de preparación">
+      <div id="flowContainer"></div>
+      <div class="flow-caption">SECADORA → ACONDICIONADOR (COCINA) → LAMINADOR 1 / LAMINADOR 2</div>
+    </section>
+
+    <section class="cards-grid" id="cardsGrid" aria-label="Indicadores actuales"></section>
+
+    <section class="lower-grid">
+      <div class="panel">
+        <h2>Registros recientes</h2>
+        <div class="table-wrap">
+          <table id="recentTable">
+            <thead>
+              <tr>
+                <th>Fecha / hora</th>
+                <th>Operador</th>
+                <th>Estado</th>
+                <th>Hum. sal.</th>
+                <th>T° acond.</th>
+                <th>Lam1 I/D</th>
+                <th>Lam2 I/D</th>
+              </tr>
+            </thead>
+            <tbody id="recentTbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Calidad de datos (últimas 50 cargas)</h2>
+        <ul id="qualityList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios · umbrales configurables en CONFIG del código fuente
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+/* =========================================================================
+   CONFIG — acá se agregan nuevos parámetros a futuro.
+   Cada parámetro necesita: label, unit, column (nombre EXACTO de la columna
+   en la planilla), evalFn (devuelve {status, note}), domain (para el
+   gráfico), chartBands (para pintar las franjas de color en el gráfico).
+   ========================================================================= */
+
+function evalHumedadSalida(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 10)     return {status:'crit', note:'Crítico — bajo: riesgo de rotura de laminado / exceso de finos'};
+  if (v <= 11.5)  return {status:'ok',   note:'Normal'};
+  if (v <= 12)    return {status:'warn', note:'Advertencia — encender quemador de secadora'};
+  return               {status:'crit', note:'Crítico — alto'};
+}
+
+// NOTA: bandas de advertencia (62–65 y 70–75) inferidas por continuidad con
+// el esquema de humedad; confirmar con Iadin si corresponde otro valor.
+function evalAcondTemp(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 62)     return {status:'crit', note:'Crítico — bajo: corregir temperatura de cocina'};
+  if (v < 65)     return {status:'warn', note:'Advertencia — por debajo del óptimo'};
+  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)'};
+  if (v <= 75)    return {status:'warn', note:'Advertencia — por encima del óptimo'};
+  return               {status:'crit', note:'Crítico — alto: corregir temperatura de cocina'};
+}
+
+// NOTA: bandas de advertencia (0.23–0.25 y 0.40–0.42 mm) son un margen de
+// +/-0.02mm inferido cerca de los límites dados; ajustar si corresponde.
+function evalEspesor(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 0.23)   return {status:'crit', note:'Crítico — muy fino: exceso de finos'};
+  if (v < 0.25)   return {status:'warn', note:'Advertencia — cerca del límite fino'};
+  if (v <= 0.40)  return {status:'ok',   note:'Normal'};
+  if (v <= 0.42)  return {status:'warn', note:'Advertencia — cerca del límite grueso'};
+  return               {status:'crit', note:'Crítico — grueso: MG remanente elevado'};
+}
+
+const PARAMS = {
+  hum_salida: {
+    label:'Humedad salida secadora', unit:'%', group:'secadora',
+    column:'SECADORA HUMEDAD SALIDA (%)',
+    evalFn: evalHumedadSalida, decimals:1,
+    domain:[8,14],
+    chartBands:[
+      {status:'crit', from:8,   to:10},
+      {status:'ok',   from:10,  to:11.5},
+      {status:'warn', from:11.5,to:12},
+      {status:'crit', from:12,  to:14},
+    ]
+  },
+  temp_acond: {
+    label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador',
+    column:'ACONDICIONADOR TEMPERATURA (°C)',
+    evalFn: evalAcondTemp, decimals:0,
+    domain:[55,80],
+    chartBands:[
+      {status:'crit', from:55, to:62},
+      {status:'warn', from:62, to:65},
+      {status:'ok',   from:65, to:70},
+      {status:'warn', from:70, to:75},
+      {status:'crit', from:75, to:80},
+    ]
+  },
+  lam1_izq: {
+    label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1',
+    column:'LAMINADOR 1 ESPESOR IZQUIERDA (0,XX)',
+    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    domain:[0.15,0.55],
+    chartBands:[
+      {status:'crit', from:0.15, to:0.23},
+      {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40},
+      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.42, to:0.55},
+    ]
+  },
+  lam1_der: {
+    label:'Laminador 1 — Derecha', unit:'mm', group:'lam1',
+    column:'LAMINADOR 1 ESPESOR DERECHA (0,XX)',
+    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    domain:[0.15,0.55],
+    chartBands:[
+      {status:'crit', from:0.15, to:0.23},
+      {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40},
+      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.42, to:0.55},
+    ]
+  },
+  lam2_izq: {
+    label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2',
+    column:'LAMINADOR 2 ESPESOR IZQUIERDA (0,XX)',
+    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    domain:[0.15,0.55],
+    chartBands:[
+      {status:'crit', from:0.15, to:0.23},
+      {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40},
+      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.42, to:0.55},
+    ]
+  },
+  lam2_der: {
+    label:'Laminador 2 — Derecha', unit:'mm', group:'lam2',
+    column:'LAMINADOR 2 ESPESOR DERECHA (0,XX)',
+    transform:v=>v/100, evalFn: evalEspesor, decimals:2,
+    domain:[0.15,0.55],
+    chartBands:[
+      {status:'crit', from:0.15, to:0.23},
+      {status:'warn', from:0.23, to:0.25},
+      {status:'ok',   from:0.25, to:0.40},
+      {status:'warn', from:0.40, to:0.42},
+      {status:'crit', from:0.42, to:0.55},
+    ]
+  },
+};
+
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
+const REFRESH_MS = 5 * 60 * 1000;
+const HISTORY_POINTS = 30;
+const RECENT_ROWS = 8;
+const QUALITY_WINDOW = 50;
+
+/* ========================================================================= 
+   PARSEO
+   ========================================================================= */
+
+function parseNumber(raw){
+  if (raw === undefined || raw === null) return null;
+  let s = String(raw).trim();
+  if (s === '') return null;
+  const invalid = new Set(['..','...','.','nose','no se','n/a','na','-','--','?','sin dato']);
+  if (invalid.has(s.toLowerCase())) return null;
+  if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
+  const n = parseFloat(s);
+  if (Number.isNaN(n)) return null;
+  return n;
+}
+
+function parseTimestamp(raw){
+  if (!raw) return null;
+  const parts = String(raw).trim().split(' ');
+  if (parts.length < 2) return null;
+  const dparts = parts[0].split('/').map(Number);
+  if (dparts.length < 3) return null;
+  const [d, m, y] = dparts;
+  const tparts = parts[1].split(':').map(Number);
+  const hh = tparts[0]||0, mm = tparts[1]||0, ss = tparts[2]||0;
+  if (!d || !m || !y) return null;
+  const dt = new Date(y, m-1, d, hh, mm, ss);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+function buildRows(data){
+  let totalSeen = 0, tsFailed = 0;
+  const rows = [];
+  for (const r of data){
+    totalSeen++;
+    const ts = parseTimestamp(r['Marca temporal']);
+    if (!ts){ tsFailed++; continue; }
+    const row = { ts, operador:r['OPERADOR']||'', supervisor:r['SUPERVISOR']||'', estado:r['ESTADO DE PLANTA']||'', values:{} };
+    for (const [id, cfg] of Object.entries(PARAMS)){
+      let v = parseNumber(r[cfg.column]);
+      if (v !== null && cfg.transform) v = cfg.transform(v);
+      row.values[id] = v;
+    }
+    rows.push(row);
+  }
+  rows.sort((a,b)=>a.ts-b.ts);
+  return { rows, totalSeen, tsFailed };
+}
+
+/* =========================================================================
+   RENDER — helpers
+   ========================================================================= */
+
+function fmtTime(d){
+  const p = n => String(n).padStart(2,'0');
+  return `${p(d.getDate())}/${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function fmtValue(v, cfg){
+  return v === null ? '—' : v.toFixed(cfg.decimals);
+}
+function statusText(s){
+  return {ok:'NORMAL', warn:'ADVERTENCIA', crit:'CRÍTICO', nodata:'SIN DATO'}[s] || 'SIN DATO';
+}
+function scaleY(v, min, max, h, pad=6){
+  const c = Math.max(min, Math.min(max, v));
+  const ratio = (c - min) / (max - min);
+  return h - pad - ratio * (h - 2*pad);
+}
+
+function drawTrendSVG(cfg, points){
+  const W = 300, H = 70;
+  const [min, max] = cfg.domain;
+  const bands = cfg.chartBands.map(b=>{
+    const y1 = scaleY(b.to, min, max, H);
+    const y2 = scaleY(b.from, min, max, H);
+    return `<rect x="0" y="${y1.toFixed(1)}" width="${W}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
+  }).join('');
+  const valid = points.filter(p=>p.v !== null);
+  let line = '', dot = '';
+  if (valid.length > 1){
+    const n = valid.length;
+    const coords = valid.map((p,i)=>[ (i/(n-1))*W, scaleY(p.v, min, max, H) ]);
+    line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
+    const last = coords[coords.length-1];
+    dot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.5" class="dot-last"></circle>`;
+  } else if (valid.length === 1){
+    const y = scaleY(valid[0].v, min, max, H);
+    dot = `<circle cx="${W/2}" cy="${y.toFixed(1)}" r="3.5" class="dot-last"></circle>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
+}
+
+/* =========================================================================
+   RENDER — hero esquema de línea
+   ========================================================================= */
+
+const SEV = {nodata:0, ok:1, warn:2, crit:3};
+function worstStatus(statuses){
+  return statuses.reduce((worst, s) => SEV[s] > SEV[worst] ? s : worst, 'nodata');
+}
+
+function renderHero(last){
+  const hum = last ? PARAMS.hum_salida.evalFn(last.values.hum_salida) : {status:'nodata'};
+  const acond = last ? PARAMS.temp_acond.evalFn(last.values.temp_acond) : {status:'nodata'};
+  const lam1 = last ? worstStatus([PARAMS.lam1_izq.evalFn(last.values.lam1_izq).status, PARAMS.lam1_der.evalFn(last.values.lam1_der).status]) : 'nodata';
+  const lam2 = last ? worstStatus([PARAMS.lam2_izq.evalFn(last.values.lam2_izq).status, PARAMS.lam2_der.evalFn(last.values.lam2_der).status]) : 'nodata';
+
+  const nodes = [
+    { title:'SECADORA', sub: last ? `${fmtValue(last.values.hum_salida, PARAMS.hum_salida)}% sal.` : '—', status: hum.status },
+    { title:'ACONDICIONADOR', sub: last ? `${fmtValue(last.values.temp_acond, PARAMS.temp_acond)}°C` : '—', status: acond.status },
+    { title:'LAMINADOR 1', sub: last ? `${fmtValue(last.values.lam1_izq, PARAMS.lam1_izq)} / ${fmtValue(last.values.lam1_der, PARAMS.lam1_der)} mm` : '—', status: lam1 },
+    { title:'LAMINADOR 2', sub: last ? `${fmtValue(last.values.lam2_izq, PARAMS.lam2_izq)} / ${fmtValue(last.values.lam2_der, PARAMS.lam2_der)} mm` : '—', status: lam2 },
+  ];
+
+  const colorVar = s => ({ok:'var(--ok)', warn:'var(--warn)', crit:'var(--crit)', nodata:'var(--nodata)'}[s]);
+
+  const nodeW = 170, nodeH = 64, gap = 46, startX = 20, y = 30;
+  let svgNodes = '', svgArrows = '';
+  nodes.forEach((n,i)=>{
+    const x = startX + i*(nodeW+gap);
+    const c = colorVar(n.status);
+    svgNodes += `
+      <g>
+        <rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="8" fill="var(--panel-alt)" stroke="${c}" stroke-width="1.6"></rect>
+        <text x="${x+nodeW/2}" y="${y+24}" text-anchor="middle" font-family="Oswald, sans-serif" font-size="12.5" font-weight="600" fill="var(--text)" letter-spacing="0.03em">${n.title}</text>
+        <text x="${x+nodeW/2}" y="${y+45}" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="14" font-weight="600" fill="${c}">${n.sub}</text>
+      </g>`;
+    if (i < nodes.length-1){
+      const ax1 = x+nodeW, ax2 = x+nodeW+gap;
+      const ay = y+nodeH/2;
+      svgArrows += `<path d="M ${ax1+4} ${ay} L ${ax2-8} ${ay}" stroke="var(--line)" stroke-width="1.6" marker-end="url(#arrowhead)"></path>`;
+    }
+  });
+
+  const totalW = startX*2 + nodes.length*nodeW + (nodes.length-1)*gap - gap;
+  const svg = `
+    <svg viewBox="0 0 ${totalW} ${y*2+nodeH}" width="100%" style="max-width:780px" role="img" aria-label="Estado actual de la línea de preparación">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--line)"></path>
+        </marker>
+      </defs>
+      ${svgArrows}
+      ${svgNodes}
+    </svg>`;
+  document.getElementById('flowContainer').innerHTML = svg;
+}
+
+/* =========================================================================
+   RENDER — cards, tabla, calidad
+   ========================================================================= */
+
+function renderCards(rows){
+  const grid = document.getElementById('cardsGrid');
+  const last = rows[rows.length-1];
+  grid.innerHTML = '';
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    const currentVal = last ? last.values[id] : null;
+    const res = cfg.evalFn(currentVal);
+    const pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
+    const card = document.createElement('div');
+    card.className = `card status-${res.status}`;
+    card.title = res.note;
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="card-label">${cfg.label}</span>
+        <span class="pill pill-${res.status}">${statusText(res.status)}</span>
+      </div>
+      <div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>
+      ${drawTrendSVG(cfg, pts)}
+      <div class="card-foot">
+        <span>${last ? fmtTime(last.ts) : '—'}</span>
+        <span>${last ? last.operador : ''}</span>
+      </div>`;
+    grid.appendChild(card);
+  }
+}
+
+function statusDot(cfg, v){
+  const s = cfg.evalFn(v).status;
+  return `<span class="dot dot-${s}"></span>`;
+}
+
+function renderRecentTable(rows){
+  const tbody = document.getElementById('recentTbody');
+  const slice = rows.slice(-RECENT_ROWS).reverse();
+  tbody.innerHTML = slice.map(r=>`
+    <tr>
+      <td>${fmtTime(r.ts)}</td>
+      <td>${r.operador}</td>
+      <td>${r.estado}</td>
+      <td>${statusDot(PARAMS.hum_salida, r.values.hum_salida)}${fmtValue(r.values.hum_salida, PARAMS.hum_salida)}</td>
+      <td>${statusDot(PARAMS.temp_acond, r.values.temp_acond)}${fmtValue(r.values.temp_acond, PARAMS.temp_acond)}</td>
+      <td>${statusDot(PARAMS.lam1_izq, r.values.lam1_izq)}${fmtValue(r.values.lam1_izq, PARAMS.lam1_izq)}/${fmtValue(r.values.lam1_der, PARAMS.lam1_der)}</td>
+      <td>${statusDot(PARAMS.lam2_izq, r.values.lam2_izq)}${fmtValue(r.values.lam2_izq, PARAMS.lam2_izq)}/${fmtValue(r.values.lam2_der, PARAMS.lam2_der)}</td>
+    </tr>`).join('');
+}
+
+function renderQuality(rows, parseStats){
+  const list = document.getElementById('qualityList');
+  const window = rows.slice(-QUALITY_WINDOW);
+  const items = [];
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    const missing = window.filter(r => r.values[id] === null).length;
+    if (missing > 0){
+      items.push(`<li><span>${cfg.label}</span><span class="qty ${missing > window.length*0.15 ? 'warn-count':''}">${missing} sin dato</span></li>`);
+    }
+  }
+  if (parseStats.tsFailed > 0){
+    items.push(`<li><span>Filas con fecha/hora ilegible (todo el histórico)</span><span class="qty warn-count">${parseStats.tsFailed}</span></li>`);
+  }
+  list.innerHTML = items.length ? items.join('') : '<li><span>Sin problemas detectados en la ventana analizada</span><span class="qty">✓</span></li>';
+}
+
+/* =========================================================================
+   CONEXIÓN Y CARGA
+   ========================================================================= */
+
+function setConn(state, msg){
+  const dot = document.getElementById('connDot');
+  const text = document.getElementById('connText');
+  dot.className = 'conn-dot conn-' + state;
+  text.textContent = state==='ok' ? 'en línea' : state==='loading' ? 'actualizando…' : `error de conexión${msg?': '+msg:''}`;
+}
+
+async function loadData(){
+  setConn('loading');
+  try{
+    const res = await fetch(SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const parsed = Papa.parse(text, {header:true, skipEmptyLines:true});
+    const { rows, totalSeen, tsFailed } = buildRows(parsed.data);
+    if (rows.length === 0) throw new Error('sin filas válidas');
+
+    renderHero(rows[rows.length-1]);
+    renderCards(rows);
+    renderRecentTable(rows);
+    renderQuality(rows, {totalSeen, tsFailed});
+    document.getElementById('lastLoadTime').textContent = fmtTime(rows[rows.length-1].ts);
+    setConn('ok');
+  } catch(err){
+    console.error(err);
+    setConn('error', err.message);
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadData);
+loadData();
+setInterval(loadData, REFRESH_MS);
+</script>
+</body>
+</html>
