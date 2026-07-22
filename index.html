@@ -37,8 +37,7 @@
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
-  #app{max-width:1180px;margin:0 auto;padding:20px 20px 60px;}
-  body.view-operario #app{max-width:none; padding-left:28px; padding-right:28px;}
+  #app{max-width:none; margin:0; padding:20px 28px 60px;}
   a{color:var(--accent);}
 
   /* ---------- Topbar ---------- */
@@ -294,19 +293,25 @@
   /* ---------- Vista operario ---------- */
   body.view-operario .flow-hero,
   body.view-operario .analysis-section{display:none;}
-  body.view-operario .cards-grid{grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;}
-  body.view-operario .card{padding:14px 16px 12px;}
-  body.view-operario .card-label{font-size:14px;}
-  body.view-operario .param-icon{width:16px; height:16px;}
-  body.view-operario .pill{font-size:11.5px; padding:4px 9px;}
-  body.view-operario .card-value{font-size:34px;}
-  body.view-operario .card-value .unit{font-size:15px;}
+  body.view-operario .cards-grid{grid-template-columns:repeat(5, 1fr); gap:12px;}
+  body.view-operario .card{padding:12px 14px 10px;}
+  body.view-operario .card-label{font-size:12.5px;}
+  body.view-operario .param-icon{width:14px; height:14px;}
+  body.view-operario .pill{font-size:10px; padding:3px 7px;}
+  body.view-operario .card-value{font-size:28px;}
+  body.view-operario .card-value .unit{font-size:13px;}
   body.view-operario .card-action{
-    font-size:13px; font-weight:700; margin-top:10px; padding:8px 10px;
+    font-size:11.5px; font-weight:700; margin-top:8px; padding:7px 9px;
     border-top:none; border-radius:8px; background:rgba(255,255,255,0.06);
   }
   body.view-operario .card.status-ok .card-action{display:none;}
-  body.view-operario .card-foot{font-size:11px; margin-top:8px;}
+  body.view-operario .card-foot{font-size:10px; margin-top:6px;}
+  @media (max-width:1100px){
+    body.view-operario .cards-grid{grid-template-columns:repeat(3, 1fr);}
+  }
+  @media (max-width:700px){
+    body.view-operario .cards-grid{grid-template-columns:repeat(2, 1fr);}
+  }
 </style>
 </head>
 <body>
@@ -341,7 +346,7 @@
 
     <section class="operario-footer" aria-label="Distribución de cargas por operario">
       <div class="panel">
-        <h2>Cargas por operario (desde 01/07/2026)</h2>
+        <h2>Cargas por operario (desde 01/01/2026)</h2>
         <div id="operatorPieOperario"></div>
       </div>
     </section>
@@ -404,7 +409,7 @@
           <ul id="corrList"><li><span>Subí un archivo de laboratorio para ver correlaciones.</span></li></ul>
         </div>
         <div class="panel">
-          <h2>Cargas por operario (desde 01/07/2026)</h2>
+          <h2>Cargas por operario (desde 01/01/2026)</h2>
           <div id="operatorPieSupervisor"></div>
         </div>
       </div>
@@ -508,6 +513,20 @@ function evalTolvaTemp(v){
   if (v <= 60)    return {status:'warn', note:'Por encima del rango normal'};
   return               {status:'crit', note:'Alto'};
 }
+function evalHumedadExp(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 9.5)    return {status:'crit', note:'Bajo — dejar de secar el poroto, aumentar vapor en expandido o cerrar ingreso de aire del enfriador'};
+  if (v < 10)     return {status:'warn', note:'Bajo el óptimo — considerar reducir secado / aumentar vapor'};
+  if (v <= 11)    return {status:'ok',   note:'Normal (óptimo)'};
+  if (v <= 11.5)  return {status:'warn', note:'Por encima del óptimo — considerar reducir vapor / secar más el poroto'};
+  return               {status:'crit', note:'Alto — reducir vapor, secar mejor el poroto antes de cocina, abrir más entrada de aire del enfriador'};
+}
+function evalDensidadExp(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v <= 450)   return {status:'ok',   note:'Normal'};
+  if (v <= 500)   return {status:'warn', note:'Expandido poco poroso'};
+  return               {status:'crit', note:'Expandido sin porosidad o con mucho fino'};
+}
 function evalUnclassified(v){
   if (v === null) return {status:'nodata', note:'Sin dato'};
   return {status:'unset', note:'Umbral pendiente de confirmar'};
@@ -606,13 +625,23 @@ const PARAMS = {
   },
   densidad_exp: {
     label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander', icon:'density',
-    column:'Densidad expandido salida enfriador (g/L)', evalFn: evalUnclassified, decimals:0,
-    domain:[350,600], chartBands:[]
+    column:'Densidad expandido salida enfriador (g/L)', evalFn: evalDensidadExp, decimals:0,
+    domain:[300,600],
+    chartBands:[
+      {status:'ok',   from:300, to:450},
+      {status:'warn', from:450, to:500},
+      {status:'crit', from:500, to:600},
+    ]
   },
   humedad_exp: {
     label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander', icon:'drop',
-    column:'Humedad de expandido en salida enfriador (%)', evalFn: evalUnclassified, decimals:1,
-    domain:[0,15], chartBands:[]
+    column:'Humedad de expandido en salida enfriador (%)', evalFn: evalHumedadExp, decimals:1,
+    domain:[7,14],
+    chartBands:[
+      {status:'crit', from:7,   to:9.5}, {status:'warn', from:9.5, to:10},
+      {status:'ok',   from:10,  to:11},  {status:'warn', from:11,  to:11.5},
+      {status:'crit', from:11.5,to:14},
+    ]
   },
 };
 
@@ -626,7 +655,7 @@ const AUTH_KEY = 'glp_supervisor_auth';
 const STALE_MS = 2.5 * 60 * 60 * 1000;
 const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
-const OPERATOR_COUNT_SINCE = new Date(2026, 6, 1);
+const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 
 let rowsGlobal = [];
@@ -1102,7 +1131,7 @@ function drawOperatorPie(){
   const counts = computeOperatorCounts(rowsGlobal);
   const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   const total = entries.reduce((s,[,c])=>s+c,0);
-  if (total === 0) return '<p class="modal-text">Sin registros desde el 01/07/2026.</p>';
+  if (total === 0) return '<p class="modal-text">Sin registros desde el 01/01/2026.</p>';
   const cx=90, cy=90, r=80;
   let angleStart = -Math.PI/2, paths = '';
   entries.forEach(([op,count], i)=>{
