@@ -580,30 +580,55 @@ function parseTimestamp(raw){
 function normalizeHeader(h){
   return String(h).trim().replace(/\s+/g, ' ').toLowerCase();
 }
-function buildColumnMap(fields){
-  const map = {};
-  for (const h of fields || []) map[normalizeHeader(h)] = h;
+
+function buildColumnMap(headerRow){
+  const map = {}; // encabezado normalizado -> [índices de columna]
+  headerRow.forEach((h, idx) => {
+    const key = normalizeHeader(h);
+    if (!map[key]) map[key] = [];
+    map[key].push(idx);
+  });
   const resolved = {}, missing = [];
   for (const [id, cfg] of Object.entries(PARAMS)){
-    const real = map[normalizeHeader(cfg.column)];
-    if (real === undefined) missing.push(cfg.label);
-    resolved[id] = real;
+    const indices = map[normalizeHeader(cfg.column)];
+    if (!indices || indices.length === 0){ missing.push(cfg.label); resolved[id] = []; }
+    else resolved[id] = indices;
   }
-  return { resolved, missing };
+  const fixedIdx = {
+    ts:         (map[normalizeHeader('Marca temporal')]   || [])[0],
+    operador:   (map[normalizeHeader('OPERADOR')]         || [])[0],
+    supervisor: (map[normalizeHeader('SUPERVISOR')]       || [])[0],
+    estado:     (map[normalizeHeader('ESTADO DE PLANTA')] || [])[0],
+  };
+  return { resolved, missing, fixedIdx };
 }
 
-function buildRows(data, fields){
-  const { resolved, missing } = buildColumnMap(fields);
+function buildRows(rawRows){
+  if (!rawRows || rawRows.length === 0) return { rows:[], totalSeen:0, tsFailed:0, missing:[] };
+  const header = rawRows[0];
+  const { resolved, missing, fixedIdx } = buildColumnMap(header);
   let totalSeen = 0, tsFailed = 0;
   const rows = [];
-  for (const r of data){
+  for (let r = 1; r < rawRows.length; r++){
+    const raw = rawRows[r];
+    if (!raw || raw.every(c => c === '' || c === undefined)) continue;
     totalSeen++;
-    const ts = parseTimestamp(r['Marca temporal']);
+    const ts = parseTimestamp(fixedIdx.ts !== undefined ? raw[fixedIdx.ts] : undefined);
     if (!ts){ tsFailed++; continue; }
-    const row = { ts, operador:r['OPERADOR']||'', supervisor:r['SUPERVISOR']||'', estado:r['ESTADO DE PLANTA']||'', values:{} };
+    const row = {
+      ts,
+      operador:   fixedIdx.operador   !== undefined ? (raw[fixedIdx.operador]  || '') : '',
+      supervisor: fixedIdx.supervisor !== undefined ? (raw[fixedIdx.supervisor]|| '') : '',
+      estado:     fixedIdx.estado     !== undefined ? (raw[fixedIdx.estado]    || '') : '',
+      values:{}
+    };
     for (const [id, cfg] of Object.entries(PARAMS)){
-      const realKey = resolved[id];
-      let v = realKey !== undefined ? parseNumber(r[realKey]) : null;
+      const indices = resolved[id] || [];
+      let v = null;
+      for (const idx of indices){
+        const candidate = parseNumber(raw[idx]);
+        if (candidate !== null){ v = candidate; break; }
+      }
       if (v !== null && cfg.transform) v = cfg.transform(v);
       row.values[id] = v;
     }
@@ -612,7 +637,6 @@ function buildRows(data, fields){
   rows.sort((a,b)=>a.ts-b.ts);
   return { rows, totalSeen, tsFailed, missing };
 }
-
 /* =========================================================================
    RENDER — helpers
    ========================================================================= */
@@ -880,8 +904,8 @@ async function loadData(){
     const res = await fetch(SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'});
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
-    const parsed = Papa.parse(text, {header:true, skipEmptyLines:true});
-    const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data, parsed.meta.fields);
+    const parsed = Papa.parse(text, {skipEmptyLines:true});
+    const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data);
     if (rows.length === 0) throw new Error('sin filas válidas');
 
     renderHero(rows[rows.length-1]);
