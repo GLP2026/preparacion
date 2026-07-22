@@ -92,7 +92,7 @@
   @media (prefers-reduced-motion: reduce){ .conn-dot.conn-loading{animation:none;} }
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
   .sep{color:var(--text-faint);}
-  #refreshBtn, #viewToggle, #logoutBtn{
+  #refreshBtn, #viewToggle, #logoutBtn, #fullscreenBtn{
     background:var(--panel-alt);
     border:1px solid var(--line);
     color:var(--text);
@@ -101,12 +101,12 @@
     font-family:'IBM Plex Mono', monospace;
     line-height:1;
   }
-  #refreshBtn{width:28px;height:28px; font-size:14px; display:inline-flex;align-items:center;justify-content:center;}
+  #refreshBtn, #fullscreenBtn{width:28px;height:28px; font-size:14px; display:inline-flex;align-items:center;justify-content:center;}
   #viewToggle, #logoutBtn{font-size:11px; letter-spacing:0.03em; padding:6px 10px;}
   #logoutBtn{display:none; color:var(--text-dim);}
   body:not(.view-operario) #logoutBtn{display:inline-block;}
-  #refreshBtn:hover, #viewToggle:hover, #logoutBtn:hover{border-color:var(--accent); color:var(--accent);}
-  #refreshBtn:focus-visible, #viewToggle:focus-visible, #logoutBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  #refreshBtn:hover, #viewToggle:hover, #logoutBtn:hover, #fullscreenBtn:hover{border-color:var(--accent); color:var(--accent);}
+  #refreshBtn:focus-visible, #viewToggle:focus-visible, #logoutBtn:focus-visible, #fullscreenBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
   /* ---------- Overlays modales ---------- */
   .modal-overlay{
@@ -285,6 +285,24 @@
   .legend-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
   .pie-legend .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
 
+  .threshold-row{ margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line-soft); }
+  .threshold-row:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .threshold-param-label{ font-family:'Oswald',sans-serif; font-size:12.5px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; letter-spacing:0.02em; }
+  .threshold-unit{ color:var(--text-faint); font-weight:400; text-transform:none; }
+  .threshold-inputs{ display:flex; flex-wrap:wrap; gap:10px; }
+  .threshold-input-group{ display:flex; flex-direction:column; gap:3px; font-size:10px; color:var(--text-faint); font-family:'IBM Plex Mono',monospace; }
+  .threshold-input-group input{
+    background:var(--panel-alt); border:1px solid var(--line); color:var(--text);
+    padding:6px 8px; border-radius:6px; width:80px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+  }
+  .threshold-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .threshold-actions button, .threshold-actions label.upload-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:7px 12px; border-radius:6px; cursor:pointer;
+    background:var(--panel-alt); border:1px solid var(--line); color:var(--text-dim);
+  }
+  .threshold-actions button.primary{ background:var(--accent); border-color:var(--accent); color:#12171C; font-weight:600; }
+  .threshold-actions button:hover, .threshold-actions label.upload-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
   .operario-footer{display:none;}
   body.view-operario .operario-footer{display:block; margin-top:16px;}
 
@@ -331,6 +349,7 @@
       <span class="sep">·</span>
       <span>Último dato: <strong id="lastLoadTime">—</strong></span>
       <button id="refreshBtn" title="Actualizar ahora" aria-label="Actualizar ahora">⟳</button>
+      <button id="fullscreenBtn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
       <button id="viewToggle">Vista supervisor</button>
       <button id="logoutBtn" title="Salir de vista supervisor">Cerrar sesión</button>
     </div>
@@ -386,12 +405,25 @@
       </div>
       <div class="analysis-col">
         <div class="panel">
+          <h2>Configuración de umbrales</h2>
+          <p class="modal-text">Ajustá los límites de cada parámetro sin tocar el código. Se guarda en este navegador — usá Exportar/Importar para llevarlo a otra PC.</p>
+          <div id="thresholdSettings"></div>
+          <div class="threshold-actions">
+            <button type="button" id="thresholdSaveBtn" class="primary">Guardar cambios</button>
+            <button type="button" id="thresholdResetBtn">Restaurar originales</button>
+            <button type="button" id="thresholdExportBtn">Exportar (.json)</button>
+            <label class="upload-btn" for="thresholdImportInput">Importar (.json)</label>
+            <input type="file" id="thresholdImportInput" accept=".json" style="display:none">
+          </div>
+          <p class="lab-file-status" id="thresholdSaveMsg"></p>
+        </div>
+        <div class="panel">
           <h2>Calidad de datos (últimas 50 cargas)</h2>
           <ul id="qualityList"></ul>
         </div>
         <div class="panel">
           <h2>Incumplimientos de carga (compartido)</h2>
-          <p class="modal-text">Se registra en la planilla "Registro Incumplimientos" cada vez que pasan 2:30 h sin carga. Visible desde cualquier PC.</p>
+          <p class="modal-text">Se registra en la planilla "Registro Incumplimientos" cada vez que pasan 3 h sin carga. Visible desde cualquier PC.</p>
           <ul id="incidentsList"></ul>
         </div>
         <div class="panel">
@@ -422,7 +454,7 @@
   </main>
 
   <footer>
-    Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios · umbrales configurables en CONFIG del código fuente
+    Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios · umbrales editables en Vista supervisor
   </footer>
 </div>
 
@@ -442,7 +474,7 @@
 <div id="staleOverlay" class="modal-overlay">
   <div class="modal-box" role="alertdialog" aria-modal="true">
     <h3>⚠ Carga pendiente</h3>
-    <p class="modal-text" id="staleMessage">Pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
+    <p class="modal-text" id="staleMessage">Pasaron más de 3 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
     <div class="modal-actions">
       <button type="button" id="stalePlantStopped">Planta parada</button>
       <button type="button" id="staleAccept" class="primary">Entendido</button>
@@ -480,7 +512,7 @@ function paramIcon(name){
 /* =========================================================================
    ROTATIVO DE TURNOS
    ========================================================================= */
-const ROSTER_ANCHOR = new Date(2026, 4, 13); // 13/05/2026
+const ROSTER_ANCHOR = new Date(2026, 4, 13);
 const ROSTER_CYCLE_DAYS = 28;
 const ROSTER_TABLE = [
   'AVFC','AVFC','CVFA','CVFA','CVFA','CVAF','CVAF','CFAV','CFAV',
@@ -518,177 +550,155 @@ function getCurrentShiftAssignment(date){
 }
 
 /* =========================================================================
-   CONFIG
+   CONFIG — umbrales unificados en "bands" (alimenta semáforo y gráfico)
    ========================================================================= */
-function evalHumedadSalida(v){
+
+const PARAMS = {
+  hum_salida: {
+    label:'Humedad salida secadora', unit:'%', group:'secadora', icon:'drop',
+    column:'SECADORA HUMEDAD SALIDA (%)', decimals:1, domain:[8,14],
+    bands:[
+      {status:'crit', to:10,       note:'Bajo — riesgo de rotura de laminado y exceso de finos'},
+      {status:'ok',   to:11.5,     note:'Normal'},
+      {status:'warn', to:12,       note:'Alto — considerar encender quemador de secadora'},
+      {status:'crit', to:Infinity, note:'Alto — encender/aumentar quemador de secadora'},
+    ]
+  },
+  temp_acond: {
+    label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador', icon:'thermo',
+    column:'ACONDICIONADOR TEMPERATURA (°C)', decimals:0, domain:[55,80],
+    bands:[
+      {status:'crit', to:62,       note:'Bajo — revisar trampas de vapor y purgas de la cocina'},
+      {status:'warn', to:65,       note:'Bajo el óptimo — verificar trampas de vapor'},
+      {status:'ok',   to:70,       note:'Normal (óptimo)'},
+      {status:'warn', to:75,       note:'Por encima del óptimo — reducir vapor'},
+      {status:'crit', to:Infinity, note:'Alto — reducir vapor, riesgo de sobrecocción'},
+    ]
+  },
+  lam1_izq: {
+    label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1', icon:'gap',
+    column:'LAMINADOR 1 ESPESOR IZQUIERDA (0.XX)', transform:v=>v/100, decimals:2, domain:[0.15,0.55],
+    bands:[
+      {status:'crit', to:0.23,     note:'Muy fino — exceso de finos'},
+      {status:'warn', to:0.25,     note:'Cerca del límite fino'},
+      {status:'ok',   to:0.40,     note:'Normal'},
+      {status:'warn', to:0.42,     note:'Cerca del límite grueso'},
+      {status:'crit', to:Infinity, note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'},
+    ]
+  },
+  lam1_der: {
+    label:'Laminador 1 — Derecha', unit:'mm', group:'lam1', icon:'gap',
+    column:'LAMINADOR 1 ESPESOR DERECHA (0.XX)', transform:v=>v/100, decimals:2, domain:[0.15,0.55],
+    bands:[
+      {status:'crit', to:0.23,     note:'Muy fino — exceso de finos'},
+      {status:'warn', to:0.25,     note:'Cerca del límite fino'},
+      {status:'ok',   to:0.40,     note:'Normal'},
+      {status:'warn', to:0.42,     note:'Cerca del límite grueso'},
+      {status:'crit', to:Infinity, note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'},
+    ]
+  },
+  lam2_izq: {
+    label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2', icon:'gap',
+    column:'LAMINADOR 2 ESPESOR IZQUIERDA (0.XX)', transform:v=>v/100, decimals:2, domain:[0.15,0.55],
+    bands:[
+      {status:'crit', to:0.23,     note:'Muy fino — exceso de finos'},
+      {status:'warn', to:0.25,     note:'Cerca del límite fino'},
+      {status:'ok',   to:0.40,     note:'Normal'},
+      {status:'warn', to:0.42,     note:'Cerca del límite grueso'},
+      {status:'crit', to:Infinity, note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'},
+    ]
+  },
+  lam2_der: {
+    label:'Laminador 2 — Derecha', unit:'mm', group:'lam2', icon:'gap',
+    column:'LAMINADOR 2 ESPESOR DERECHA (0.XX)', transform:v=>v/100, decimals:2, domain:[0.15,0.55],
+    bands:[
+      {status:'crit', to:0.23,     note:'Muy fino — exceso de finos'},
+      {status:'warn', to:0.25,     note:'Cerca del límite fino'},
+      {status:'ok',   to:0.40,     note:'Normal'},
+      {status:'warn', to:0.42,     note:'Cerca del límite grueso'},
+      {status:'crit', to:Infinity, note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'},
+    ]
+  },
+  expander_corriente: {
+    label:'Corriente expander', unit:'A', group:'expander', icon:'bolt',
+    column:'EXPANDER CORRIENTE (A)', decimals:0, domain:[70,190],
+    bands:[
+      {status:'crit', to:85,       note:'Bajo — posible falta de carga / trabajo mecánico insuficiente'},
+      {status:'warn', to:100,      note:'Por debajo del rango normal'},
+      {status:'ok',   to:160,      note:'Normal'},
+      {status:'warn', to:185,      note:'Por encima del rango normal'},
+      {status:'crit', to:Infinity, note:'Alto — riesgo de sobrecarga del motor'},
+    ]
+  },
+  expander_temp: {
+    label:'Temperatura expander', unit:'°C', group:'expander', icon:'thermo',
+    column:'EXPANDER TEMPERATURA (°C)', decimals:0, domain:[70,95],
+    bands:[]
+  },
+  tolva_extractor_temp: {
+    label:'Temperatura tolva extractor', unit:'°C', group:'expander', icon:'thermo',
+    column:'TOLVA EXTRACTOR TEMPERATURA (°C)', decimals:1, domain:[35,65],
+    bands:[
+      {status:'crit', to:42,       note:'Bajo — riesgo de condensación de hexano en entrada del extractor'},
+      {status:'warn', to:48,       note:'Por debajo del rango normal'},
+      {status:'ok',   to:56,       note:'Normal'},
+      {status:'warn', to:60,       note:'Por encima del rango normal'},
+      {status:'crit', to:Infinity, note:'Alto'},
+    ]
+  },
+  densidad_exp: {
+    label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander', icon:'density',
+    column:'Densidad expandido salida enfriador (g/L)', decimals:0, domain:[300,600],
+    bands:[
+      {status:'ok',   to:450,      note:'Normal'},
+      {status:'warn', to:500,      note:'Expandido poco poroso'},
+      {status:'crit', to:Infinity, note:'Expandido sin porosidad o con mucho fino'},
+    ]
+  },
+  humedad_exp: {
+    label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander', icon:'drop',
+    column:'Humedad de expandido en salida enfriador (%)', decimals:1, domain:[7,14],
+    bands:[
+      {status:'crit', to:9.5,      note:'Bajo — dejar de secar el poroto, aumentar vapor en expandido o cerrar ingreso de aire del enfriador'},
+      {status:'warn', to:10,       note:'Bajo el óptimo — considerar reducir secado / aumentar vapor'},
+      {status:'ok',   to:11,       note:'Normal (óptimo)'},
+      {status:'warn', to:11.5,     note:'Por encima del óptimo — considerar reducir vapor / secar más el poroto'},
+      {status:'crit', to:Infinity, note:'Alto — reducir vapor, secar mejor el poroto antes de cocina, abrir más entrada de aire del enfriador'},
+    ]
+  },
+};
+
+// Copia congelada de los valores originales, para poder "Restaurar" después de editar.
+const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(
+  Object.fromEntries(Object.entries(PARAMS).map(([id,cfg]) => [id, cfg.bands]))
+));
+
+function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 10)     return {status:'crit', note:'Bajo — riesgo de rotura de laminado y exceso de finos'};
-  if (v <= 11.5)  return {status:'ok',   note:'Normal'};
-  if (v <= 12)    return {status:'warn', note:'Alto — considerar encender quemador de secadora'};
-  return               {status:'crit', note:'Alto — encender/aumentar quemador de secadora'};
+  if (!bands || bands.length === 0) return {status:'unset', note:'Umbral pendiente de confirmar'};
+  for (const b of bands){
+    if (v <= b.to) return {status:b.status, note:b.note};
+  }
+  return {status:bands[bands.length-1].status, note:bands[bands.length-1].note};
 }
-function evalAcondTemp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 62)     return {status:'crit', note:'Bajo — revisar trampas de vapor y purgas de la cocina'};
-  if (v < 65)     return {status:'warn', note:'Bajo el óptimo — verificar trampas de vapor'};
-  if (v <= 70)    return {status:'ok',   note:'Normal (óptimo)'};
-  if (v <= 75)    return {status:'warn', note:'Por encima del óptimo — reducir vapor'};
-  return               {status:'crit', note:'Alto — reducir vapor, riesgo de sobrecocción'};
+function bandsToChartBands(bands, domain){
+  if (!bands || bands.length === 0) return [];
+  const [dmin, dmax] = domain;
+  const chart = [];
+  let from = dmin;
+  for (const b of bands){
+    const to = (b.to === Infinity) ? dmax : Math.min(Math.max(b.to, dmin), dmax);
+    chart.push({status:b.status, from, to});
+    from = to;
+  }
+  return chart;
 }
-function evalEspesor(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 0.23)   return {status:'crit', note:'Muy fino — exceso de finos'};
-  if (v < 0.25)   return {status:'warn', note:'Cerca del límite fino'};
-  if (v <= 0.40)  return {status:'ok',   note:'Normal'};
-  if (v <= 0.42)  return {status:'warn', note:'Cerca del límite grueso'};
-  return               {status:'crit', note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'};
-}
-function evalExpanderCorriente(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 85)     return {status:'crit', note:'Bajo — posible falta de carga / trabajo mecánico insuficiente'};
-  if (v < 100)    return {status:'warn', note:'Por debajo del rango normal'};
-  if (v <= 160)   return {status:'ok',   note:'Normal'};
-  if (v <= 185)   return {status:'warn', note:'Por encima del rango normal'};
-  return               {status:'crit', note:'Alto — riesgo de sobrecarga del motor'};
-}
-function evalTolvaTemp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 42)     return {status:'crit', note:'Bajo — riesgo de condensación de hexano en entrada del extractor'};
-  if (v < 48)     return {status:'warn', note:'Por debajo del rango normal'};
-  if (v <= 56)    return {status:'ok',   note:'Normal'};
-  if (v <= 60)    return {status:'warn', note:'Por encima del rango normal'};
-  return               {status:'crit', note:'Alto'};
-}
-function evalHumedadExp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v < 9.5)    return {status:'crit', note:'Bajo — dejar de secar el poroto, aumentar vapor en expandido o cerrar ingreso de aire del enfriador'};
-  if (v < 10)     return {status:'warn', note:'Bajo el óptimo — considerar reducir secado / aumentar vapor'};
-  if (v <= 11)    return {status:'ok',   note:'Normal (óptimo)'};
-  if (v <= 11.5)  return {status:'warn', note:'Por encima del óptimo — considerar reducir vapor / secar más el poroto'};
-  return               {status:'crit', note:'Alto — reducir vapor, secar mejor el poroto antes de cocina, abrir más entrada de aire del enfriador'};
-}
-function evalDensidadExp(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  if (v <= 450)   return {status:'ok',   note:'Normal'};
-  if (v <= 500)   return {status:'warn', note:'Expandido poco poroso'};
-  return               {status:'crit', note:'Expandido sin porosidad o con mucho fino'};
-}
-function evalUnclassified(v){
-  if (v === null) return {status:'nodata', note:'Sin dato'};
-  return {status:'unset', note:'Umbral pendiente de confirmar'};
-}
+function plainStatusLabel(s){ return {ok:'Normal', warn:'Advertencia', crit:'Crítico'}[s] || s; }
 
 const GENERIC_ACTION = {
   ok:'', nodata:'', unset:'',
   warn:'Fuera del rango óptimo — controlar y ajustar.',
   crit:'Estado crítico — corregir de inmediato o avisar al supervisor.'
-};
-
-const PARAMS = {
-  hum_salida: {
-    label:'Humedad salida secadora', unit:'%', group:'secadora', icon:'drop',
-    column:'SECADORA HUMEDAD SALIDA (%)', evalFn: evalHumedadSalida, decimals:1,
-    domain:[8,14],
-    chartBands:[
-      {status:'crit', from:8,   to:10}, {status:'ok',   from:10,  to:11.5},
-      {status:'warn', from:11.5,to:12}, {status:'crit', from:12,  to:14},
-    ]
-  },
-  temp_acond: {
-    label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador', icon:'thermo',
-    column:'ACONDICIONADOR TEMPERATURA (°C)', evalFn: evalAcondTemp, decimals:0,
-    domain:[55,80],
-    chartBands:[
-      {status:'crit', from:55, to:62}, {status:'warn', from:62, to:65},
-      {status:'ok',   from:65, to:70}, {status:'warn', from:70, to:75},
-      {status:'crit', from:75, to:80},
-    ]
-  },
-  lam1_izq: {
-    label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1', icon:'gap',
-    column:'LAMINADOR 1 ESPESOR IZQUIERDA (0.XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
-    domain:[0.15,0.55],
-    chartBands:[
-      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
-      {status:'crit', from:0.42, to:0.55},
-    ]
-  },
-  lam1_der: {
-    label:'Laminador 1 — Derecha', unit:'mm', group:'lam1', icon:'gap',
-    column:'LAMINADOR 1 ESPESOR DERECHA (0.XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
-    domain:[0.15,0.55],
-    chartBands:[
-      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
-      {status:'crit', from:0.42, to:0.55},
-    ]
-  },
-  lam2_izq: {
-    label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2', icon:'gap',
-    column:'LAMINADOR 2 ESPESOR IZQUIERDA (0.XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
-    domain:[0.15,0.55],
-    chartBands:[
-      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
-      {status:'crit', from:0.42, to:0.55},
-    ]
-  },
-  lam2_der: {
-    label:'Laminador 2 — Derecha', unit:'mm', group:'lam2', icon:'gap',
-    column:'LAMINADOR 2 ESPESOR DERECHA (0.XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
-    domain:[0.15,0.55],
-    chartBands:[
-      {status:'crit', from:0.15, to:0.23}, {status:'warn', from:0.23, to:0.25},
-      {status:'ok',   from:0.25, to:0.40}, {status:'warn', from:0.40, to:0.42},
-      {status:'crit', from:0.42, to:0.55},
-    ]
-  },
-  expander_corriente: {
-    label:'Corriente expander', unit:'A', group:'expander', icon:'bolt',
-    column:'EXPANDER CORRIENTE (A)', evalFn: evalExpanderCorriente, decimals:0,
-    domain:[70,190],
-    chartBands:[
-      {status:'crit', from:70,  to:85},  {status:'warn', from:85,  to:100},
-      {status:'ok',   from:100, to:160}, {status:'warn', from:160, to:185},
-      {status:'crit', from:185, to:190},
-    ]
-  },
-  expander_temp: {
-    label:'Temperatura expander', unit:'°C', group:'expander', icon:'thermo',
-    column:'EXPANDER TEMPERATURA (°C)', evalFn: evalUnclassified, decimals:0,
-    domain:[70,95], chartBands:[]
-  },
-  tolva_extractor_temp: {
-    label:'Temperatura tolva extractor', unit:'°C', group:'expander', icon:'thermo',
-    column:'TOLVA EXTRACTOR TEMPERATURA (°C)', evalFn: evalTolvaTemp, decimals:1,
-    domain:[35,65],
-    chartBands:[
-      {status:'crit', from:35, to:42}, {status:'warn', from:42, to:48},
-      {status:'ok',   from:48, to:56}, {status:'warn', from:56, to:60},
-      {status:'crit', from:60, to:65},
-    ]
-  },
-  densidad_exp: {
-    label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander', icon:'density',
-    column:'Densidad expandido salida enfriador (g/L)', evalFn: evalDensidadExp, decimals:0,
-    domain:[300,600],
-    chartBands:[
-      {status:'ok',   from:300, to:450},
-      {status:'warn', from:450, to:500},
-      {status:'crit', from:500, to:600},
-    ]
-  },
-  humedad_exp: {
-    label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander', icon:'drop',
-    column:'Humedad de expandido en salida enfriador (%)', evalFn: evalHumedadExp, decimals:1,
-    domain:[7,14],
-    chartBands:[
-      {status:'crit', from:7,   to:9.5}, {status:'warn', from:9.5, to:10},
-      {status:'ok',   from:10,  to:11},  {status:'warn', from:11,  to:11.5},
-      {status:'crit', from:11.5,to:14},
-    ]
-  },
 };
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
@@ -705,10 +715,107 @@ const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
+const THRESHOLD_KEY = 'glp_threshold_overrides';
 
 let rowsGlobal = [];
 let labRows = [];
 let currentIncidentId = null;
+
+/* =========================================================================
+   UMBRALES EDITABLES — carga/guarda/aplica overrides
+   ========================================================================= */
+
+function loadThresholdOverrides(){
+  try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveThresholdOverrides(obj){ localStorage.setItem(THRESHOLD_KEY, JSON.stringify(obj)); }
+
+function applyThresholdOverrides(){
+  const overrides = loadThresholdOverrides();
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    if (!PARAMS_DEFAULTS[id]) continue;
+    cfg.bands = JSON.parse(JSON.stringify(PARAMS_DEFAULTS[id]));
+    const ov = overrides[id];
+    if (!ov) continue;
+    ov.forEach((val, i) => {
+      if (cfg.bands[i] && typeof val === 'number' && !Number.isNaN(val)) cfg.bands[i].to = val;
+    });
+  }
+}
+
+function renderThresholdSettings(){
+  const container = document.getElementById('thresholdSettings');
+  let html = '';
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    if (!cfg.bands || cfg.bands.length <= 1) continue;
+    html += `<div class="threshold-row"><div class="threshold-param-label">${cfg.label} <span class="threshold-unit">(${cfg.unit})</span></div><div class="threshold-inputs">`;
+    for (let i = 0; i < cfg.bands.length - 1; i++){
+      const b = cfg.bands[i], next = cfg.bands[i+1];
+      const label = `${plainStatusLabel(b.status)} → ${plainStatusLabel(next.status)}`;
+      html += `<label class="threshold-input-group"><span>${label}</span><input type="number" step="any" data-param="${id}" data-idx="${i}" value="${b.to}"></label>`;
+    }
+    html += `</div></div>`;
+  }
+  container.innerHTML = html || '<p class="modal-text">No hay parámetros con umbrales editables todavía.</p>';
+}
+
+function rerenderAll(){
+  if (!rowsGlobal.length) return;
+  renderHero(rowsGlobal[rowsGlobal.length-1]);
+  renderCards(rowsGlobal);
+  renderRecentTable(rowsGlobal);
+  renderHistChart();
+  renderOperatorPie();
+}
+
+document.getElementById('thresholdSaveBtn').addEventListener('click', () => {
+  const inputs = document.querySelectorAll('#thresholdSettings input[data-param]');
+  const overrides = loadThresholdOverrides();
+  const grouped = {};
+  inputs.forEach(inp => {
+    const id = inp.dataset.param, idx = parseInt(inp.dataset.idx, 10);
+    const val = parseFloat(inp.value);
+    if (!grouped[id]) grouped[id] = [];
+    grouped[id][idx] = val;
+  });
+  Object.assign(overrides, grouped);
+  saveThresholdOverrides(overrides);
+  applyThresholdOverrides();
+  renderThresholdSettings();
+  rerenderAll();
+  document.getElementById('thresholdSaveMsg').textContent = 'Guardado — ' + fmtTime(new Date());
+});
+document.getElementById('thresholdResetBtn').addEventListener('click', () => {
+  saveThresholdOverrides({});
+  applyThresholdOverrides();
+  renderThresholdSettings();
+  rerenderAll();
+  document.getElementById('thresholdSaveMsg').textContent = 'Restaurado a valores originales — ' + fmtTime(new Date());
+});
+document.getElementById('thresholdExportBtn').addEventListener('click', () => {
+  const data = JSON.stringify(loadThresholdOverrides(), null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'umbrales_glp.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('thresholdImportInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    saveThresholdOverrides(parsed);
+    applyThresholdOverrides();
+    renderThresholdSettings();
+    rerenderAll();
+    document.getElementById('thresholdSaveMsg').textContent = 'Configuración importada — ' + fmtTime(new Date());
+  } catch(err){
+    document.getElementById('thresholdSaveMsg').textContent = 'Error al importar: ' + err.message;
+  }
+});
 
 /* =========================================================================
    PARSEO — planilla de operarios (tolerante a columnas duplicadas)
@@ -917,7 +1024,7 @@ function scaleY(v, min, max, h, pad=6){
 function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=50){
   const W = viewW, H = viewH;
   const [min, max] = cfg.domain;
-  const bands = cfg.chartBands.map(b=>{
+  const bands = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{
     const y1 = scaleY(b.to, min, max, H);
     const y2 = scaleY(b.from, min, max, H);
     return `<rect x="0" y="${y1.toFixed(1)}" width="${W}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
@@ -941,7 +1048,7 @@ function drawTrendSVGWithAxis(cfg, points, viewW=1000, viewH=300){
   const W = viewW, H = viewH, leftPad = 46;
   const chartW = W - leftPad;
   const [min, max] = cfg.domain;
-  const bands = cfg.chartBands.map(b=>{
+  const bands = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{
     const y1 = scaleY(b.to, min, max, H);
     const y2 = scaleY(b.from, min, max, H);
     return `<rect x="${leftPad}" y="${y1.toFixed(1)}" width="${chartW}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
@@ -977,10 +1084,10 @@ function worstStatus(statuses){
 }
 
 function renderHero(last){
-  const hum = last ? PARAMS.hum_salida.evalFn(last.values.hum_salida) : {status:'nodata'};
-  const acond = last ? PARAMS.temp_acond.evalFn(last.values.temp_acond) : {status:'nodata'};
-  const lam1 = last ? worstStatus([PARAMS.lam1_izq.evalFn(last.values.lam1_izq).status, PARAMS.lam1_der.evalFn(last.values.lam1_der).status]) : 'nodata';
-  const lam2 = last ? worstStatus([PARAMS.lam2_izq.evalFn(last.values.lam2_izq).status, PARAMS.lam2_der.evalFn(last.values.lam2_der).status]) : 'nodata';
+  const hum = last ? evalFromBands(last.values.hum_salida, PARAMS.hum_salida.bands) : {status:'nodata'};
+  const acond = last ? evalFromBands(last.values.temp_acond, PARAMS.temp_acond.bands) : {status:'nodata'};
+  const lam1 = last ? worstStatus([evalFromBands(last.values.lam1_izq, PARAMS.lam1_izq.bands).status, evalFromBands(last.values.lam1_der, PARAMS.lam1_der.bands).status]) : 'nodata';
+  const lam2 = last ? worstStatus([evalFromBands(last.values.lam2_izq, PARAMS.lam2_izq.bands).status, evalFromBands(last.values.lam2_der, PARAMS.lam2_der.bands).status]) : 'nodata';
 
   const nodes = [
     { title:'SECADORA', sub: last ? `${fmtValue(last.values.hum_salida, PARAMS.hum_salida)}% sal.` : '—', status: hum.status },
@@ -1024,7 +1131,7 @@ function renderCards(rows){
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
     const currentVal = last ? last.values[id] : null;
-    const res = cfg.evalFn(currentVal);
+    const res = evalFromBands(currentVal, cfg.bands);
     const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div');
@@ -1049,7 +1156,7 @@ function renderCards(rows){
 }
 
 function statusDot(cfg, v){
-  const s = cfg.evalFn(v).status;
+  const s = evalFromBands(v, cfg.bands).status;
   return `<span class="dot dot-${s}"></span>`;
 }
 function renderRecentTable(rows){
@@ -1325,6 +1432,24 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 /* =========================================================================
+   PANTALLA COMPLETA
+   ========================================================================= */
+
+function updateFullscreenBtn(){
+  const btn = document.getElementById('fullscreenBtn');
+  btn.title = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa';
+}
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(err => console.error(err));
+  } else {
+    document.exitFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange', updateFullscreenBtn);
+updateFullscreenBtn();
+
+/* =========================================================================
    ALERTA DE CARGA VENCIDA — solo vista operario
    ========================================================================= */
 
@@ -1432,6 +1557,8 @@ async function loadData(){
   }
 }
 
+applyThresholdOverrides();
+renderThresholdSettings();
 populateHistSelect();
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData();
