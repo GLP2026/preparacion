@@ -115,7 +115,7 @@
   }
   .modal-box{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:22px; width:300px; display:flex; flex-direction:column; gap:12px;
+    padding:22px; width:320px; display:flex; flex-direction:column; gap:12px;
   }
   .modal-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
   .modal-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
@@ -130,11 +130,11 @@
     color:var(--accent); text-align:center; margin:2px 0 6px;
   }
   .login-error{color:var(--crit); font-size:11.5px; min-height:14px; margin:0;}
-  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px; flex-wrap:wrap;}
   .modal-actions button{
     font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer;
   }
-  #loginCancel{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  #loginCancel, #stalePlantStopped{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{
     background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;
   }
@@ -251,11 +251,11 @@
   .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata,.dot-unset{background:var(--nodata);}
   .table-wrap{overflow-x:auto;}
 
-  #qualityList{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
-  #qualityList li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
-  #qualityList li:last-child{border-bottom:none;}
-  #qualityList .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
-  #qualityList .qty.warn-count{color:var(--warn);}
+  #qualityList, #incidentsList{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
+  #qualityList li, #incidentsList li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
+  #qualityList li:last-child, #incidentsList li:last-child{border-bottom:none;}
+  #qualityList .qty, #incidentsList .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
+  #qualityList .qty.warn-count, #incidentsList .qty.warn-count{color:var(--warn);}
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono', monospace; flex-wrap:wrap;}
   .hist-controls select{
@@ -390,6 +390,11 @@
           <ul id="qualityList"></ul>
         </div>
         <div class="panel">
+          <h2>Incumplimientos de carga (este navegador)</h2>
+          <p class="modal-text">Se registra en este navegador cada vez que pasan 2:30 h sin carga y no se justifica como "Planta parada". Por ahora es local a esta PC — no se ve desde otras computadoras.</p>
+          <ul id="incidentsList"></ul>
+        </div>
+        <div class="panel">
           <h2>Relación con laboratorio (MG)</h2>
           <p class="modal-text">Subí el Excel de laboratorio (Registro N° 53, hoja "Crudo Soja") para cruzar los resultados con los parámetros de proceso de esos días.</p>
           <div class="lab-upload-row">
@@ -437,8 +442,9 @@
 <div id="staleOverlay" class="modal-overlay">
   <div class="modal-box" role="alertdialog" aria-modal="true">
     <h3>⚠ Carga pendiente</h3>
-    <p class="modal-text">Pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
+    <p class="modal-text" id="staleMessage">Pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
     <div class="modal-actions">
+      <button type="button" id="stalePlantStopped">Planta parada</button>
       <button type="button" id="staleAccept" class="primary">Entendido</button>
     </div>
   </div>
@@ -469,6 +475,46 @@ const ICONS = {
 };
 function paramIcon(name){
   return `<svg class="param-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${ICONS[name]||''}</svg>`;
+}
+
+/* =========================================================================
+   ROTATIVO DE TURNOS
+   ========================================================================= */
+const ROSTER_ANCHOR = new Date(2026, 4, 13); // 13/05/2026
+const ROSTER_CYCLE_DAYS = 28;
+const ROSTER_TABLE = [
+  'AVFC','AVFC','CVFA','CVFA','CVFA','CVAF','CVAF','CFAV','CFAV',
+  'VFAC','VFAC','VFAC','VFCA','VFCA','VACF','VACF','FACV','FACV','FACV',
+  'FAVC','FAVC','FCVA','FCVA','ACVF','ACVF','ACVF','ACFV','ACFV'
+];
+const ROSTER_NAMES = { A:'Acuña', C:'Cobo', F:'Filippi', V:'Velazquez' };
+const SUPERVISOR_TO_OPERATOR = {
+  'Acuña': 'Rodrigo Carreras',
+  'Cobo': 'Juan Ignacio Cucchiarini',
+  'Filippi': 'Hugo Roda',
+  'Velazquez': 'Esteban Scheuber'
+};
+
+function getShiftInfo(date){
+  const hour = date.getHours();
+  let shift, base;
+  if (hour >= 6 && hour < 14){ shift = 'MAÑANA'; base = new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+  else if (hour >= 14 && hour < 22){ shift = 'TARDE'; base = new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+  else if (hour >= 22){ shift = 'NOCHE'; base = new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+  else { shift = 'NOCHE'; const y = new Date(date); y.setDate(y.getDate()-1); base = new Date(y.getFullYear(), y.getMonth(), y.getDate()); }
+  return { shift, base };
+}
+function getCurrentShiftAssignment(date){
+  const { shift, base } = getShiftInfo(date);
+  let diffDays = Math.round((base - ROSTER_ANCHOR) / 86400000);
+  let idx = diffDays % ROSTER_CYCLE_DAYS;
+  if (idx < 0) idx += ROSTER_CYCLE_DAYS;
+  const codes = ROSTER_TABLE[idx];
+  const posMap = { 'MAÑANA':0, 'TARDE':1, 'NOCHE':2 };
+  const code = codes[posMap[shift]];
+  const supervisorSurname = ROSTER_NAMES[code];
+  const operatorName = SUPERVISOR_TO_OPERATOR[supervisorSurname] || supervisorSurname;
+  return { shift, supervisorSurname, operatorName };
 }
 
 /* =========================================================================
@@ -657,9 +703,11 @@ const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
+const INCIDENTS_KEY = 'glp_stale_incidents';
 
 let rowsGlobal = [];
 let labRows = [];
+let currentIncidentId = null;
 
 /* =========================================================================
    PARSEO — planilla de operarios (tolerante a columnas duplicadas)
@@ -1160,6 +1208,59 @@ function renderOperatorPie(){
 }
 
 /* =========================================================================
+   REGISTRO DE INCUMPLIMIENTOS (local a este navegador por ahora)
+   ========================================================================= */
+
+function loadIncidents(){
+  try { return JSON.parse(localStorage.getItem(INCIDENTS_KEY) || '[]'); } catch(e){ return []; }
+}
+function saveIncidents(list){ localStorage.setItem(INCIDENTS_KEY, JSON.stringify(list)); }
+
+function startIncident(assign){
+  const list = loadIncidents();
+  const id = Date.now();
+  list.push({ id, operatorName: assign.operatorName, shift: assign.shift, detectedAt: new Date().toISOString(), justified: false, resolved: false, resolvedAt: null });
+  saveIncidents(list);
+  currentIncidentId = id;
+  renderIncidentsPanel();
+}
+function resolveIncident(justified){
+  if (currentIncidentId === null) return;
+  const list = loadIncidents();
+  const idx = list.findIndex(i => i.id === currentIncidentId);
+  if (idx !== -1){
+    list[idx].resolved = true;
+    list[idx].justified = justified;
+    list[idx].resolvedAt = new Date().toISOString();
+    saveIncidents(list);
+  }
+  currentIncidentId = null;
+  renderIncidentsPanel();
+}
+function renderIncidentsPanel(){
+  const container = document.getElementById('incidentsList');
+  if (!container) return;
+  const list = loadIncidents();
+  if (!list.length){
+    container.innerHTML = '<li><span>Sin incidentes registrados en este navegador.</span></li>';
+    return;
+  }
+  const counts = {};
+  list.forEach(i => { if (!i.justified) counts[i.operatorName] = (counts[i.operatorName]||0) + 1; });
+  const summaryRows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([op,c]) =>
+    `<li><span>${op}</span><span class="qty ${c>=3?'warn-count':''}">${c} incumplimiento${c>1?'s':''}</span></li>`
+  ).join('') || '<li><span>Sin incumplimientos sin justificar.</span></li>';
+  const recent = list.slice(-6).reverse().map(i => {
+    const d = new Date(i.detectedAt);
+    const tag = i.justified ? 'planta parada' : (i.resolved ? 'resuelto' : 'abierto');
+    return `<li><span>${fmtTime(d)} · ${i.operatorName} (${i.shift.toLowerCase()})</span><span class="qty">${tag}</span></li>`;
+  }).join('');
+  container.innerHTML = summaryRows +
+    '<li style="border-top:1px solid var(--line-soft); margin-top:6px; padding-top:10px; font-weight:600; color:var(--text-faint);">Últimos eventos</li>' +
+    recent;
+}
+
+/* =========================================================================
    VISTA OPERARIO / SUPERVISOR + LOGIN
    ========================================================================= */
 
@@ -1221,6 +1322,12 @@ function checkStale(){
   const elapsed = Date.now() - lastDataTs.getTime();
   if (elapsed > STALE_MS){
     if (staleLastShownAt === null || (Date.now() - staleLastShownAt) > STALE_RENAG_MS){
+      if (currentIncidentId === null){
+        const assign = getCurrentShiftAssignment(new Date());
+        startIncident(assign);
+        document.getElementById('staleMessage').textContent =
+          `${assign.operatorName} — turno ${assign.shift.toLowerCase()}: pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.`;
+      }
       overlay.style.display = 'flex';
       staleLastShownAt = Date.now();
     }
@@ -1231,6 +1338,11 @@ function checkStale(){
 }
 document.getElementById('staleAccept').addEventListener('click', () => {
   document.getElementById('staleOverlay').style.display = 'none';
+});
+document.getElementById('stalePlantStopped').addEventListener('click', () => {
+  document.getElementById('staleOverlay').style.display = 'none';
+  resolveIncident(true);
+  staleLastShownAt = Date.now();
 });
 setInterval(checkStale, 60 * 1000);
 
@@ -1277,6 +1389,7 @@ async function loadData(){
     const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data);
     if (rows.length === 0) throw new Error('sin filas válidas');
 
+    const previousLastTs = lastDataTs;
     rowsGlobal = rows;
     renderHero(rows[rows.length-1]);
     renderCards(rows);
@@ -1288,7 +1401,12 @@ async function loadData(){
     lastDataTs = rows[rows.length-1].ts;
     document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs);
     setConn('ok');
+
+    if (currentIncidentId !== null && (!previousLastTs || lastDataTs.getTime() > previousLastTs.getTime())){
+      resolveIncident(false);
+    }
     checkStale();
+    renderIncidentsPanel();
   } catch(err){
     console.error(err);
     setConn('error', err.message);
