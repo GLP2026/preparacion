@@ -390,8 +390,8 @@
           <ul id="qualityList"></ul>
         </div>
         <div class="panel">
-          <h2>Incumplimientos de carga (este navegador)</h2>
-          <p class="modal-text">Se registra en este navegador cada vez que pasan 2:30 h sin carga y no se justifica como "Planta parada". Por ahora es local a esta PC — no se ve desde otras computadoras.</p>
+          <h2>Incumplimientos de carga (compartido)</h2>
+          <p class="modal-text">Se registra en la planilla "Registro Incumplimientos" cada vez que pasan 2:30 h sin carga. Visible desde cualquier PC.</p>
           <ul id="incidentsList"></ul>
         </div>
         <div class="panel">
@@ -692,18 +692,19 @@ const PARAMS = {
 };
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
+const INCIDENTS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1hufIUg-iHYrhRjCMEMPCoNqGhGo9PdUi6bVMAKjKoquyZuEcFkk-kLcz6DAjKqodzUqoEhpzbjIi/pub?output=csv";
+const INCIDENTS_WRITE_URL = "https://script.google.com/macros/s/AKfycbzYvWmwkQZfRlZjYS_ZNUuUVnm_biGn53DhyNXE4Eum_to21x9w3itqRVyBqTLYr7-0pg/exec";
 const REFRESH_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 30;
 const OPERATOR_TREND_POINTS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
 const AUTH_KEY = 'glp_supervisor_auth';
-const STALE_MS = 2.5 * 60 * 60 * 1000;
+const STALE_MS = 1 * 60 * 1000;
 const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
-const INCIDENTS_KEY = 'glp_stale_incidents';
 
 let rowsGlobal = [];
 let labRows = [];
@@ -1208,52 +1209,67 @@ function renderOperatorPie(){
 }
 
 /* =========================================================================
-   REGISTRO DE INCUMPLIMIENTOS (local a este navegador por ahora)
+   REGISTRO DE INCUMPLIMIENTOS — compartido vía Google Sheet + Apps Script
    ========================================================================= */
 
-function loadIncidents(){
-  try { return JSON.parse(localStorage.getItem(INCIDENTS_KEY) || '[]'); } catch(e){ return []; }
-}
-function saveIncidents(list){ localStorage.setItem(INCIDENTS_KEY, JSON.stringify(list)); }
-
-function startIncident(assign){
-  const list = loadIncidents();
-  const id = Date.now();
-  list.push({ id, operatorName: assign.operatorName, shift: assign.shift, detectedAt: new Date().toISOString(), justified: false, resolved: false, resolvedAt: null });
-  saveIncidents(list);
-  currentIncidentId = id;
-  renderIncidentsPanel();
-}
-function resolveIncident(justified){
-  if (currentIncidentId === null) return;
-  const list = loadIncidents();
-  const idx = list.findIndex(i => i.id === currentIncidentId);
-  if (idx !== -1){
-    list[idx].resolved = true;
-    list[idx].justified = justified;
-    list[idx].resolvedAt = new Date().toISOString();
-    saveIncidents(list);
+async function postIncident(operatorName, shift, eventType, note){
+  if (!INCIDENTS_WRITE_URL || INCIDENTS_WRITE_URL.indexOf('PEGAR_AQUI') === 0) return;
+  try{
+    await fetch(INCIDENTS_WRITE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ operatorName, shift, eventType, note })
+    });
+  } catch(err){
+    console.error('No se pudo registrar el incidente remoto:', err);
   }
-  currentIncidentId = null;
-  renderIncidentsPanel();
 }
-function renderIncidentsPanel(){
+function startIncident(assign){
+  currentIncidentId = 'active';
+  postIncident(assign.operatorName, assign.shift, 'DETECTADO', '');
+}
+function resolveIncident(justified, assign){
+  if (currentIncidentId === null) return;
+  currentIncidentId = null;
+  if (justified && assign) postIncident(assign.operatorName, assign.shift, 'PLANTA_PARADA', '');
+}
+
+async function fetchIncidentsRemote(){
+  if (!INCIDENTS_SHEET_URL) return null;
+  try{
+    const res = await fetch(INCIDENTS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const parsed = Papa.parse(text, {skipEmptyLines:true});
+    const raw = parsed.data;
+    const list = [];
+    for (let r=1; r<raw.length; r++){
+      const row = raw[r];
+      if (!row || row.every(c=>!c)) continue;
+      const ts = parseTimestamp(row[0]);
+      if (!ts) continue;
+      list.push({ ts, operador: row[1]||'', turno: row[2]||'', evento: row[3]||'', nota: row[4]||'' });
+    }
+    list.sort((a,b)=>a.ts-b.ts);
+    return list;
+  } catch(err){
+    console.error('Error leyendo registro de incumplimientos:', err);
+    return null;
+  }
+}
+function renderIncidentsFromRemote(list){
   const container = document.getElementById('incidentsList');
   if (!container) return;
-  const list = loadIncidents();
-  if (!list.length){
-    container.innerHTML = '<li><span>Sin incidentes registrados en este navegador.</span></li>';
-    return;
-  }
+  if (list === null){ container.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>'; return; }
+  if (!list.length){ container.innerHTML = '<li><span>Sin incidentes registrados.</span></li>'; return; }
   const counts = {};
-  list.forEach(i => { if (!i.justified) counts[i.operatorName] = (counts[i.operatorName]||0) + 1; });
+  list.forEach(i => { if (i.evento === 'DETECTADO') counts[i.operador] = (counts[i.operador]||0) + 1; });
   const summaryRows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([op,c]) =>
     `<li><span>${op}</span><span class="qty ${c>=3?'warn-count':''}">${c} incumplimiento${c>1?'s':''}</span></li>`
-  ).join('') || '<li><span>Sin incumplimientos sin justificar.</span></li>';
-  const recent = list.slice(-6).reverse().map(i => {
-    const d = new Date(i.detectedAt);
-    const tag = i.justified ? 'planta parada' : (i.resolved ? 'resuelto' : 'abierto');
-    return `<li><span>${fmtTime(d)} · ${i.operatorName} (${i.shift.toLowerCase()})</span><span class="qty">${tag}</span></li>`;
+  ).join('') || '<li><span>Sin incumplimientos registrados.</span></li>';
+  const recent = list.slice(-8).reverse().map(i => {
+    const tag = i.evento === 'PLANTA_PARADA' ? 'planta parada' : (i.evento || '').toLowerCase();
+    return `<li><span>${fmtTime(i.ts)} · ${i.operador} (${(i.turno||'').toLowerCase()})</span><span class="qty">${tag}</span></li>`;
   }).join('');
   container.innerHTML = summaryRows +
     '<li style="border-top:1px solid var(--line-soft); margin-top:6px; padding-top:10px; font-weight:600; color:var(--text-faint);">Últimos eventos</li>' +
@@ -1341,7 +1357,8 @@ document.getElementById('staleAccept').addEventListener('click', () => {
 });
 document.getElementById('stalePlantStopped').addEventListener('click', () => {
   document.getElementById('staleOverlay').style.display = 'none';
-  resolveIncident(true);
+  const assign = getCurrentShiftAssignment(new Date());
+  resolveIncident(true, assign);
   staleLastShownAt = Date.now();
 });
 setInterval(checkStale, 60 * 1000);
@@ -1403,10 +1420,12 @@ async function loadData(){
     setConn('ok');
 
     if (currentIncidentId !== null && (!previousLastTs || lastDataTs.getTime() > previousLastTs.getTime())){
-      resolveIncident(false);
+      resolveIncident(false, null);
     }
     checkStale();
-    renderIncidentsPanel();
+
+    const incidentsList = await fetchIncidentsRemote();
+    renderIncidentsFromRemote(incidentsList);
   } catch(err){
     console.error(err);
     setConn('error', err.message);
