@@ -700,7 +700,7 @@ const OPERATOR_TREND_POINTS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
 const AUTH_KEY = 'glp_supervisor_auth';
-const STALE_MS = 1 * 60 * 1000;
+const STALE_MS = 3 * 60 * 60 * 1000;
 const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
@@ -1342,7 +1342,7 @@ function checkStale(){
         const assign = getCurrentShiftAssignment(new Date());
         startIncident(assign);
         document.getElementById('staleMessage').textContent =
-          `${assign.operatorName} — turno ${assign.shift.toLowerCase()}: pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.`;
+          `${assign.operatorName} — turno ${assign.shift.toLowerCase()}: pasaron más de 3 h desde la última carga de parámetros de proceso. Completá la planilla.`;
       }
       overlay.style.display = 'flex';
       staleLastShownAt = Date.now();
