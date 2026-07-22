@@ -108,29 +108,36 @@
   #refreshBtn:hover, #viewToggle:hover, #logoutBtn:hover{border-color:var(--accent); color:var(--accent);}
   #refreshBtn:focus-visible, #viewToggle:focus-visible, #logoutBtn:focus-visible, a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
-  /* ---------- Login overlay (NO es seguridad real, solo un filtro de UX) ---------- */
-  .login-overlay{
+  /* ---------- Overlays modales (login / stale / silo) ---------- */
+  .modal-overlay{
     display:none; position:fixed; inset:0; background:rgba(8,10,13,0.78);
     align-items:center; justify-content:center; z-index:50; padding:16px;
   }
-  .login-box{
+  .modal-box{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:22px; width:280px; display:flex; flex-direction:column; gap:12px;
+    padding:22px; width:300px; display:flex; flex-direction:column; gap:12px;
   }
-  .login-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
-  .login-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
-  .login-box input{
+  .modal-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
+  .modal-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+  .modal-box input{
     background:var(--panel-alt); border:1px solid var(--line); color:var(--text);
     padding:8px 10px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px;
   }
-  .login-box input:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .modal-box input:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .modal-text{color:var(--text-dim); font-size:13px; line-height:1.5; margin:0;}
+  .modal-highlight{
+    font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; letter-spacing:0.03em;
+    color:var(--accent); text-align:center; margin:2px 0 6px;
+  }
   .login-error{color:var(--crit); font-size:11.5px; min-height:14px; margin:0;}
-  .login-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px;}
-  .login-actions button{
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px;}
+  .modal-actions button{
     font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer;
   }
   #loginCancel{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
-  .login-actions button[type="submit"]{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
+  .modal-actions button[type="submit"], .modal-actions button.primary{
+    background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;
+  }
 
   /* ---------- Hero flow ---------- */
   .flow-hero{
@@ -151,11 +158,11 @@
     letter-spacing:0.04em;
   }
 
-  /* ---------- Cards ---------- */
+  /* ---------- Cards (compactas, "tablero de control") ---------- */
   .cards-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-    gap:14px;
+    grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+    gap:10px;
     margin-bottom:24px;
   }
   .card{
@@ -163,9 +170,10 @@
     border:1px solid var(--line);
     border-left:3px solid var(--nodata);
     border-radius:var(--radius);
-    padding:14px 16px 12px;
-    transition:box-shadow .3s ease;
+    padding:11px 13px 10px;
+    transition:box-shadow .2s ease, transform .15s ease;
   }
+  .card:hover{ box-shadow:0 3px 12px rgba(0,0,0,0.35); transform:translateY(-1px); }
   .card.status-ok{border-left-color:var(--ok);}
   .card.status-warn{border-left-color:var(--warn); background:linear-gradient(180deg, rgba(232,163,61,0.10), transparent 60%);}
   .card.status-crit{
@@ -180,23 +188,28 @@
     0%,100%{ box-shadow:0 0 0 1px rgba(225,85,79,0.35); }
     50%{ box-shadow:0 0 0 5px rgba(225,85,79,0.20); }
   }
-  .card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;}
+  .card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px;}
   .card-label{
-    font-family:'Oswald', sans-serif; font-size:13.5px; text-transform:uppercase;
-    letter-spacing:0.03em; color:var(--text-dim); line-height:1.25;
+    font-family:'Oswald', sans-serif; font-size:12.5px; text-transform:uppercase;
+    letter-spacing:0.02em; color:var(--text-dim); line-height:1.25;
+    display:flex; align-items:center; gap:6px;
   }
+  .param-icon{color:var(--text-faint); flex-shrink:0;}
+  .card.status-ok .param-icon{color:var(--ok);}
+  .card.status-warn .param-icon{color:var(--warn);}
+  .card.status-crit .param-icon{color:var(--crit);}
   .pill{
-    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.03em;
-    padding:3px 7px; border-radius:20px; white-space:nowrap; flex-shrink:0;
+    font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.02em;
+    padding:3px 6px; border-radius:20px; white-space:nowrap; flex-shrink:0;
   }
   .pill-ok{background:var(--ok-bg); color:var(--ok);}
   .pill-warn{background:var(--warn-bg); color:var(--warn);}
   .pill-crit{background:var(--crit-bg); color:var(--crit); font-weight:600;}
   .pill-nodata, .pill-unset{background:var(--nodata-bg); color:var(--text-faint);}
-  .card-value{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; margin:4px 0 8px;}
-  .card-value .unit{font-size:13px; font-weight:400; color:var(--text-dim); margin-left:3px;}
+  .card-value{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:23px; margin:3px 0 6px;}
+  .card-value .unit{font-size:12px; font-weight:400; color:var(--text-dim); margin-left:3px;}
 
-  .trend-svg{width:100%; height:70px; display:block;}
+  .trend-svg{width:100%; height:50px; display:block;}
   .trend-operario{display:none;}
   body.view-operario .trend-supervisor{display:none;}
   body.view-operario .trend-operario{display:block;}
@@ -211,11 +224,11 @@
   .dot-last{fill:var(--accent); stroke:var(--bg); stroke-width:1.5;}
   .card-foot{
     display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px; color:var(--text-faint); margin-top:6px;
+    font-size:10px; color:var(--text-faint); margin-top:4px;
   }
   .card-action{
-    font-family:'IBM Plex Sans', sans-serif; font-size:11.5px; line-height:1.4;
-    margin-top:8px; padding-top:8px; border-top:1px solid var(--line-soft); color:var(--text-dim);
+    font-family:'IBM Plex Sans', sans-serif; font-size:11px; line-height:1.4;
+    margin-top:6px; padding-top:6px; border-top:1px solid var(--line-soft); color:var(--text-dim);
   }
   .card-action:empty{display:none; border-top:none; padding-top:0; margin-top:0;}
   .card.status-warn .card-action{color:var(--warn);}
@@ -249,10 +262,11 @@
   body.view-operario .flow-hero,
   body.view-operario .lower-grid{display:none;}
   body.view-operario .cards-grid{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;}
-  body.view-operario .card{padding:22px 22px 18px;}
+  body.view-operario .card{padding:20px 20px 16px;}
   body.view-operario .card-label{font-size:16px;}
+  body.view-operario .param-icon{width:18px; height:18px;}
   body.view-operario .pill{font-size:13px; padding:5px 11px;}
-  body.view-operario .card-value{font-size:46px;}
+  body.view-operario .card-value{font-size:44px;}
   body.view-operario .card-value .unit{font-size:18px;}
   body.view-operario .card-action{
     font-size:16px; font-weight:700; margin-top:14px; padding:10px 12px;
@@ -319,21 +333,56 @@
   </footer>
 </div>
 
-<div id="loginOverlay" class="login-overlay">
-  <form id="loginForm" class="login-box">
+<div id="loginOverlay" class="modal-overlay">
+  <form id="loginForm" class="modal-box" role="dialog" aria-modal="true">
     <h3>Acceso supervisor</h3>
     <label>Usuario<input type="text" id="loginUser" autocomplete="username" required></label>
     <label>Contraseña<input type="password" id="loginPass" autocomplete="current-password" required></label>
     <p id="loginError" class="login-error"></p>
-    <div class="login-actions">
+    <div class="modal-actions">
       <button type="button" id="loginCancel">Cancelar</button>
       <button type="submit">Ingresar</button>
     </div>
   </form>
 </div>
 
+<div id="staleOverlay" class="modal-overlay">
+  <div class="modal-box" role="alertdialog" aria-modal="true">
+    <h3>⚠ Carga pendiente</h3>
+    <p class="modal-text">Pasaron más de 2:30 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
+    <div class="modal-actions">
+      <button type="button" id="staleAccept" class="primary">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<div id="siloOverlay" class="modal-overlay">
+  <div class="modal-box" role="alertdialog" aria-modal="true">
+    <h3>Recordatorio 6:00 hs</h3>
+    <p class="modal-highlight">CAMBIAR DE SILO</p>
+    <div class="modal-actions">
+      <button type="button" id="siloAccept" class="primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
+/* =========================================================================
+   ICONOS (por tipo de parámetro, referencia visual rápida)
+   ========================================================================= */
+
+const ICONS = {
+  drop:    '<path d="M12 3C9 7 6 10.5 6 14a6 6 0 0 0 12 0c0-3.5-3-7-6-11z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+  thermo:  '<path d="M12 4v10.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+  gap:     '<path d="M5 5v14M19 5v14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.5 2.5"/>',
+  bolt:    '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7z" fill="currentColor"/>',
+  density: '<circle cx="8" cy="8" r="1.7" fill="currentColor"/><circle cx="16" cy="8" r="1.7" fill="currentColor"/><circle cx="8" cy="16" r="1.7" fill="currentColor"/><circle cx="16" cy="16" r="1.7" fill="currentColor"/>'
+};
+function paramIcon(name){
+  return `<svg class="param-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${ICONS[name]||''}</svg>`;
+}
+
 /* =========================================================================
    CONFIG
    ========================================================================= */
@@ -345,7 +394,6 @@ function evalHumedadSalida(v){
   if (v <= 12)    return {status:'warn', note:'Alto — considerar encender quemador de secadora'};
   return               {status:'crit', note:'Alto — encender/aumentar quemador de secadora'};
 }
-// NOTA: bandas de advertencia (62–65 y 70–75) inferidas por continuidad; confirmar.
 function evalAcondTemp(v){
   if (v === null) return {status:'nodata', note:'Sin dato'};
   if (v < 62)     return {status:'crit', note:'Bajo — revisar trampas de vapor y purgas de la cocina'};
@@ -354,7 +402,6 @@ function evalAcondTemp(v){
   if (v <= 75)    return {status:'warn', note:'Por encima del óptimo — reducir vapor'};
   return               {status:'crit', note:'Alto — reducir vapor, riesgo de sobrecocción'};
 }
-// NOTA: bandas de advertencia (0.23–0.25 y 0.40–0.42 mm) son un margen de +/-0.02mm inferido.
 function evalEspesor(v){
   if (v === null) return {status:'nodata', note:'Sin dato'};
   if (v < 0.23)   return {status:'crit', note:'Muy fino — exceso de finos'};
@@ -363,13 +410,29 @@ function evalEspesor(v){
   if (v <= 0.42)  return {status:'warn', note:'Cerca del límite grueso'};
   return               {status:'crit', note:'Grueso — posible MG remanente alto / verificar conicidad de rodillos'};
 }
+// Umbrales provisorios (tomados de un tablero previo de collet) — confirmar con Iadin.
+function evalExpanderCorriente(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 85)     return {status:'crit', note:'Bajo — posible falta de carga / trabajo mecánico insuficiente'};
+  if (v < 100)    return {status:'warn', note:'Por debajo del rango normal'};
+  if (v <= 160)   return {status:'ok',   note:'Normal'};
+  if (v <= 185)   return {status:'warn', note:'Por encima del rango normal'};
+  return               {status:'crit', note:'Alto — riesgo de sobrecarga del motor'};
+}
+function evalTolvaTemp(v){
+  if (v === null) return {status:'nodata', note:'Sin dato'};
+  if (v < 42)     return {status:'crit', note:'Bajo — riesgo de condensación de hexano en entrada del extractor'};
+  if (v < 48)     return {status:'warn', note:'Por debajo del rango normal'};
+  if (v <= 56)    return {status:'ok',   note:'Normal'};
+  if (v <= 60)    return {status:'warn', note:'Por encima del rango normal'};
+  return               {status:'crit', note:'Alto'};
+}
 // Sin umbral confirmado todavía — se muestra el valor pero sin semáforo.
 function evalUnclassified(v){
   if (v === null) return {status:'nodata', note:'Sin dato'};
   return {status:'unset', note:'Umbral pendiente de confirmar'};
 }
 
-// Texto de acción genérico por severidad (no por parámetro específico).
 const GENERIC_ACTION = {
   ok:'', nodata:'', unset:'',
   warn:'Fuera del rango óptimo — controlar y ajustar.',
@@ -378,30 +441,26 @@ const GENERIC_ACTION = {
 
 const PARAMS = {
   hum_salida: {
-    label:'Humedad salida secadora', unit:'%', group:'secadora',
+    label:'Humedad salida secadora', unit:'%', group:'secadora', icon:'drop',
     column:'SECADORA HUMEDAD SALIDA (%)', evalFn: evalHumedadSalida, decimals:1,
     domain:[8,14],
     chartBands:[
-      {status:'crit', from:8,   to:10},
-      {status:'ok',   from:10,  to:11.5},
-      {status:'warn', from:11.5,to:12},
-      {status:'crit', from:12,  to:14},
+      {status:'crit', from:8,   to:10}, {status:'ok',   from:10,  to:11.5},
+      {status:'warn', from:11.5,to:12}, {status:'crit', from:12,  to:14},
     ]
   },
   temp_acond: {
-    label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador',
+    label:'Temperatura acondicionador (cocina)', unit:'°C', group:'acondicionador', icon:'thermo',
     column:'ACONDICIONADOR TEMPERATURA (°C)', evalFn: evalAcondTemp, decimals:0,
     domain:[55,80],
     chartBands:[
-      {status:'crit', from:55, to:62},
-      {status:'warn', from:62, to:65},
-      {status:'ok',   from:65, to:70},
-      {status:'warn', from:70, to:75},
+      {status:'crit', from:55, to:62}, {status:'warn', from:62, to:65},
+      {status:'ok',   from:65, to:70}, {status:'warn', from:70, to:75},
       {status:'crit', from:75, to:80},
     ]
   },
   lam1_izq: {
-    label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1',
+    label:'Laminador 1 — Izquierda', unit:'mm', group:'lam1', icon:'gap',
     column:'LAMINADOR 1 ESPESOR IZQUIERDA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
@@ -411,7 +470,7 @@ const PARAMS = {
     ]
   },
   lam1_der: {
-    label:'Laminador 1 — Derecha', unit:'mm', group:'lam1',
+    label:'Laminador 1 — Derecha', unit:'mm', group:'lam1', icon:'gap',
     column:'LAMINADOR 1 ESPESOR DERECHA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
@@ -421,7 +480,7 @@ const PARAMS = {
     ]
   },
   lam2_izq: {
-    label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2',
+    label:'Laminador 2 — Izquierda', unit:'mm', group:'lam2', icon:'gap',
     column:'LAMINADOR 2 ESPESOR IZQUIERDA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
@@ -431,7 +490,7 @@ const PARAMS = {
     ]
   },
   lam2_der: {
-    label:'Laminador 2 — Derecha', unit:'mm', group:'lam2',
+    label:'Laminador 2 — Derecha', unit:'mm', group:'lam2', icon:'gap',
     column:'LAMINADOR 2 ESPESOR DERECHA (0,XX)', transform:v=>v/100, evalFn: evalEspesor, decimals:2,
     domain:[0.15,0.55],
     chartBands:[
@@ -440,13 +499,38 @@ const PARAMS = {
       {status:'crit', from:0.42, to:0.55},
     ]
   },
+  expander_corriente: {
+    label:'Corriente expander', unit:'A', group:'expander', icon:'bolt',
+    column:'EXPANDER CORRIENTE (A)', evalFn: evalExpanderCorriente, decimals:0,
+    domain:[70,190],
+    chartBands:[
+      {status:'crit', from:70,  to:85},  {status:'warn', from:85,  to:100},
+      {status:'ok',   from:100, to:160}, {status:'warn', from:160, to:185},
+      {status:'crit', from:185, to:190},
+    ]
+  },
+  expander_temp: {
+    label:'Temperatura expander', unit:'°C', group:'expander', icon:'thermo',
+    column:'EXPANDER TEMPERATURA (°C)', evalFn: evalUnclassified, decimals:0,
+    domain:[70,95], chartBands:[]
+  },
+  tolva_extractor_temp: {
+    label:'Temperatura tolva extractor', unit:'°C', group:'expander', icon:'thermo',
+    column:'TOLVA EXTRACTOR TEMPERATURA (°C)', evalFn: evalTolvaTemp, decimals:1,
+    domain:[35,65],
+    chartBands:[
+      {status:'crit', from:35, to:42}, {status:'warn', from:42, to:48},
+      {status:'ok',   from:48, to:56}, {status:'warn', from:56, to:60},
+      {status:'crit', from:60, to:65},
+    ]
+  },
   densidad_exp: {
-    label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander',
+    label:'Densidad expandido (salida enfriador)', unit:'g/L', group:'expander', icon:'density',
     column:'Densidad expandido salida enfriador (g/L)', evalFn: evalUnclassified, decimals:0,
     domain:[350,600], chartBands:[]
   },
   humedad_exp: {
-    label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander',
+    label:'Humedad expandido (salida enfriador)', unit:'%', group:'expander', icon:'drop',
     column:'Humedad de expandido en salida enfriador (%)', evalFn: evalUnclassified, decimals:1,
     domain:[0,15], chartBands:[]
   },
@@ -455,10 +539,13 @@ const PARAMS = {
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
 const REFRESH_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 30;
-const OPERATOR_WINDOW_HOURS = 4;
+const OPERATOR_TREND_POINTS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
 const AUTH_KEY = 'glp_supervisor_auth';
+const STALE_MS = 2.5 * 60 * 60 * 1000;
+const STALE_RENAG_MS = 20 * 60 * 1000;
+const SILO_KEY = 'glp_silo_ack_date';
 
 /* =========================================================================
    PARSEO
@@ -490,7 +577,23 @@ function parseTimestamp(raw){
   return isNaN(dt.getTime()) ? null : dt;
 }
 
-function buildRows(data){
+function normalizeHeader(h){
+  return String(h).trim().replace(/\s+/g, ' ').toLowerCase();
+}
+function buildColumnMap(fields){
+  const map = {};
+  for (const h of fields || []) map[normalizeHeader(h)] = h;
+  const resolved = {}, missing = [];
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    const real = map[normalizeHeader(cfg.column)];
+    if (real === undefined) missing.push(cfg.label);
+    resolved[id] = real;
+  }
+  return { resolved, missing };
+}
+
+function buildRows(data, fields){
+  const { resolved, missing } = buildColumnMap(fields);
   let totalSeen = 0, tsFailed = 0;
   const rows = [];
   for (const r of data){
@@ -499,14 +602,15 @@ function buildRows(data){
     if (!ts){ tsFailed++; continue; }
     const row = { ts, operador:r['OPERADOR']||'', supervisor:r['SUPERVISOR']||'', estado:r['ESTADO DE PLANTA']||'', values:{} };
     for (const [id, cfg] of Object.entries(PARAMS)){
-      let v = parseNumber(r[cfg.column]);
+      const realKey = resolved[id];
+      let v = realKey !== undefined ? parseNumber(r[realKey]) : null;
       if (v !== null && cfg.transform) v = cfg.transform(v);
       row.values[id] = v;
     }
     rows.push(row);
   }
   rows.sort((a,b)=>a.ts-b.ts);
-  return { rows, totalSeen, tsFailed };
+  return { rows, totalSeen, tsFailed, missing };
 }
 
 /* =========================================================================
@@ -528,7 +632,7 @@ function scaleY(v, min, max, h, pad=6){
 }
 
 function drawTrendSVG(cfg, points, extraClass){
-  const W = 300, H = 70;
+  const W = 300, H = 50;
   const [min, max] = cfg.domain;
   const bands = cfg.chartBands.map(b=>{
     const y1 = scaleY(b.to, min, max, H);
@@ -542,10 +646,10 @@ function drawTrendSVG(cfg, points, extraClass){
     const coords = valid.map((p,i)=>[ (i/(n-1))*W, scaleY(p.v, min, max, H) ]);
     line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
     const last = coords[coords.length-1];
-    dot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.5" class="dot-last"></circle>`;
+    dot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.2" class="dot-last"></circle>`;
   } else if (valid.length === 1){
     const y = scaleY(valid[0].v, min, max, H);
-    dot = `<circle cx="${W/2}" cy="${y.toFixed(1)}" r="3.5" class="dot-last"></circle>`;
+    dot = `<circle cx="${W/2}" cy="${y.toFixed(1)}" r="3.2" class="dot-last"></circle>`;
   }
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg ${extraClass}" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
 }
@@ -604,25 +708,24 @@ function renderHero(last){
 function renderCards(rows){
   const grid = document.getElementById('cardsGrid');
   const last = rows[rows.length-1];
-  const cutoff = last ? new Date(last.ts.getTime() - OPERATOR_WINDOW_HOURS*3600*1000) : null;
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
     const currentVal = last ? last.values[id] : null;
     const res = cfg.evalFn(currentVal);
     const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
-    const ptsOp = cutoff ? rows.filter(r=>r.ts >= cutoff).map(r=>({ts:r.ts, v:r.values[id]})) : [];
+    const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div');
     card.className = `card status-${res.status}`;
     card.title = res.note;
     card.innerHTML = `
       <div class="card-head">
-        <span class="card-label">${cfg.label}</span>
+        <span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span>
         <span class="pill pill-${res.status}">${statusText(res.status)}</span>
       </div>
       <div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>
       ${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}
       ${drawTrendSVG(cfg, ptsOp, 'trend-operario')}
-      <div class="trend-caption-op">Tendencia últimas 4 h</div>
+      <div class="trend-caption-op">Tendencia últimas 4 mediciones</div>
       <div class="card-foot">
         <span>${last ? fmtTime(last.ts) : '—'}</span>
         <span>${last ? last.operador : ''}</span>
@@ -652,6 +755,9 @@ function renderQuality(rows, parseStats){
   const list = document.getElementById('qualityList');
   const window = rows.slice(-QUALITY_WINDOW);
   const items = [];
+  if (parseStats.missing && parseStats.missing.length){
+    items.push(`<li><span>⚠ Columna no encontrada: ${parseStats.missing.join(', ')}</span><span class="qty warn-count">revisar nombre</span></li>`);
+  }
   for (const [id, cfg] of Object.entries(PARAMS)){
     const missing = window.filter(r => r.values[id] === null).length;
     if (missing > 0) items.push(`<li><span>${cfg.label}</span><span class="qty ${missing > window.length*0.15 ? 'warn-count':''}">${missing} sin dato</span></li>`);
@@ -662,8 +768,6 @@ function renderQuality(rows, parseStats){
 
 /* =========================================================================
    VISTA OPERARIO / SUPERVISOR + LOGIN
-   El login es un filtro de UX, no seguridad real: el código es visible
-   para cualquiera que abra "ver código fuente" en un repo público.
    ========================================================================= */
 
 function isAuthed(){ return localStorage.getItem(AUTH_KEY) === '1'; }
@@ -711,6 +815,55 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 /* =========================================================================
+   ALERTA DE CARGA VENCIDA (>2:30h sin dato nuevo) — solo vista operario
+   ========================================================================= */
+
+let lastDataTs = null;
+let staleLastShownAt = null;
+
+function checkStale(){
+  const overlay = document.getElementById('staleOverlay');
+  const inOperario = document.body.classList.contains('view-operario');
+  if (!lastDataTs || !inOperario){
+    overlay.style.display = 'none';
+    return;
+  }
+  const elapsed = Date.now() - lastDataTs.getTime();
+  if (elapsed > STALE_MS){
+    if (staleLastShownAt === null || (Date.now() - staleLastShownAt) > STALE_RENAG_MS){
+      overlay.style.display = 'flex';
+      staleLastShownAt = Date.now();
+    }
+  } else {
+    overlay.style.display = 'none';
+    staleLastShownAt = null;
+  }
+}
+document.getElementById('staleAccept').addEventListener('click', () => {
+  document.getElementById('staleOverlay').style.display = 'none';
+});
+setInterval(checkStale, 60 * 1000);
+
+/* =========================================================================
+   RECORDATORIO DIARIO 6:00 hs — "CAMBIAR DE SILO" — solo vista operario
+   ========================================================================= */
+
+function todayKey(d){ return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function checkSiloReminder(){
+  const inOperario = document.body.classList.contains('view-operario');
+  const now = new Date();
+  if (inOperario && now.getHours() >= 6 && localStorage.getItem(SILO_KEY) !== todayKey(now)){
+    document.getElementById('siloOverlay').style.display = 'flex';
+  }
+}
+document.getElementById('siloAccept').addEventListener('click', () => {
+  localStorage.setItem(SILO_KEY, todayKey(new Date()));
+  document.getElementById('siloOverlay').style.display = 'none';
+});
+checkSiloReminder();
+setInterval(checkSiloReminder, 60 * 1000);
+
+/* =========================================================================
    CONEXIÓN Y CARGA
    ========================================================================= */
 
@@ -728,15 +881,17 @@ async function loadData(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const parsed = Papa.parse(text, {header:true, skipEmptyLines:true});
-    const { rows, totalSeen, tsFailed } = buildRows(parsed.data);
+    const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data, parsed.meta.fields);
     if (rows.length === 0) throw new Error('sin filas válidas');
 
     renderHero(rows[rows.length-1]);
     renderCards(rows);
     renderRecentTable(rows);
-    renderQuality(rows, {totalSeen, tsFailed});
-    document.getElementById('lastLoadTime').textContent = fmtTime(rows[rows.length-1].ts);
+    renderQuality(rows, {totalSeen, tsFailed, missing});
+    lastDataTs = rows[rows.length-1].ts;
+    document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs);
     setConn('ok');
+    checkStale();
   } catch(err){
     console.error(err);
     setConn('error', err.message);
