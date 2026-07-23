@@ -169,6 +169,10 @@
   .ritmo-value{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:30px; color:var(--accent);}
   .ritmo-mini-chart{flex:1; min-width:200px; height:50px;}
   body.view-operario .ritmo-value{font-size:42px;}
+  .ritmo-turno{padding-left:20px; border-left:1px solid var(--line-soft); gap:4px;}
+  .ritmo-turno-name{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);}
+  .ritmo-turno-name strong{color:var(--text); font-weight:600;}
+  body.view-operario .ritmo-turno-name{font-size:16px;}
 
   /* ---------- Cards ---------- */
   .cards-grid{
@@ -320,7 +324,7 @@
   #corrList li:last-child{border-bottom:none;}
   #corrList .qty{font-family:'IBM Plex Mono', monospace; color:var(--text);}
 
-  .pie-wrap{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .pie-wrap{display:flex; align-items:center; gap:16px; flex-wrap:wrap; max-width:420px;}
   .pie-legend{list-style:none; margin:0; padding:0; font-size:12px; color:var(--text-dim); flex:1; min-width:140px;}
   .pie-legend li{display:flex; align-items:center; gap:8px; padding:4px 0;}
   .pie-legend li span:nth-child(2){flex:1;}
@@ -405,6 +409,11 @@
       <div class="ritmo-item">
         <span class="ritmo-label">Proyección de turno (8 h)</span>
         <span class="ritmo-value" id="ritmoProj">— tn</span>
+      </div>
+      <div class="ritmo-item ritmo-turno">
+        <span class="ritmo-label">Turno actual</span>
+        <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
+        <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
       </div>
       <div class="ritmo-mini-chart" id="ritmoChart"></div>
     </section>
@@ -1180,7 +1189,7 @@ function drawTrendSVGWithAxis(cfg, points, viewW=1000, viewH=300){
 }
 
 /* =========================================================================
-   RENDER — hero (tamaño calculado en px según el ancho real del contenedor)
+   RENDER — hero (tamaño fijo, siempre completo)
    ========================================================================= */
 
 const SEV = {nodata:0, unset:0, ok:1, warn:2, crit:3};
@@ -1188,11 +1197,7 @@ function worstStatus(statuses){
   return statuses.reduce((worst, s) => SEV[s] > SEV[worst] ? s : worst, 'nodata');
 }
 
-let lastHeroRow;
-let heroResizeTimer = null;
-
 function renderHero(last){
-  lastHeroRow = last;
   const hum = last ? evalFromBands(last.values.hum_salida, PARAMS.hum_salida.bands) : {status:'nodata'};
   const acond = last ? evalFromBands(last.values.temp_acond, PARAMS.temp_acond.bands) : {status:'nodata'};
   const lam1 = last ? worstStatus([evalFromBands(last.values.lam1_izq, PARAMS.lam1_izq.bands).status, evalFromBands(last.values.lam1_der, PARAMS.lam1_der.bands).status]) : 'nodata';
@@ -1225,26 +1230,15 @@ function renderHero(last){
   const totalW = startX*2 + nodes.length*nodeW + (nodes.length-1)*gap - gap;
   const totalH = y*2 + nodeH;
 
-  const container = document.getElementById('flowContainer');
-  const containerWidth = Math.max(container.clientWidth || totalW, 280);
-  const scale = Math.min(containerWidth / totalW, 1.35);
-  const renderW = Math.round(totalW * scale);
-  const renderH = Math.round(totalH * scale);
-
-  container.innerHTML = `
-    <svg viewBox="0 0 ${totalW} ${totalH}" width="${renderW}" height="${renderH}" role="img" aria-label="Estado actual de la línea de preparación">
+  document.getElementById('flowContainer').innerHTML = `
+    <svg viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" role="img" aria-label="Estado actual de la línea de preparación">
       <defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--line)"></path></marker></defs>
       ${svgArrows}${svgNodes}
     </svg>`;
 }
 
-window.addEventListener('resize', () => {
-  clearTimeout(heroResizeTimer);
-  heroResizeTimer = setTimeout(() => { if (lastHeroRow !== undefined) renderHero(lastHeroRow); }, 150);
-});
-
 /* =========================================================================
-   RENDER — ritmo de turno (promedio y proyección de 8 h)
+   RENDER — ritmo de turno + turno actual
    ========================================================================= */
 
 function computeRitmo(rows){
@@ -1257,13 +1251,24 @@ function computeRitmo(rows){
   return { avg, proj: avg * RITMO_WINDOW_HOURS, pts: windowRows.map(r=>({ts:r.ts, v:r.values.pesaje_balanza})) };
 }
 
+function renderTurnoInfo(){
+  const assign = getCurrentShiftAssignment(new Date());
+  const opEl = document.getElementById('ritmoOperador');
+  const supEl = document.getElementById('ritmoSupervisor');
+  if (opEl) opEl.textContent = `${assign.operatorName} (${assign.shift})`;
+  if (supEl) supEl.textContent = assign.supervisorSurname;
+}
+
 function renderRitmo(rows){
   const { avg, proj, pts } = computeRitmo(rows);
   document.getElementById('ritmoAvg').textContent = avg !== null ? `${avg.toFixed(1)} tn/h` : '— tn/h';
   document.getElementById('ritmoProj').textContent = proj !== null ? `${proj.toFixed(0)} tn` : '— tn';
   const chartEl = document.getElementById('ritmoChart');
   chartEl.innerHTML = pts.length ? drawTrendSVG(PARAMS.pesaje_balanza, pts, 'trend-supervisor', 260, 50) : '';
+  renderTurnoInfo();
 }
+
+setInterval(renderTurnoInfo, 60 * 1000);
 
 /* =========================================================================
    RENDER — cards, tabla, calidad
@@ -1566,8 +1571,6 @@ document.getElementById('viewToggle').addEventListener('click', () => {
   } else {
     currentView = 'operario'; setView(currentView);
   }
-  clearTimeout(heroResizeTimer);
-  heroResizeTimer = setTimeout(() => { if (lastHeroRow !== undefined) renderHero(lastHeroRow); }, 50);
 });
 document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 document.getElementById('loginForm').addEventListener('submit', (e) => {
