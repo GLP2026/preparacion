@@ -74,6 +74,11 @@
   body.view-operario .ritmo-turno-name{font-size:16px;}
   .ritmo-plc{padding-left:20px; border-left:1px solid var(--line-soft);}
   .ritmo-plc-meta{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:2px;}
+  .ritmo-estado-general .ritmo-value{font-size:30px;}
+  body.view-operario .ritmo-estado-general .ritmo-value{font-size:44px;}
+  #plcEstadoGeneral.estado-marcha{color:var(--ok);}
+  #plcEstadoGeneral.estado-parada{color:var(--crit);}
+  #plcEstadoGeneral.estado-desconocido{color:var(--text-faint);}
   .marchas-dots{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
   .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--nodata-bg); color:var(--text-faint);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
@@ -218,6 +223,10 @@
     </section>
 
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
+      <div class="ritmo-item ritmo-estado-general">
+        <span class="ritmo-label">Estado de planta</span>
+        <span class="ritmo-value" id="plcEstadoGeneral">—</span>
+      </div>
       <div class="ritmo-item">
         <span class="ritmo-label">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
@@ -511,6 +520,7 @@ const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 const THRESHOLD_KEY = 'glp_threshold_overrides';
+const CAUDAL_MIN_TN_H = 0.1;
 
 let rowsGlobal = [];
 let labRows = [];
@@ -990,24 +1000,45 @@ function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const projEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
   const corrEl = document.getElementById('plcCorrienteExp'); const tempEl = document.getElementById('plcTempExp');
+  const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
   if (!metaEl) return;
+
   if (!state || !state.lastUpdate){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
     projEl.textContent = '— tn'; projDiaEl.textContent = '— tn'; corrEl.textContent = '— A'; tempEl.textContent = '— °C';
     ['marchaExpander','marchaAlimExpander','marchaLam1','marchaLam2'].forEach(id => setMarchaChip(id, '0'));
+    if (estadoGeneralEl){ estadoGeneralEl.textContent = 'SIN DATO'; estadoGeneralEl.className = 'ritmo-value estado-desconocido'; }
     return;
   }
-  metaEl.textContent = `Últ. dato PLC: ${fmtTime(state.lastUpdate)}`;
+
+  const stale = (Date.now() - state.lastUpdate.getTime()) > PLC_STALE_MS;
+  metaEl.textContent = `Últ. dato PLC: ${fmtTime(state.lastUpdate)}` + (stale ? ' (sin señal reciente)' : '');
   setMarchaChip('marchaExpander', state.marchaExpander); setMarchaChip('marchaAlimExpander', state.marchaAlimExpander);
   setMarchaChip('marchaLam1', state.marchaLam1); setMarchaChip('marchaLam2', state.marchaLam2);
+
   const ritmoActual = state.caudalBalanza;
   ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
   projEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*8).toFixed(0)} tn` : '— tn';
   projDiaEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*24).toFixed(0)} tn` : '— tn';
+
   if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){ prodEl.textContent = `${((state.totalizadoActual - state.totalizadoMedianoche) / 1000).toFixed(1)} tn`; }
   else { prodEl.textContent = '— tn'; }
+
   corrEl.textContent = (state.corrienteExpander !== null) ? `${state.corrienteExpander} A` : '— A';
   tempEl.textContent = (state.temperaturaExpander !== null) ? `${state.temperaturaExpander} °C` : '— °C';
+
+  if (estadoGeneralEl){
+    if (stale){
+      estadoGeneralEl.textContent = '⚪ SIN SEÑAL RECIENTE';
+      estadoGeneralEl.className = 'ritmo-value estado-desconocido';
+    } else {
+      const laminadorEnMarcha = (String(state.marchaLam1) === '1' || String(state.marchaLam2) === '1');
+      const caudalConFlujo = (state.caudalBalanza !== null && state.caudalBalanza > CAUDAL_MIN_TN_H);
+      const enMarcha = laminadorEnMarcha && caudalConFlujo;
+      estadoGeneralEl.textContent = enMarcha ? '🟢 EN MARCHA' : '🔴 PARADA';
+      estadoGeneralEl.className = 'ritmo-value ' + (enMarcha ? 'estado-marcha' : 'estado-parada');
+    }
+  }
 }
 fetchPlantState().then(renderPlantState);
 setInterval(() => fetchPlantState().then(renderPlantState), REFRESH_MS);
