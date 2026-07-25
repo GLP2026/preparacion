@@ -59,10 +59,6 @@
   #loginCancel, #stalePlantStopped, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
-  .flow-hero{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 16px 14px; margin-bottom:24px; overflow-x:auto;}
-  .flow-hero svg{display:block; margin:0 auto;}
-  .flow-caption{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-align:center; margin-top:8px; letter-spacing:0.04em;}
-
   .ritmo-banner{display:flex; align-items:center; gap:24px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius); padding:16px 20px; margin-bottom:24px;}
   .ritmo-item{display:flex; flex-direction:column; gap:2px; cursor:help;}
   .ritmo-label{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint);}
@@ -80,7 +76,7 @@
   #plcEstadoGeneral.estado-parada{color:var(--crit);}
   #plcEstadoGeneral.estado-desconocido{color:var(--text-faint);}
   .marchas-dots{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
-  .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--nodata-bg); color:var(--text-faint);}
+  .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--crit-bg); color:var(--crit);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
 
   .cards-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:24px;}
@@ -190,7 +186,7 @@
   .operario-footer{display:none;}
   body.view-operario .operario-footer{display:block; margin-top:16px;}
   footer{margin-top:22px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); text-align:center;}
-  body.view-operario .flow-hero, body.view-operario .supervisor-workspace{display:none;}
+  body.view-operario .supervisor-workspace{display:none;}
 </style>
 </head>
 <body>
@@ -217,11 +213,6 @@
   </header>
 
   <main>
-    <section class="flow-hero" aria-label="Esquema de línea de preparación">
-      <div id="flowContainer"></div>
-      <div class="flow-caption">SECADORA → ACONDICIONADOR (COCINA) → LAMINADOR 1 / LAMINADOR 2</div>
-    </section>
-
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
       <div class="ritmo-item ritmo-estado-general" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
         <span class="ritmo-label">Estado de planta</span>
@@ -248,7 +239,7 @@
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
       </div>
-      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo). Es el dato base que se usa para calcular 'Estado de planta'.">
+      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo, rojo = apagado). Es el dato base que se usa para calcular 'Estado de planta'.">
         <span class="ritmo-label">Marchas (PLC en vivo)</span>
         <div class="marchas-dots">
           <span class="marcha-chip" id="marchaExpander">Expander</span>
@@ -487,6 +478,11 @@ const PARAMS = {
 
 const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(PARAMS).map(([id,cfg]) => [id, cfg.bands]))));
 
+const LIVE_PLC_PARAM_MAP = {
+  expander_corriente: 'corrienteExpander',
+  expander_temp: 'temperaturaExpander',
+};
+
 function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
   if (!bands || bands.length === 0) return {status:'unset', note:'Umbral pendiente de confirmar'};
@@ -528,6 +524,7 @@ const RITMO_MAX_DELTA_SEC = 3600;
 let rowsGlobal = [];
 let labRows = [];
 let currentIncidentId = null;
+let latestPlcState = null;
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -557,7 +554,6 @@ function renderThresholdSettings(){
 }
 function rerenderAll(){
   if (!rowsGlobal.length) return;
-  renderHero(rowsGlobal[rowsGlobal.length-1]);
   renderRitmo(rowsGlobal);
   renderCards(rowsGlobal);
   renderRecentTable(rowsGlobal);
@@ -745,33 +741,6 @@ function drawTrendSVGWithAxis(cfg, points, viewW=1000, viewH=300){
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">${tickEls}${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${hoverDots}${lastDot}</svg>`;
 }
 
-/* RENDER — hero */
-const SEV = {nodata:0, unset:0, ok:1, warn:2, crit:3};
-function worstStatus(statuses){ return statuses.reduce((worst, s) => SEV[s] > SEV[worst] ? s : worst, 'nodata'); }
-function renderHero(last){
-  const hum = last ? evalFromBands(last.values.hum_salida, PARAMS.hum_salida.bands) : {status:'nodata'};
-  const acond = last ? evalFromBands(last.values.temp_acond, PARAMS.temp_acond.bands) : {status:'nodata'};
-  const lam1 = last ? worstStatus([evalFromBands(last.values.lam1_izq, PARAMS.lam1_izq.bands).status, evalFromBands(last.values.lam1_der, PARAMS.lam1_der.bands).status]) : 'nodata';
-  const lam2 = last ? worstStatus([evalFromBands(last.values.lam2_izq, PARAMS.lam2_izq.bands).status, evalFromBands(last.values.lam2_der, PARAMS.lam2_der.bands).status]) : 'nodata';
-  const nodes = [
-    { title:'SECADORA', sub: last ? `${fmtValue(last.values.hum_salida, PARAMS.hum_salida)}% sal.` : '—', status: hum.status },
-    { title:'ACONDICIONADOR', sub: last ? `${fmtValue(last.values.temp_acond, PARAMS.temp_acond)}°C` : '—', status: acond.status },
-    { title:'LAMINADOR 1', sub: last ? `${fmtValue(last.values.lam1_izq, PARAMS.lam1_izq)} / ${fmtValue(last.values.lam1_der, PARAMS.lam1_der)} mm` : '—', status: lam1 },
-    { title:'LAMINADOR 2', sub: last ? `${fmtValue(last.values.lam2_izq, PARAMS.lam2_izq)} / ${fmtValue(last.values.lam2_der, PARAMS.lam2_der)} mm` : '—', status: lam2 },
-  ];
-  const colorVar = s => ({ok:'var(--ok)', warn:'var(--warn)', crit:'var(--crit)', nodata:'var(--nodata)', unset:'var(--nodata)'}[s]);
-  const nodeW = 170, nodeH = 64, gap = 46, startX = 20, y = 30;
-  let svgNodes = '', svgArrows = '';
-  nodes.forEach((n,i)=>{
-    const x = startX + i*(nodeW+gap); const c = colorVar(n.status);
-    svgNodes += `<g><rect x="${x}" y="${y}" width="${nodeW}" height="${nodeH}" rx="8" fill="var(--panel-alt)" stroke="${c}" stroke-width="1.6"></rect><text x="${x+nodeW/2}" y="${y+24}" text-anchor="middle" font-family="Oswald, sans-serif" font-size="12.5" font-weight="600" fill="var(--text)" letter-spacing="0.03em">${n.title}</text><text x="${x+nodeW/2}" y="${y+45}" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="14" font-weight="600" fill="${c}">${n.sub}</text></g>`;
-    if (i < nodes.length-1){ const ax1 = x+nodeW, ax2 = x+nodeW+gap, ay = y+nodeH/2; svgArrows += `<path d="M ${ax1+4} ${ay} L ${ax2-8} ${ay}" stroke="var(--line)" stroke-width="1.6" marker-end="url(#arrowhead)"></path>`; }
-  });
-  const totalW = startX*2 + nodes.length*nodeW + (nodes.length-1)*gap - gap;
-  const totalH = y*2 + nodeH;
-  document.getElementById('flowContainer').innerHTML = `<svg viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" role="img" aria-label="Estado actual de la línea de preparación"><defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--line)"></path></marker></defs>${svgArrows}${svgNodes}</svg>`;
-}
-
 /* RENDER — ritmo (turno) */
 function renderTurnoInfo(){
   const assign = getCurrentShiftAssignment(new Date());
@@ -784,13 +753,26 @@ setInterval(renderTurnoInfo, 60 * 1000);
 
 /* RENDER — cards, tabla, calidad */
 function renderCards(rows){
-  const grid = document.getElementById('cardsGrid'); const last = rows[rows.length-1]; grid.innerHTML = '';
+  const grid = document.getElementById('cardsGrid');
+  const last = rows[rows.length-1];
+  grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
-    const currentVal = last ? last.values[id] : null; const res = evalFromBands(currentVal, cfg.bands);
+    let currentVal = last ? last.values[id] : null;
+    let footTime = last ? fmtTime(last.ts) : '—';
+    let footOperator = last ? last.operador : '';
+
+    const liveKey = LIVE_PLC_PARAM_MAP[id];
+    if (liveKey && latestPlcState && latestPlcState[liveKey] !== null && latestPlcState[liveKey] !== undefined && !Number.isNaN(latestPlcState[liveKey])){
+      currentVal = latestPlcState[liveKey];
+      footOperator = 'PLC';
+      if (latestPlcState.lastUpdate) footTime = fmtTime(latestPlcState.lastUpdate);
+    }
+
+    const res = evalFromBands(currentVal, cfg.bands);
     const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
-    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div><div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${last ? fmtTime(last.ts) : '—'}</span><span>${last ? last.operador : ''}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
+    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div><div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
       const sel = document.getElementById('histParamSelect'); if (sel){ sel.value = id; renderHistChart(); }
@@ -1069,8 +1051,15 @@ function renderPlantState(state){
     }
   }
 }
-fetchPlantState().then(renderPlantState);
-setInterval(() => fetchPlantState().then(renderPlantState), REFRESH_MS);
+function refreshPlcState(){
+  fetchPlantState().then(state => {
+    latestPlcState = state;
+    renderPlantState(state);
+    if (rowsGlobal.length) renderCards(rowsGlobal);
+  });
+}
+refreshPlcState();
+setInterval(refreshPlcState, REFRESH_MS);
 
 /* CONEXIÓN Y CARGA */
 function setConn(state, msg){
@@ -1085,7 +1074,7 @@ async function loadData(){
     const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data);
     if (rows.length === 0) throw new Error('sin filas válidas');
     const previousLastTs = lastDataTs; rowsGlobal = rows;
-    renderHero(rows[rows.length-1]); renderRitmo(rows); renderCards(rows); renderRecentTable(rows);
+    renderRitmo(rows); renderCards(rows); renderRecentTable(rows);
     renderQuality(rows, {totalSeen, tsFailed, missing}); renderHistChart(); renderCorrList(document.getElementById('labVarSelect').value); renderOperatorPie();
     lastDataTs = rows[rows.length-1].ts; document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs); setConn('ok');
     if (currentIncidentId !== null && (!previousLastTs || lastDataTs.getTime() > previousLastTs.getTime())){ resolveIncident(false, null); }
