@@ -64,7 +64,7 @@
   .flow-caption{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-align:center; margin-top:8px; letter-spacing:0.04em;}
 
   .ritmo-banner{display:flex; align-items:center; gap:24px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius); padding:16px 20px; margin-bottom:24px;}
-  .ritmo-item{display:flex; flex-direction:column; gap:2px;}
+  .ritmo-item{display:flex; flex-direction:column; gap:2px; cursor:help;}
   .ritmo-label{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint);}
   .ritmo-value{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:26px; color:var(--accent);}
   body.view-operario .ritmo-value{font-size:38px;}
@@ -223,32 +223,32 @@
     </section>
 
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
-      <div class="ritmo-item ritmo-estado-general">
+      <div class="ritmo-item ritmo-estado-general" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
         <span class="ritmo-label">Estado de planta</span>
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
       </div>
-      <div class="ritmo-item">
+      <div class="ritmo-item" title="Se calcula con la variación real del totalizador de la balanza entre la última lectura del PLC y la anterior que vio el tablero, llevada a toneladas por hora. No usa el caudal instantáneo del PLC, solo el contador acumulado real.">
         <span class="ritmo-label">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
       </div>
-      <div class="ritmo-item">
+      <div class="ritmo-item" title="Ritmo actual sostenido durante 8 horas seguidas — no es un promedio del turno, es una proyección: 'si siguiera así'.">
         <span class="ritmo-label">Proyección de turno (8 h)</span>
         <span class="ritmo-value" id="ritmoProj">— tn</span>
       </div>
-      <div class="ritmo-item">
+      <div class="ritmo-item" title="Ritmo actual sostenido durante 24 horas seguidas — proyección, no un dato real de todo el día.">
         <span class="ritmo-label">Proyección diaria (24 h)</span>
         <span class="ritmo-value" id="ritmoProjDia">— tn</span>
       </div>
-      <div class="ritmo-item">
+      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy hasta el último dato recibido. Dato real, no proyectado.">
         <span class="ritmo-label">Producción hoy (real, PLC)</span>
         <span class="ritmo-value" id="plcProdHoy">— tn</span>
       </div>
-      <div class="ritmo-item ritmo-turno">
+      <div class="ritmo-item ritmo-turno" title="Operario y supervisor de turno según el rotativo de 28 días, calculado a partir de la hora actual — no depende del PLC.">
         <span class="ritmo-label">Turno actual</span>
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
       </div>
-      <div class="ritmo-item ritmo-plc">
+      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo). Es el dato base que se usa para calcular 'Estado de planta'.">
         <span class="ritmo-label">Marchas (PLC en vivo)</span>
         <div class="marchas-dots">
           <span class="marcha-chip" id="marchaExpander">Expander</span>
@@ -258,11 +258,11 @@
         </div>
         <span class="ritmo-plc-meta" id="plcMeta"></span>
       </div>
-      <div class="ritmo-item ritmo-plc">
+      <div class="ritmo-item ritmo-plc" title="Lectura instantánea del PLC, sin procesar.">
         <span class="ritmo-label">Corriente Expander (en vivo)</span>
         <span class="ritmo-value" id="plcCorrienteExp">— A</span>
       </div>
-      <div class="ritmo-item ritmo-plc">
+      <div class="ritmo-item ritmo-plc" title="Lectura instantánea del PLC, sin procesar.">
         <span class="ritmo-label">Temperatura Expander (en vivo)</span>
         <span class="ritmo-value" id="plcTempExp">— °C</span>
       </div>
@@ -521,6 +521,9 @@ const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 const THRESHOLD_KEY = 'glp_threshold_overrides';
 const CAUDAL_MIN_TN_H = 0.1;
+const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
+const RITMO_MIN_DELTA_SEC = 5;
+const RITMO_MAX_DELTA_SEC = 3600;
 
 let rowsGlobal = [];
 let labRows = [];
@@ -996,6 +999,32 @@ async function fetchPlantState(){
   } catch(err){ console.error('Error leyendo datos en vivo del PLC:', err); return null; }
 }
 function setMarchaChip(id, val){ const el = document.getElementById(id); if (!el) return; el.classList.toggle('on', String(val) === '1'); }
+
+function computeRitmoDesdeDelta(totalizadoActual, lastUpdate){
+  if (totalizadoActual === null || !lastUpdate) return null;
+  let prev = null;
+  try { prev = JSON.parse(localStorage.getItem(RITMO_STORAGE_KEY) || 'null'); } catch(e){ prev = null; }
+
+  const nowTs = lastUpdate.getTime();
+  let rate = null;
+
+  if (prev && typeof prev.value === 'number' && typeof prev.ts === 'number'){
+    const deltaSec = (nowTs - prev.ts) / 1000;
+    if (deltaSec >= RITMO_MIN_DELTA_SEC && deltaSec <= RITMO_MAX_DELTA_SEC){
+      const deltaKg = totalizadoActual - prev.value;
+      if (deltaKg >= 0){
+        rate = (deltaKg / 1000) / (deltaSec / 3600);
+      }
+    }
+  }
+
+  if (!prev || prev.ts !== nowTs){
+    localStorage.setItem(RITMO_STORAGE_KEY, JSON.stringify({ value: totalizadoActual, ts: nowTs }));
+  }
+
+  return rate;
+}
+
 function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const projEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
@@ -1016,7 +1045,7 @@ function renderPlantState(state){
   setMarchaChip('marchaExpander', state.marchaExpander); setMarchaChip('marchaAlimExpander', state.marchaAlimExpander);
   setMarchaChip('marchaLam1', state.marchaLam1); setMarchaChip('marchaLam2', state.marchaLam2);
 
-  const ritmoActual = state.caudalBalanza;
+  const ritmoActual = computeRitmoDesdeDelta(state.totalizadoActual, state.lastUpdate);
   ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
   projEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*8).toFixed(0)} tn` : '— tn';
   projDiaEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*24).toFixed(0)} tn` : '— tn';
