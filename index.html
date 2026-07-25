@@ -218,8 +218,8 @@
         <span class="ritmo-label">Estado de planta</span>
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
       </div>
-      <div class="ritmo-item" title="Se calcula con la variación real del totalizador de la balanza entre la última lectura del PLC y la anterior que vio el tablero, llevada a toneladas por hora. No usa el caudal instantáneo del PLC, solo el contador acumulado real.">
-        <span class="ritmo-label">Ritmo actual (PLC, tn/h)</span>
+      <div class="ritmo-item" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles (por ejemplo, justo después de medianoche), muestra el último dato confiable en vez de un número inestable, hasta que haya datos nuevos reales del día en curso.">
+        <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
       </div>
       <div class="ritmo-item" title="Ritmo actual sostenido durante 8 horas seguidas — no es un promedio del turno, es una proyección: 'si siguiera así'.">
@@ -230,7 +230,7 @@
         <span class="ritmo-label">Proyección diaria (24 h)</span>
         <span class="ritmo-value" id="ritmoProjDia">— tn</span>
       </div>
-      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy hasta el último dato recibido. Dato real, no proyectado.">
+      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy hasta el último dato recibido. Este sí arranca en 0 cada día — dato real, no proyectado.">
         <span class="ritmo-label">Producción hoy (real, PLC)</span>
         <span class="ritmo-value" id="plcProdHoy">— tn</span>
       </div>
@@ -518,6 +518,7 @@ const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF'
 const THRESHOLD_KEY = 'glp_threshold_overrides';
 const CAUDAL_MIN_TN_H = 0.1;
 const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
+const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
 const RITMO_MIN_DELTA_SEC = 5;
 const RITMO_MAX_DELTA_SEC = 3600;
 
@@ -1007,11 +1008,29 @@ function computeRitmoDesdeDelta(totalizadoActual, lastUpdate){
   return rate;
 }
 
+function computeRitmoPromedioDesdeMedianoche(totalizadoActual, totalizadoMedianoche, lastUpdate){
+  if (totalizadoActual === null || totalizadoMedianoche === null || !lastUpdate) return null;
+  const medianoche = new Date(lastUpdate.getFullYear(), lastUpdate.getMonth(), lastUpdate.getDate(), 0, 0, 0);
+  const horasTranscurridas = (lastUpdate.getTime() - medianoche.getTime()) / 3600000;
+  if (horasTranscurridas < (5/60)) return null;
+  const deltaKg = totalizadoActual - totalizadoMedianoche;
+  if (deltaKg < 0) return null;
+  return (deltaKg/1000) / horasTranscurridas;
+}
+
+function loadLastGoodRitmo(){
+  try { return JSON.parse(localStorage.getItem(RITMO_LASTGOOD_KEY) || 'null'); } catch(e){ return null; }
+}
+function saveLastGoodRitmo(value, ts){
+  localStorage.setItem(RITMO_LASTGOOD_KEY, JSON.stringify({ value, ts }));
+}
+
 function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const projEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
   const corrEl = document.getElementById('plcCorrienteExp'); const tempEl = document.getElementById('plcTempExp');
   const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
+  const ritmoLabelEl = document.getElementById('plcRitmoLabel');
   if (!metaEl) return;
 
   if (!state || !state.lastUpdate){
@@ -1027,7 +1046,23 @@ function renderPlantState(state){
   setMarchaChip('marchaExpander', state.marchaExpander); setMarchaChip('marchaAlimExpander', state.marchaAlimExpander);
   setMarchaChip('marchaLam1', state.marchaLam1); setMarchaChip('marchaLam2', state.marchaLam2);
 
-  const ritmoActual = computeRitmoDesdeDelta(state.totalizadoActual, state.lastUpdate);
+  let ritmoActual = computeRitmoDesdeDelta(state.totalizadoActual, state.lastUpdate);
+  let ritmoLabelText = 'Ritmo actual (PLC, tn/h)';
+
+  if (ritmoActual !== null && !Number.isNaN(ritmoActual)){
+    saveLastGoodRitmo(ritmoActual, state.lastUpdate.getTime());
+  } else {
+    const lastGood = loadLastGoodRitmo();
+    if (lastGood && typeof lastGood.value === 'number'){
+      ritmoActual = lastGood.value;
+      ritmoLabelText = 'Ritmo actual (último dato válido)';
+    } else {
+      ritmoActual = computeRitmoPromedioDesdeMedianoche(state.totalizadoActual, state.totalizadoMedianoche, state.lastUpdate);
+      ritmoLabelText = 'Ritmo actual (promedio del día)';
+    }
+  }
+
+  if (ritmoLabelEl) ritmoLabelEl.textContent = ritmoLabelText;
   ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
   projEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*8).toFixed(0)} tn` : '— tn';
   projDiaEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*24).toFixed(0)} tn` : '— tn';
