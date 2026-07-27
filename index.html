@@ -150,7 +150,9 @@
   #qualityList .qty.warn-count, #paradasSummary .qty.warn-count{color:var(--warn);}
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-wrap:wrap;}
-  .hist-controls select{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  .hist-controls select, .hist-controls input[type="date"]{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  .hist-controls button.apply-btn{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  .hist-controls button.apply-btn:hover{opacity:0.9;}
   .trend-full{width:100%; height:300px; display:block;}
   .hist-axis-labels{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:4px;}
 
@@ -345,11 +347,25 @@
 
       <div class="content-panel operarios-grid" data-content="paradas">
         <div class="panel">
-          <h2>Resumen de paradas — hoy</h2>
+          <h2>Resumen de paradas</h2>
+          <div class="hist-controls">
+            <label for="paradasRangeSelect">Período:</label>
+            <select id="paradasRangeSelect">
+              <option value="hoy" selected>Hoy</option>
+              <option value="7">Últimos 7 días</option>
+              <option value="30">Últimos 30 días</option>
+              <option value="all">Todo el histórico</option>
+            </select>
+            <label for="paradasDesde">Desde:</label>
+            <input type="date" id="paradasDesde">
+            <label for="paradasHasta">Hasta:</label>
+            <input type="date" id="paradasHasta">
+            <button type="button" id="paradasFiltrarBtn" class="apply-btn">Aplicar</button>
+          </div>
           <ul id="paradasSummary"><li><span>Cargando…</span></li></ul>
         </div>
         <div class="panel">
-          <h2>Eventos recientes</h2>
+          <h2>Eventos en el período</h2>
           <div class="table-wrap">
             <table id="paradasTable">
               <thead>
@@ -528,6 +544,8 @@ let rowsGlobal = [];
 let labRows = [];
 let latestPlcState = null;
 let lastDataTs = null;
+let paradasListGlobal = [];
+let paradasFetchFailed = false;
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -972,40 +990,80 @@ async function fetchParadasRemote(){
     list.sort((a,b)=>a.ts-b.ts); return list;
   } catch(err){ console.error('Error leyendo registro de paradas:', err); return null; }
 }
-function renderParadas(list){
+function getParadasFilteredRange(){
+  const rangeVal = document.getElementById('paradasRangeSelect').value;
+  const desdeVal = document.getElementById('paradasDesde').value;
+  const hastaVal = document.getElementById('paradasHasta').value;
+
+  if (desdeVal || hastaVal){
+    const desde = desdeVal ? new Date(desdeVal + 'T00:00:00') : new Date(0);
+    const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59') : new Date();
+    return { desde, hasta };
+  }
+
+  const now = new Date();
+  if (rangeVal === 'hoy'){
+    const desde = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    return { desde, hasta: now };
+  }
+  if (rangeVal === 'all') return { desde: new Date(0), hasta: now };
+  const days = parseInt(rangeVal, 10);
+  const desde = new Date(now.getTime() - days*24*3600*1000);
+  return { desde, hasta: now };
+}
+function renderParadas(){
   const summaryEl = document.getElementById('paradasSummary');
   const tbodyEl = document.getElementById('paradasTbody');
   if (!summaryEl) return;
-  if (list === null){
+
+  if (paradasFetchFailed && !paradasListGlobal.length){
     summaryEl.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>';
     tbodyEl.innerHTML = '';
     return;
   }
-  const today = todayKey(new Date());
-  const iniciosHoy = list.filter(e => e.evento === 'INICIO_PARADA' && todayKey(e.ts) === today);
-  const finsHoy = list.filter(e => e.evento === 'FIN_PARADA' && todayKey(e.ts) === today);
-  const tiempoTotalMin = finsHoy.reduce((s,e)=> s + (e.duracionMin || 0), 0);
-
-  let paradaEnCursoMin = null;
-  if (list.length){
-    const ultimo = list[list.length-1];
-    if (ultimo.evento === 'INICIO_PARADA') paradaEnCursoMin = (Date.now() - ultimo.ts.getTime()) / 60000;
+  if (!paradasListGlobal.length){
+    summaryEl.innerHTML = '<li><span>Sin eventos registrados todavía.</span></li>';
+    tbodyEl.innerHTML = '<tr><td colspan="5">Sin eventos registrados todavía.</td></tr>';
+    return;
   }
 
+  const { desde, hasta } = getParadasFilteredRange();
+  const filtered = paradasListGlobal.filter(e => e.ts >= desde && e.ts <= hasta);
+
+  const inicios = filtered.filter(e => e.evento === 'INICIO_PARADA');
+  const fins = filtered.filter(e => e.evento === 'FIN_PARADA');
+  const tiempoTotalMin = fins.reduce((s,e)=> s + (e.duracionMin || 0), 0);
+
+  let paradaEnCursoMin = null;
+  const ultimo = paradasListGlobal[paradasListGlobal.length-1];
+  if (ultimo.evento === 'INICIO_PARADA') paradaEnCursoMin = (Date.now() - ultimo.ts.getTime()) / 60000;
+
   summaryEl.innerHTML = `
-    <li><span>Paradas hoy</span><span class="qty">${iniciosHoy.length}</span></li>
-    <li><span>Tiempo detenido hoy (paradas ya cerradas)</span><span class="qty">${tiempoTotalMin.toFixed(0)} min</span></li>
-    ${paradaEnCursoMin !== null ? `<li><span>Parada en curso</span><span class="qty warn-count">${paradaEnCursoMin.toFixed(0)} min y sigue</span></li>` : ''}
+    <li><span>Paradas en el período</span><span class="qty">${inicios.length}</span></li>
+    <li><span>Tiempo detenido (paradas cerradas en el período)</span><span class="qty">${tiempoTotalMin.toFixed(0)} min</span></li>
+    ${paradaEnCursoMin !== null ? `<li><span>Parada en curso (tiempo real, no depende del filtro)</span><span class="qty warn-count">${paradaEnCursoMin.toFixed(0)} min y sigue</span></li>` : ''}
   `;
 
-  const recent = list.slice(-15).reverse();
+  const recent = filtered.slice(-40).reverse();
   tbodyEl.innerHTML = recent.length ? recent.map(e => {
     const tag = e.evento === 'INICIO_PARADA' ? '🔴 Inicio de parada' : (e.evento === 'FIN_PARADA' ? '🟢 Fin de parada' : e.evento);
     const dur = (e.duracionMin != null) ? `${e.duracionMin.toFixed(0)} min` : '—';
     return `<tr><td>${fmtTime(e.ts)}</td><td>${tag}</td><td>${e.criterio}</td><td>${dur}</td><td>${e.turno}</td></tr>`;
-  }).join('') : '<tr><td colspan="5">Sin eventos registrados todavía.</td></tr>';
+  }).join('') : '<tr><td colspan="5">Sin eventos en el período seleccionado.</td></tr>';
 }
-function refreshParadas(){ fetchParadasRemote().then(renderParadas); }
+function refreshParadas(){
+  fetchParadasRemote().then(list => {
+    if (list === null){ paradasFetchFailed = true; }
+    else { paradasFetchFailed = false; paradasListGlobal = list; }
+    renderParadas();
+  });
+}
+document.getElementById('paradasRangeSelect').addEventListener('change', () => {
+  document.getElementById('paradasDesde').value = '';
+  document.getElementById('paradasHasta').value = '';
+  renderParadas();
+});
+document.getElementById('paradasFiltrarBtn').addEventListener('click', renderParadas);
 refreshParadas();
 setInterval(refreshParadas, REFRESH_MS);
 
@@ -1014,7 +1072,6 @@ function parsePlcNumber(v){
   if (v === undefined || v === null || v === '') return null;
   let s = String(v).trim();
   if (s === '') return null;
-  // Sheets a veces exporta el CSV con coma decimal según la configuración regional — convertir a punto antes de parsear.
   if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
   const n = parseFloat(s);
   return Number.isNaN(n) ? null : n;
