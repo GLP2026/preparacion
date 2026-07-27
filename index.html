@@ -56,7 +56,7 @@
   .login-error{color:var(--crit); font-size:11.5px; min-height:14px; margin:0;}
   .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px; flex-wrap:wrap;}
   .modal-actions button{font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer;}
-  #loginCancel, #stalePlantStopped, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  #loginCancel, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
   .ritmo-banner{display:flex; align-items:center; gap:24px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius); padding:16px 20px; margin-bottom:24px;}
@@ -143,11 +143,11 @@
   .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata,.dot-unset{background:var(--nodata);}
   .table-wrap{overflow-x:auto;}
 
-  #qualityList, #incidentsList, #paradasSummary{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
-  #qualityList li, #incidentsList li, #paradasSummary li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
-  #qualityList li:last-child, #incidentsList li:last-child, #paradasSummary li:last-child{border-bottom:none;}
-  #qualityList .qty, #incidentsList .qty, #paradasSummary .qty{font-family:'IBM Plex Mono',monospace; color:var(--text);}
-  #qualityList .qty.warn-count, #incidentsList .qty.warn-count, #paradasSummary .qty.warn-count{color:var(--warn);}
+  #qualityList, #paradasSummary{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
+  #qualityList li, #paradasSummary li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
+  #qualityList li:last-child, #paradasSummary li:last-child{border-bottom:none;}
+  #qualityList .qty, #paradasSummary .qty{font-family:'IBM Plex Mono',monospace; color:var(--text);}
+  #qualityList .qty.warn-count, #paradasSummary .qty.warn-count{color:var(--warn);}
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-wrap:wrap;}
   .hist-controls select{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
@@ -336,12 +336,7 @@
         </div>
       </div>
 
-      <div class="content-panel operarios-grid" data-content="operarios">
-        <div class="panel">
-          <h2>Incumplimientos de carga (compartido)</h2>
-          <p class="modal-text">Se registra en la planilla "Registro Incumplimientos" cada vez que pasan 3 h sin carga. Visible desde cualquier PC.</p>
-          <ul id="incidentsList"></ul>
-        </div>
+      <div class="content-panel" data-content="operarios">
         <div class="panel">
           <h2>Cargas por operario (desde 01/01/2026)</h2>
           <div id="operatorPieSupervisor"></div>
@@ -369,7 +364,7 @@
   </main>
 
   <footer>
-    Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios · umbrales editables en Vista supervisor
+    Actualiza automáticamente cada 5 min · fuente: planilla de carga de operarios + PLC en vivo · umbrales editables en Vista supervisor
   </footer>
 </div>
 
@@ -384,17 +379,6 @@
       <button type="submit">Ingresar</button>
     </div>
   </form>
-</div>
-
-<div id="staleOverlay" class="modal-overlay">
-  <div class="modal-box" role="alertdialog" aria-modal="true">
-    <h3>⚠ Carga pendiente</h3>
-    <p class="modal-text" id="staleMessage">Pasaron más de 3 h desde la última carga de parámetros de proceso. Completá la planilla.</p>
-    <div class="modal-actions">
-      <button type="button" id="stalePlantStopped">Planta parada</button>
-      <button type="button" id="staleAccept" class="primary">Entendido</button>
-    </div>
-  </div>
 </div>
 
 <div id="siloOverlay" class="modal-overlay">
@@ -519,8 +503,6 @@ function plainStatusLabel(s){ return {ok:'Normal', warn:'Advertencia', crit:'Cr�
 const GENERIC_ACTION = { ok:'', nodata:'', unset:'', warn:'Fuera del rango óptimo — controlar y ajustar.', crit:'Estado crítico — corregir de inmediato o avisar al supervisor.' };
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
-const INCIDENTS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1hufIUg-iHYrhRjCMEMPCoNqGhGo9PdUi6bVMAKjKoquyZuEcFkk-kLcz6DAjKqodzUqoEhpzbjIi/pub?output=csv";
-const INCIDENTS_WRITE_URL = "https://script.google.com/macros/s/AKfycbzYvWmwkQZfRlZjYS_ZNUuUVnm_biGn53DhyNXE4Eum_to21x9w3itqRVyBqTLYr7-0pg/exec";
 const PLANT_STATE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQqQTUptRxTopUF9Umqhjg16jaUQWJqAhHMEL8apN4ny413Ht4_WdpQ6uS81DsWVVVo42-0ljHJzRL/pub?output=csv";
 const PARADAS_WRITE_URL = "https://script.google.com/macros/s/AKfycbyH8w5hpXITFagFMoODEePF9wWZhnzIoHWdLF31aV7e72UY_ORZwJDAPODtbY4O2CRZfg/exec";
 const PARADAS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-cBYqTSZAfs7Nmro3qu3E6rGsxHVRfL71E95S4Cfs94GgHWQHaa-Sf5Z-JxWblFJdX22RP8FMFXxw/pub?output=csv";
@@ -531,8 +513,6 @@ const OPERATOR_TREND_POINTS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
 const AUTH_KEY = 'glp_supervisor_auth';
-const STALE_MS = 3 * 60 * 60 * 1000;
-const STALE_RENAG_MS = 20 * 60 * 1000;
 const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
@@ -546,8 +526,8 @@ const PARADA_STATE_KEY = 'glp_parada_last_estado_prep';
 
 let rowsGlobal = [];
 let labRows = [];
-let currentIncidentId = null;
 let latestPlcState = null;
+let lastDataTs = null;
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -902,33 +882,6 @@ function renderOperatorPie(){
   if (a) a.innerHTML = html; if (b) b.innerHTML = html;
 }
 
-/* REGISTRO DE INCUMPLIMIENTOS */
-async function postIncident(operatorName, shift, eventType, note){
-  if (!INCIDENTS_WRITE_URL || INCIDENTS_WRITE_URL.indexOf('PEGAR_AQUI') === 0) return;
-  try{ await fetch(INCIDENTS_WRITE_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ operatorName, shift, eventType, note }) }); }
-  catch(err){ console.error('No se pudo registrar el incidente remoto:', err); }
-}
-function startIncident(assign){ currentIncidentId = 'active'; postIncident(assign.operatorName, assign.shift, 'DETECTADO', ''); }
-function resolveIncident(justified, assign){ if (currentIncidentId === null) return; currentIncidentId = null; if (justified && assign) postIncident(assign.operatorName, assign.shift, 'PLANTA_PARADA', ''); }
-async function fetchIncidentsRemote(){
-  if (!INCIDENTS_SHEET_URL) return null;
-  try{
-    const res = await fetch(INCIDENTS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text(); const parsed = Papa.parse(text, {skipEmptyLines:true}); const raw = parsed.data; const list = [];
-    for (let r=1; r<raw.length; r++){ const row = raw[r]; if (!row || row.every(c=>!c)) continue; const ts = parseTimestamp(row[0]); if (!ts) continue; list.push({ ts, operador: row[1]||'', turno: row[2]||'', evento: row[3]||'', nota: row[4]||'' }); }
-    list.sort((a,b)=>a.ts-b.ts); return list;
-  } catch(err){ console.error('Error leyendo registro de incumplimientos:', err); return null; }
-}
-function renderIncidentsFromRemote(list){
-  const container = document.getElementById('incidentsList'); if (!container) return;
-  if (list === null){ container.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>'; return; }
-  if (!list.length){ container.innerHTML = '<li><span>Sin incidentes registrados.</span></li>'; return; }
-  const counts = {}; list.forEach(i => { if (i.evento === 'DETECTADO') counts[i.operador] = (counts[i.operador]||0) + 1; });
-  const summaryRows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([op,c]) => `<li><span>${op}</span><span class="qty ${c>=3?'warn-count':''}">${c} incumplimiento${c>1?'s':''}</span></li>`).join('') || '<li><span>Sin incumplimientos registrados.</span></li>';
-  const recent = list.slice(-8).reverse().map(i => { const tag = i.evento === 'PLANTA_PARADA' ? 'planta parada' : (i.evento || '').toLowerCase(); return `<li><span>${fmtTime(i.ts)} · ${i.operador} (${(i.turno||'').toLowerCase()})</span><span class="qty">${tag}</span></li>`; }).join('');
-  container.innerHTML = summaryRows + '<li style="border-top:1px solid var(--line-soft); margin-top:6px; padding-top:10px; font-weight:600; color:var(--text-faint);">Últimos eventos</li>' + recent;
-}
-
 /* VISTA OPERARIO / SUPERVISOR + LOGIN */
 function isAuthed(){ return localStorage.getItem(AUTH_KEY) === '1'; }
 function setAuthed(v){ if (v) localStorage.setItem(AUTH_KEY,'1'); else localStorage.removeItem(AUTH_KEY); }
@@ -952,29 +905,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => { setAuthed
 function updateFullscreenBtn(){ const btn = document.getElementById('fullscreenBtn'); btn.title = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa'; }
 document.getElementById('fullscreenBtn').addEventListener('click', () => { if (!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(err => console.error(err)); } else { document.exitFullscreen(); } });
 document.addEventListener('fullscreenchange', updateFullscreenBtn); updateFullscreenBtn();
-
-/* ALERTA DE CARGA VENCIDA */
-let lastDataTs = null; let staleLastShownAt = null;
-function checkStale(){
-  const overlay = document.getElementById('staleOverlay'); const inOperario = document.body.classList.contains('view-operario');
-  if (!lastDataTs || !inOperario){ overlay.style.display = 'none'; return; }
-  const elapsed = Date.now() - lastDataTs.getTime();
-  if (elapsed > STALE_MS){
-    if (staleLastShownAt === null || (Date.now() - staleLastShownAt) > STALE_RENAG_MS){
-      if (currentIncidentId === null){
-        const assign = getCurrentShiftAssignment(new Date()); startIncident(assign);
-        document.getElementById('staleMessage').textContent = `${assign.operatorName} — turno ${assign.shift.toLowerCase()}: pasaron más de 3 h desde la última carga de parámetros de proceso. Completá la planilla.`;
-      }
-      overlay.style.display = 'flex'; staleLastShownAt = Date.now();
-    }
-  } else { overlay.style.display = 'none'; staleLastShownAt = null; }
-}
-document.getElementById('staleAccept').addEventListener('click', () => { document.getElementById('staleOverlay').style.display = 'none'; });
-document.getElementById('stalePlantStopped').addEventListener('click', () => {
-  document.getElementById('staleOverlay').style.display = 'none';
-  const assign = getCurrentShiftAssignment(new Date()); resolveIncident(true, assign); staleLastShownAt = Date.now();
-});
-setInterval(checkStale, 60 * 1000);
 
 /* RECORDATORIO DIARIO 6:00 */
 function todayKey(d){ return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
@@ -1080,19 +1010,27 @@ refreshParadas();
 setInterval(refreshParadas, REFRESH_MS);
 
 /* ESTADO PLC EN VIVO */
+function parsePlcNumber(v){
+  if (v === undefined || v === null || v === '') return null;
+  let s = String(v).trim();
+  if (s === '') return null;
+  // Sheets a veces exporta el CSV con coma decimal según la configuración regional — convertir a punto antes de parsear.
+  if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
+  const n = parseFloat(s);
+  return Number.isNaN(n) ? null : n;
+}
 async function fetchPlantState(){
   try{
     const res = await fetch(PLANT_STATE_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text(); const parsed = Papa.parse(text, {skipEmptyLines:true}); const map = {};
     parsed.data.forEach(row => { if (row && row[0] !== undefined) map[String(row[0]).trim()] = row[1]; });
-    const num = (v) => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
     return {
       lastUpdate: parseTimestamp(map['Última actualización']),
       marchaExpander: map['Marcha Expander'], marchaAlimExpander: map['Marcha Alim. Expander'],
       marchaLam1: map['Marcha Laminador 1'], marchaLam2: map['Marcha Laminador 2'],
-      totalizadoActual: num(map['Totalizado actual (kg)']), totalizadoMedianoche: num(map['Totalizado 00:00 de hoy (kg)']),
-      caudalBalanza: num(map['Caudal Balanza (tn/h)']),
-      corrienteExpander: num(map['Corriente Expander (A)']), temperaturaExpander: num(map['Temperatura Expander (°C)']),
+      totalizadoActual: parsePlcNumber(map['Totalizado actual (kg)']), totalizadoMedianoche: parsePlcNumber(map['Totalizado 00:00 de hoy (kg)']),
+      caudalBalanza: parsePlcNumber(map['Caudal Balanza (tn/h)']),
+      corrienteExpander: parsePlcNumber(map['Corriente Expander (A)']), temperaturaExpander: parsePlcNumber(map['Temperatura Expander (°C)']),
     };
   } catch(err){ console.error('Error leyendo datos en vivo del PLC:', err); return null; }
 }
@@ -1225,13 +1163,10 @@ async function loadData(){
     const text = await res.text(); const parsed = Papa.parse(text, {skipEmptyLines:true});
     const { rows, totalSeen, tsFailed, missing } = buildRows(parsed.data);
     if (rows.length === 0) throw new Error('sin filas válidas');
-    const previousLastTs = lastDataTs; rowsGlobal = rows;
+    rowsGlobal = rows;
     renderRitmo(rows); renderCards(rows); renderRecentTable(rows);
     renderQuality(rows, {totalSeen, tsFailed, missing}); renderHistChart(); renderCorrList(document.getElementById('labVarSelect').value); renderOperatorPie();
     lastDataTs = rows[rows.length-1].ts; document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs); setConn('ok');
-    if (currentIncidentId !== null && (!previousLastTs || lastDataTs.getTime() > previousLastTs.getTime())){ resolveIncident(false, null); }
-    checkStale();
-    const incidentsList = await fetchIncidentsRemote(); renderIncidentsFromRemote(incidentsList);
   } catch(err){ console.error(err); setConn('error', err.message); }
 }
 
