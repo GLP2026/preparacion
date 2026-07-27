@@ -68,16 +68,15 @@
   .ritmo-turno-name{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);}
   .ritmo-turno-name strong{color:var(--text); font-weight:600;}
   body.view-operario .ritmo-turno-name{font-size:16px;}
-  .ritmo-plc{padding-left:20px; border-left:1px solid var(--line-soft);}
   .ritmo-plc-meta{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:2px;}
   .ritmo-estado-general .ritmo-value{font-size:30px;}
   body.view-operario .ritmo-estado-general .ritmo-value{font-size:44px;}
   #plcEstadoGeneral.estado-marcha{color:var(--ok);}
   #plcEstadoGeneral.estado-parada{color:var(--crit);}
   #plcEstadoGeneral.estado-desconocido{color:var(--text-faint);}
-  .marchas-dots{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
   .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--crit-bg); color:var(--crit);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
+  .card-marcha-row{display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 6px;}
 
   .cards-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:24px;}
   @media (max-width:1400px){ .cards-grid{grid-template-columns:repeat(4, 1fr);} }
@@ -219,6 +218,7 @@
       <div class="ritmo-item ritmo-estado-general" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
         <span class="ritmo-label">Estado de planta</span>
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
+        <span class="ritmo-plc-meta" id="plcMeta"></span>
       </div>
       <div class="ritmo-item" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles, muestra el último dato confiable en vez de un número inestable.">
         <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
@@ -240,24 +240,6 @@
         <span class="ritmo-label">Turno actual</span>
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
-      </div>
-      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo, rojo = apagado).">
-        <span class="ritmo-label">Marchas (PLC en vivo)</span>
-        <div class="marchas-dots">
-          <span class="marcha-chip" id="marchaExpander">Expander</span>
-          <span class="marcha-chip" id="marchaAlimExpander">Alim. Expander</span>
-          <span class="marcha-chip" id="marchaLam1">Laminador 1</span>
-          <span class="marcha-chip" id="marchaLam2">Laminador 2</span>
-        </div>
-        <span class="ritmo-plc-meta" id="plcMeta"></span>
-      </div>
-      <div class="ritmo-item ritmo-plc" title="Lectura instantánea del PLC, sin procesar.">
-        <span class="ritmo-label">Corriente Expander (en vivo)</span>
-        <span class="ritmo-value" id="plcCorrienteExp">— A</span>
-      </div>
-      <div class="ritmo-item ritmo-plc" title="Lectura instantánea del PLC, sin procesar.">
-        <span class="ritmo-label">Temperatura Expander (en vivo)</span>
-        <span class="ritmo-value" id="plcTempExp">— °C</span>
       </div>
     </section>
 
@@ -500,6 +482,15 @@ const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(Object.entr
 const LIVE_PLC_PARAM_MAP = {
   expander_corriente: 'corrienteExpander',
   expander_temp: 'temperaturaExpander',
+};
+
+const CARD_MARCHA_MAP = {
+  lam1_izq: [{ key:'marchaLam1', label:'Laminador 1' }],
+  lam1_der: [{ key:'marchaLam1', label:'Laminador 1' }],
+  lam2_izq: [{ key:'marchaLam2', label:'Laminador 2' }],
+  lam2_der: [{ key:'marchaLam2', label:'Laminador 2' }],
+  expander_corriente: [{ key:'marchaAlimExpander', label:'Alim. Expander' }],
+  expander_temp: [{ key:'marchaExpander', label:'Expander' }],
 };
 
 function evalFromBands(v, bands){
@@ -773,6 +764,16 @@ function renderRitmo(rows){ renderTurnoInfo(); }
 setInterval(renderTurnoInfo, 60 * 1000);
 
 /* RENDER — cards, tabla, calidad */
+function buildMarchaRow(id){
+  const entries = CARD_MARCHA_MAP[id];
+  if (!entries) return '';
+  const chips = entries.map(e => {
+    const val = latestPlcState ? latestPlcState[e.key] : null;
+    const isOn = String(val) === '1';
+    return `<span class="marcha-chip${isOn?' on':''}">${e.label}</span>`;
+  }).join('');
+  return `<div class="card-marcha-row">${chips}</div>`;
+}
 function renderCards(rows){
   const grid = document.getElementById('cardsGrid');
   const last = rows[rows.length-1];
@@ -793,7 +794,7 @@ function renderCards(rows){
     const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
-    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div><div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
+    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
       const sel = document.getElementById('histParamSelect'); if (sel){ sel.value = id; renderHistChart(); }
@@ -1091,7 +1092,6 @@ async function fetchPlantState(){
     };
   } catch(err){ console.error('Error leyendo datos en vivo del PLC:', err); return null; }
 }
-function setMarchaChip(id, val){ const el = document.getElementById(id); if (!el) return; el.classList.toggle('on', String(val) === '1'); }
 
 function computeRitmoDesdeDelta(totalizadoActual, lastUpdate){
   if (totalizadoActual === null || !lastUpdate) return null;
@@ -1138,23 +1138,19 @@ function saveLastGoodRitmo(value, ts){
 function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const projEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
-  const corrEl = document.getElementById('plcCorrienteExp'); const tempEl = document.getElementById('plcTempExp');
   const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
   const ritmoLabelEl = document.getElementById('plcRitmoLabel');
   if (!metaEl) return;
 
   if (!state || !state.lastUpdate){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
-    projEl.textContent = '— tn'; projDiaEl.textContent = '— tn'; corrEl.textContent = '— A'; tempEl.textContent = '— °C';
-    ['marchaExpander','marchaAlimExpander','marchaLam1','marchaLam2'].forEach(id => setMarchaChip(id, '0'));
+    projEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
     if (estadoGeneralEl){ estadoGeneralEl.textContent = 'SIN DATO'; estadoGeneralEl.className = 'ritmo-value estado-desconocido'; }
     return;
   }
 
   const stale = (Date.now() - state.lastUpdate.getTime()) > PLC_STALE_MS;
   metaEl.textContent = `Últ. dato PLC: ${fmtTime(state.lastUpdate)}` + (stale ? ' (sin señal reciente)' : '');
-  setMarchaChip('marchaExpander', state.marchaExpander); setMarchaChip('marchaAlimExpander', state.marchaAlimExpander);
-  setMarchaChip('marchaLam1', state.marchaLam1); setMarchaChip('marchaLam2', state.marchaLam2);
 
   let ritmoActual = computeRitmoDesdeDelta(state.totalizadoActual, state.lastUpdate);
   let ritmoLabelText = 'Ritmo actual (PLC, tn/h)';
@@ -1179,9 +1175,6 @@ function renderPlantState(state){
 
   if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){ prodEl.textContent = `${((state.totalizadoActual - state.totalizadoMedianoche) / 1000).toFixed(1)} tn`; }
   else { prodEl.textContent = '— tn'; }
-
-  corrEl.textContent = (state.corrienteExpander !== null) ? `${state.corrienteExpander} A` : '— A';
-  tempEl.textContent = (state.temperaturaExpander !== null) ? `${state.temperaturaExpander} °C` : '— °C';
 
   if (estadoGeneralEl){
     if (stale){
