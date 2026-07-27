@@ -143,11 +143,11 @@
   .dot-ok{background:var(--ok);} .dot-warn{background:var(--warn);} .dot-crit{background:var(--crit);} .dot-nodata,.dot-unset{background:var(--nodata);}
   .table-wrap{overflow-x:auto;}
 
-  #qualityList, #incidentsList{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
-  #qualityList li, #incidentsList li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
-  #qualityList li:last-child, #incidentsList li:last-child{border-bottom:none;}
-  #qualityList .qty, #incidentsList .qty{font-family:'IBM Plex Mono',monospace; color:var(--text);}
-  #qualityList .qty.warn-count, #incidentsList .qty.warn-count{color:var(--warn);}
+  #qualityList, #incidentsList, #paradasSummary{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--text-dim);}
+  #qualityList li, #incidentsList li, #paradasSummary li{padding:7px 0; border-bottom:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:10px;}
+  #qualityList li:last-child, #incidentsList li:last-child, #paradasSummary li:last-child{border-bottom:none;}
+  #qualityList .qty, #incidentsList .qty, #paradasSummary .qty{font-family:'IBM Plex Mono',monospace; color:var(--text);}
+  #qualityList .qty.warn-count, #incidentsList .qty.warn-count, #paradasSummary .qty.warn-count{color:var(--warn);}
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-wrap:wrap;}
   .hist-controls select{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
@@ -218,11 +218,11 @@
         <span class="ritmo-label">Estado de planta</span>
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
       </div>
-      <div class="ritmo-item" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles (por ejemplo, justo después de medianoche), muestra el último dato confiable en vez de un número inestable, hasta que haya datos nuevos reales del día en curso.">
+      <div class="ritmo-item" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles, muestra el último dato confiable en vez de un número inestable.">
         <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
       </div>
-      <div class="ritmo-item" title="Ritmo actual sostenido durante 8 horas seguidas — no es un promedio del turno, es una proyección: 'si siguiera así'.">
+      <div class="ritmo-item" title="Ritmo actual sostenido durante 8 horas seguidas — proyección, no un promedio del turno.">
         <span class="ritmo-label">Proyección de turno (8 h)</span>
         <span class="ritmo-value" id="ritmoProj">— tn</span>
       </div>
@@ -230,16 +230,16 @@
         <span class="ritmo-label">Proyección diaria (24 h)</span>
         <span class="ritmo-value" id="ritmoProjDia">— tn</span>
       </div>
-      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy hasta el último dato recibido. Este sí arranca en 0 cada día — dato real, no proyectado.">
+      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy. Dato real, no proyectado.">
         <span class="ritmo-label">Producción hoy (real, PLC)</span>
         <span class="ritmo-value" id="plcProdHoy">— tn</span>
       </div>
-      <div class="ritmo-item ritmo-turno" title="Operario y supervisor de turno según el rotativo de 28 días, calculado a partir de la hora actual — no depende del PLC.">
+      <div class="ritmo-item ritmo-turno" title="Operario y supervisor de turno según el rotativo de 28 días.">
         <span class="ritmo-label">Turno actual</span>
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
       </div>
-      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo, rojo = apagado). Es el dato base que se usa para calcular 'Estado de planta'.">
+      <div class="ritmo-item ritmo-plc" title="Estado crudo de cada marcha según el PLC (verde = activo, rojo = apagado).">
         <span class="ritmo-label">Marchas (PLC en vivo)</span>
         <div class="marchas-dots">
           <span class="marcha-chip" id="marchaExpander">Expander</span>
@@ -272,6 +272,7 @@
       <nav class="supervisor-nav">
         <button class="nav-item active" data-panel="analisis">Análisis de variables</button>
         <button class="nav-item" data-panel="operarios">Gestión de operarios</button>
+        <button class="nav-item" data-panel="paradas">Registro de paradas</button>
         <button class="nav-item nav-config" id="navConfigBtn">⚙ Configuración de umbrales</button>
       </nav>
 
@@ -344,6 +345,24 @@
         <div class="panel">
           <h2>Cargas por operario (desde 01/01/2026)</h2>
           <div id="operatorPieSupervisor"></div>
+        </div>
+      </div>
+
+      <div class="content-panel operarios-grid" data-content="paradas">
+        <div class="panel">
+          <h2>Resumen de paradas — hoy</h2>
+          <ul id="paradasSummary"><li><span>Cargando…</span></li></ul>
+        </div>
+        <div class="panel">
+          <h2>Eventos recientes</h2>
+          <div class="table-wrap">
+            <table id="paradasTable">
+              <thead>
+                <tr><th>Fecha / hora</th><th>Evento</th><th>Motivo</th><th>Duración</th><th>Turno</th></tr>
+              </thead>
+              <tbody id="paradasTbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -503,6 +522,8 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOe
 const INCIDENTS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1hufIUg-iHYrhRjCMEMPCoNqGhGo9PdUi6bVMAKjKoquyZuEcFkk-kLcz6DAjKqodzUqoEhpzbjIi/pub?output=csv";
 const INCIDENTS_WRITE_URL = "https://script.google.com/macros/s/AKfycbzYvWmwkQZfRlZjYS_ZNUuUVnm_biGn53DhyNXE4Eum_to21x9w3itqRVyBqTLYr7-0pg/exec";
 const PLANT_STATE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQqQTUptRxTopUF9Umqhjg16jaUQWJqAhHMEL8apN4ny413Ht4_WdpQ6uS81DsWVVVo42-0ljHJzRL/pub?output=csv";
+const PARADAS_WRITE_URL = "https://script.google.com/macros/s/AKfycbyH8w5hpXITFagFMoODEePF9wWZhnzIoHWdLF31aV7e72UY_ORZwJDAPODtbY4O2CRZfg/exec";
+const PARADAS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-cBYqTSZAfs7Nmro3qu3E6rGsxHVRfL71E95S4Cfs94GgHWQHaa-Sf5Z-JxWblFJdX22RP8FMFXxw/pub?output=csv";
 const PLC_STALE_MS = 5 * 60 * 1000;
 const REFRESH_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 30;
@@ -521,6 +542,7 @@ const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
 const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
 const RITMO_MIN_DELTA_SEC = 5;
 const RITMO_MAX_DELTA_SEC = 3600;
+const PARADA_STATE_KEY = 'glp_parada_last_estado_prep';
 
 let rowsGlobal = [];
 let labRows = [];
@@ -964,6 +986,99 @@ function checkSiloReminder(){
 document.getElementById('siloAccept').addEventListener('click', () => { localStorage.setItem(SILO_KEY, todayKey(new Date())); document.getElementById('siloOverlay').style.display = 'none'; });
 checkSiloReminder(); setInterval(checkSiloReminder, 60 * 1000);
 
+/* REGISTRO DE PARADAS */
+async function postParadaEvent(evento, criterio, duracionMin){
+  try{
+    const assign = getCurrentShiftAssignment(new Date());
+    await fetch(PARADAS_WRITE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        evento,
+        criterio: criterio || '',
+        duracionMin: duracionMin != null ? Math.round(duracionMin*10)/10 : null,
+        operador: assign.operatorName,
+        turno: assign.shift
+      })
+    });
+  } catch(err){ console.error('No se pudo registrar el evento de parada:', err); }
+}
+function checkParadaTransition(enMarcha, criterioTexto){
+  let prev = null;
+  try { prev = JSON.parse(localStorage.getItem(PARADA_STATE_KEY) || 'null'); } catch(e){ prev = null; }
+  const nowTs = Date.now();
+  const nuevoEstado = enMarcha ? 'EN_MARCHA' : 'PARADA';
+
+  if (!prev){
+    localStorage.setItem(PARADA_STATE_KEY, JSON.stringify({ estado: nuevoEstado, since: nowTs }));
+    return;
+  }
+  if (prev.estado !== nuevoEstado){
+    if (nuevoEstado === 'PARADA'){
+      postParadaEvent('INICIO_PARADA', criterioTexto, null);
+    } else {
+      const duracionMin = (nowTs - prev.since) / 60000;
+      postParadaEvent('FIN_PARADA', criterioTexto, duracionMin);
+    }
+    localStorage.setItem(PARADA_STATE_KEY, JSON.stringify({ estado: nuevoEstado, since: nowTs }));
+  }
+}
+async function fetchParadasRemote(){
+  try{
+    const res = await fetch(PARADAS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text(); const parsed = Papa.parse(text, {skipEmptyLines:true}); const raw = parsed.data; const list = [];
+    for (let r=1; r<raw.length; r++){
+      const row = raw[r]; if (!row || row.every(c=>!c)) continue;
+      const ts = parseTimestamp(row[0]); if (!ts) continue;
+      list.push({
+        ts,
+        evento: row[1] || '',
+        criterio: row[2] || '',
+        duracionMin: (row[3] !== undefined && row[3] !== '') ? parseFloat(row[3]) : null,
+        operador: row[4] || '',
+        turno: row[5] || ''
+      });
+    }
+    list.sort((a,b)=>a.ts-b.ts); return list;
+  } catch(err){ console.error('Error leyendo registro de paradas:', err); return null; }
+}
+function renderParadas(list){
+  const summaryEl = document.getElementById('paradasSummary');
+  const tbodyEl = document.getElementById('paradasTbody');
+  if (!summaryEl) return;
+  if (list === null){
+    summaryEl.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>';
+    tbodyEl.innerHTML = '';
+    return;
+  }
+  const today = todayKey(new Date());
+  const iniciosHoy = list.filter(e => e.evento === 'INICIO_PARADA' && todayKey(e.ts) === today);
+  const finsHoy = list.filter(e => e.evento === 'FIN_PARADA' && todayKey(e.ts) === today);
+  const tiempoTotalMin = finsHoy.reduce((s,e)=> s + (e.duracionMin || 0), 0);
+
+  let paradaEnCursoMin = null;
+  if (list.length){
+    const ultimo = list[list.length-1];
+    if (ultimo.evento === 'INICIO_PARADA') paradaEnCursoMin = (Date.now() - ultimo.ts.getTime()) / 60000;
+  }
+
+  summaryEl.innerHTML = `
+    <li><span>Paradas hoy</span><span class="qty">${iniciosHoy.length}</span></li>
+    <li><span>Tiempo detenido hoy (paradas ya cerradas)</span><span class="qty">${tiempoTotalMin.toFixed(0)} min</span></li>
+    ${paradaEnCursoMin !== null ? `<li><span>Parada en curso</span><span class="qty warn-count">${paradaEnCursoMin.toFixed(0)} min y sigue</span></li>` : ''}
+  `;
+
+  const recent = list.slice(-15).reverse();
+  tbodyEl.innerHTML = recent.length ? recent.map(e => {
+    const tag = e.evento === 'INICIO_PARADA' ? '🔴 Inicio de parada' : (e.evento === 'FIN_PARADA' ? '🟢 Fin de parada' : e.evento);
+    const dur = (e.duracionMin != null) ? `${e.duracionMin.toFixed(0)} min` : '—';
+    return `<tr><td>${fmtTime(e.ts)}</td><td>${tag}</td><td>${e.criterio}</td><td>${dur}</td><td>${e.turno}</td></tr>`;
+  }).join('') : '<tr><td colspan="5">Sin eventos registrados todavía.</td></tr>';
+}
+function refreshParadas(){ fetchParadasRemote().then(renderParadas); }
+refreshParadas();
+setInterval(refreshParadas, REFRESH_MS);
+
 /* ESTADO PLC EN VIVO */
 async function fetchPlantState(){
   try{
@@ -1081,8 +1196,10 @@ function renderPlantState(state){
       const laminadorEnMarcha = (String(state.marchaLam1) === '1' || String(state.marchaLam2) === '1');
       const caudalConFlujo = (state.caudalBalanza !== null && state.caudalBalanza > CAUDAL_MIN_TN_H);
       const enMarcha = laminadorEnMarcha && caudalConFlujo;
+      const criterioTexto = (!laminadorEnMarcha && !caudalConFlujo) ? 'Laminador y caudal' : (!laminadorEnMarcha ? 'Laminador apagado' : (!caudalConFlujo ? 'Sin caudal' : 'OK'));
       estadoGeneralEl.textContent = enMarcha ? '🟢 EN MARCHA' : '🔴 PARADA';
       estadoGeneralEl.className = 'ritmo-value ' + (enMarcha ? 'estado-marcha' : 'estado-parada');
+      checkParadaTransition(enMarcha, criterioTexto);
     }
   }
 }
