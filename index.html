@@ -529,7 +529,7 @@ const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
 const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
 const RITMO_MIN_DELTA_SEC = 5;
 const RITMO_MAX_DELTA_SEC = 3600;
-const PARADA_STATE_KEY = 'glp_parada_last_estado_prep';
+
 
 let rowsGlobal = [];
 let labRows = [];
@@ -935,43 +935,7 @@ function checkSiloReminder(){
 document.getElementById('siloAccept').addEventListener('click', () => { localStorage.setItem(SILO_KEY, todayKey(new Date())); document.getElementById('siloOverlay').style.display = 'none'; });
 checkSiloReminder(); setInterval(checkSiloReminder, 60 * 1000);
 
-/* REGISTRO DE PARADAS */
-async function postParadaEvent(evento, criterio, duracionMin){
-  try{
-    const assign = getCurrentShiftAssignment(new Date());
-    await fetch(PARADAS_WRITE_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({
-        evento,
-        criterio: criterio || '',
-        duracionMin: duracionMin != null ? Math.round(duracionMin*10)/10 : null,
-        operador: assign.operatorName,
-        turno: assign.shift
-      })
-    });
-  } catch(err){ console.error('No se pudo registrar el evento de parada:', err); }
-}
-function checkParadaTransition(enMarcha, criterioTexto){
-  let prev = null;
-  try { prev = JSON.parse(localStorage.getItem(PARADA_STATE_KEY) || 'null'); } catch(e){ prev = null; }
-  const nowTs = Date.now();
-  const nuevoEstado = enMarcha ? 'EN_MARCHA' : 'PARADA';
 
-  if (!prev){
-    localStorage.setItem(PARADA_STATE_KEY, JSON.stringify({ estado: nuevoEstado, since: nowTs }));
-    return;
-  }
-  if (prev.estado !== nuevoEstado){
-    if (nuevoEstado === 'PARADA'){
-      postParadaEvent('INICIO_PARADA', criterioTexto, null);
-    } else {
-      const duracionMin = (nowTs - prev.since) / 60000;
-      postParadaEvent('FIN_PARADA', criterioTexto, duracionMin);
-    }
-    localStorage.setItem(PARADA_STATE_KEY, JSON.stringify({ estado: nuevoEstado, since: nowTs }));
-  }
-}
 async function fetchParadasRemote(){
   try{
     const res = await fetch(PARADAS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1184,10 +1148,8 @@ function renderPlantState(state){
       const laminadorEnMarcha = (String(state.marchaLam1) === '1' || String(state.marchaLam2) === '1');
       const caudalConFlujo = (state.caudalBalanza !== null && state.caudalBalanza > CAUDAL_MIN_TN_H);
       const enMarcha = laminadorEnMarcha && caudalConFlujo;
-      const criterioTexto = (!laminadorEnMarcha && !caudalConFlujo) ? 'Laminador y caudal' : (!laminadorEnMarcha ? 'Laminador apagado' : (!caudalConFlujo ? 'Sin caudal' : 'OK'));
       estadoGeneralEl.textContent = enMarcha ? '🟢 EN MARCHA' : '🔴 PARADA';
       estadoGeneralEl.className = 'ritmo-value ' + (enMarcha ? 'estado-marcha' : 'estado-parada');
-      checkParadaTransition(enMarcha, criterioTexto);
     }
   }
 }
