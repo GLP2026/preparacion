@@ -220,16 +220,17 @@
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
         <span class="ritmo-plc-meta" id="plcMeta"></span>
       </div>
-      <div class="ritmo-item" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles, muestra el último dato confiable en vez de un número inestable.">
+      <div class="ritmo-item" title="Variación real del totalizador entre dos lecturas cercanas del PLC, llevada a tn/h. Abajo se muestra la diferencia contra el Caudal Balanza instantáneo que manda el PLC — sirve para detectar si ese sensor se está desviando del dato real.">
         <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
+        <span class="ritmo-plc-meta" id="plcRitmoDiff"></span>
       </div>
-      <div class="ritmo-item" title="Ritmo actual sostenido durante 8 horas seguidas — proyección, no un promedio del turno.">
-        <span class="ritmo-label">Proyección de turno (8 h)</span>
+      <div class="ritmo-item" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Dato real, no proyección.">
+        <span class="ritmo-label">Poroto procesado en turno</span>
         <span class="ritmo-value" id="ritmoProj">— tn</span>
       </div>
-      <div class="ritmo-item" title="Ritmo actual sostenido durante 24 horas seguidas — proyección, no un dato real de todo el día.">
-        <span class="ritmo-label">Proyección diaria (24 h)</span>
+      <div class="ritmo-item" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59. Combina dato real + proyección del resto del día.">
+        <span class="ritmo-label">Proyección diaria</span>
         <span class="ritmo-value" id="ritmoProjDia">— tn</span>
       </div>
       <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy. Dato real, no proyectado.">
@@ -511,7 +512,6 @@ const GENERIC_ACTION = { ok:'', nodata:'', unset:'', warn:'Fuera del rango ópti
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQACB1i9rLcOeekMDuHD8D0HyP-rdDuhX9Z02vrkKG7lrsdMXNfDEwvpnvuJ5zJ-GZkUPtF_CNDErUy/pub?gid=990187587&single=true&output=csv";
 const PLANT_STATE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQqQTUptRxTopUF9Umqhjg16jaUQWJqAhHMEL8apN4ny413Ht4_WdpQ6uS81DsWVVVo42-0ljHJzRL/pub?output=csv";
-const PARADAS_WRITE_URL = "https://script.google.com/macros/s/AKfycbyH8w5hpXITFagFMoODEePF9wWZhnzIoHWdLF31aV7e72UY_ORZwJDAPODtbY4O2CRZfg/exec";
 const PARADAS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-cBYqTSZAfs7Nmro3qu3E6rGsxHVRfL71E95S4Cfs94GgHWQHaa-Sf5Z-JxWblFJdX22RP8FMFXxw/pub?output=csv";
 const PLC_STALE_MS = 5 * 60 * 1000;
 const REFRESH_MS = 5 * 60 * 1000;
@@ -529,7 +529,6 @@ const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
 const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
 const RITMO_MIN_DELTA_SEC = 5;
 const RITMO_MAX_DELTA_SEC = 3600;
-
 
 let rowsGlobal = [];
 let labRows = [];
@@ -935,7 +934,7 @@ function checkSiloReminder(){
 document.getElementById('siloAccept').addEventListener('click', () => { localStorage.setItem(SILO_KEY, todayKey(new Date())); document.getElementById('siloOverlay').style.display = 'none'; });
 checkSiloReminder(); setInterval(checkSiloReminder, 60 * 1000);
 
-
+/* REGISTRO DE PARADAS (solo lectura — la detección corre en Apps Script) */
 async function fetchParadasRemote(){
   try{
     const res = await fetch(PARADAS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1050,7 +1049,9 @@ async function fetchPlantState(){
       lastUpdate: parseTimestamp(map['Última actualización']),
       marchaExpander: map['Marcha Expander'], marchaAlimExpander: map['Marcha Alim. Expander'],
       marchaLam1: map['Marcha Laminador 1'], marchaLam2: map['Marcha Laminador 2'],
-      totalizadoActual: parsePlcNumber(map['Totalizado actual (kg)']), totalizadoMedianoche: parsePlcNumber(map['Totalizado 00:00 de hoy (kg)']),
+      totalizadoActual: parsePlcNumber(map['Totalizado actual (kg)']),
+      totalizadoMedianoche: parsePlcNumber(map['Totalizado 00:00 de hoy (kg)']),
+      totalizadoInicioTurno: parsePlcNumber(map['Totalizado inicio turno (kg)']),
       caudalBalanza: parsePlcNumber(map['Caudal Balanza (tn/h)']),
       corrienteExpander: parsePlcNumber(map['Corriente Expander (A)']), temperaturaExpander: parsePlcNumber(map['Temperatura Expander (°C)']),
     };
@@ -1101,14 +1102,16 @@ function saveLastGoodRitmo(value, ts){
 
 function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
-  const ritmoEl = document.getElementById('plcRitmoActual'); const projEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
+  const ritmoEl = document.getElementById('plcRitmoActual'); const ritmoDiffEl = document.getElementById('plcRitmoDiff');
+  const turnoTnEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
   const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
   const ritmoLabelEl = document.getElementById('plcRitmoLabel');
   if (!metaEl) return;
 
   if (!state || !state.lastUpdate){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
-    projEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
+    if (ritmoDiffEl) ritmoDiffEl.textContent = '';
+    turnoTnEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
     if (estadoGeneralEl){ estadoGeneralEl.textContent = 'SIN DATO'; estadoGeneralEl.className = 'ritmo-value estado-desconocido'; }
     return;
   }
@@ -1134,11 +1137,44 @@ function renderPlantState(state){
 
   if (ritmoLabelEl) ritmoLabelEl.textContent = ritmoLabelText;
   ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
-  projEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*8).toFixed(0)} tn` : '— tn';
-  projDiaEl.textContent = (ritmoActual !== null) ? `${(ritmoActual*24).toFixed(0)} tn` : '— tn';
 
-  if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){ prodEl.textContent = `${((state.totalizadoActual - state.totalizadoMedianoche) / 1000).toFixed(1)} tn`; }
-  else { prodEl.textContent = '— tn'; }
+  // Diferencia contra el Caudal Balanza instantáneo del PLC
+  if (ritmoDiffEl){
+    if (ritmoActual !== null && state.caudalBalanza !== null && state.caudalBalanza !== 0){
+      const diffTnh = ritmoActual - state.caudalBalanza;
+      const diffPct = (diffTnh / state.caudalBalanza) * 100;
+      const signo = diffTnh >= 0 ? '+' : '';
+      ritmoDiffEl.textContent = `Δ vs PLC: ${signo}${diffTnh.toFixed(1)} tn/h (${signo}${diffPct.toFixed(0)}%)`;
+    } else {
+      ritmoDiffEl.textContent = '';
+    }
+  }
+
+  // Poroto procesado en turno (dato real, no proyección)
+  if (state.totalizadoActual !== null && state.totalizadoInicioTurno !== null){
+    turnoTnEl.textContent = `${((state.totalizadoActual - state.totalizadoInicioTurno)/1000).toFixed(1)} tn`;
+  } else {
+    turnoTnEl.textContent = '— tn';
+  }
+
+  // Producción hoy (real) y proyección diaria (real + proyección del resto del día)
+  let producidoHoyTn = null;
+  if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){
+    producidoHoyTn = (state.totalizadoActual - state.totalizadoMedianoche) / 1000;
+    prodEl.textContent = `${producidoHoyTn.toFixed(1)} tn`;
+  } else {
+    prodEl.textContent = '— tn';
+  }
+
+  if (producidoHoyTn !== null && ritmoActual !== null){
+    const medianoche = new Date(state.lastUpdate.getFullYear(), state.lastUpdate.getMonth(), state.lastUpdate.getDate(), 0, 0, 0);
+    const horasTranscurridas = (state.lastUpdate.getTime() - medianoche.getTime()) / 3600000;
+    const horasRestantes = Math.max(0, 24 - horasTranscurridas);
+    const proyeccionDiaria = producidoHoyTn + (ritmoActual * horasRestantes);
+    projDiaEl.textContent = `${proyeccionDiaria.toFixed(0)} tn`;
+  } else {
+    projDiaEl.textContent = '— tn';
+  }
 
   if (estadoGeneralEl){
     if (stale){
