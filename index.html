@@ -59,7 +59,7 @@
   #loginCancel, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
-  /* ===== BANNER SUPERIOR REDISEÑADO ===== */
+  /* ===== BANNER SUPERIOR ===== */
   .ritmo-banner{
     display:grid; grid-template-columns:230px 1fr auto; gap:18px; align-items:stretch;
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
@@ -111,6 +111,21 @@
   }
   /* ===== FIN BANNER SUPERIOR ===== */
 
+  /* ===== TRANSICIONES SUAVES ===== */
+  @media (prefers-reduced-motion: no-preference){
+    .card-value.value-flash{ animation: valueFlash 0.6s ease-out; }
+    .ritmo-hero-value.value-flash, .ritmo-stat-value.value-flash{ animation: valueFlashAccent 0.6s ease-out; }
+  }
+  @keyframes valueFlash{
+    0%{ transform:scale(1.08); color:var(--accent); }
+    100%{ transform:scale(1); color:var(--text); }
+  }
+  @keyframes valueFlashAccent{
+    0%{ transform:scale(1.08); }
+    100%{ transform:scale(1); }
+  }
+  /* ===== FIN TRANSICIONES ===== */
+
   .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--crit-bg); color:var(--crit);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
   .card-marcha-row{display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 6px;}
@@ -136,7 +151,7 @@
   .pill-crit{background:var(--crit-bg); color:var(--crit); font-weight:600;} .pill-nodata, .pill-unset{background:var(--nodata-bg); color:var(--text-faint);}
   .card-value{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:23px; margin:3px 0 6px;}
   .card-value .unit{font-size:12px; font-weight:400; color:var(--text-dim); margin-left:3px;}
-  .trend-svg{width:100%; height:50px; display:block;}
+  .trend-svg{width:100%; height:56px; display:block;}
   .band-ok{fill:var(--ok-bg);} .band-warn{fill:var(--warn-bg);} .band-crit{fill:var(--crit-bg);}
   .trend-line{fill:none; stroke:var(--text); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:0.85;}
   .dot-last{fill:var(--accent); stroke:var(--bg); stroke-width:1.5;}
@@ -325,6 +340,11 @@
                 <option value="90">Últimos 90 días</option>
                 <option value="all">Todo el histórico</option>
               </select>
+              <label for="histDesde">Desde:</label>
+              <input type="date" id="histDesde">
+              <label for="histHasta">Hasta:</label>
+              <input type="date" id="histHasta">
+              <button type="button" id="histFiltrarBtn" class="apply-btn">Aplicar</button>
             </div>
             <div id="histChartContainer"></div>
             <div class="hist-axis-labels" id="histAxisLabels"></div>
@@ -567,7 +587,6 @@ const PARADAS_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-cB
 const PLC_STALE_MS = 5 * 60 * 1000;
 const REFRESH_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 30;
-const OPERATOR_TREND_POINTS = 4;
 const RECENT_ROWS = 8;
 const QUALITY_WINDOW = 50;
 const AUTH_KEY = 'glp_supervisor_auth';
@@ -587,6 +606,7 @@ let latestPlcState = null;
 let lastDataTs = null;
 let paradasListGlobal = [];
 let paradasFetchFailed = false;
+let prevCardValues = {};
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -776,7 +796,7 @@ function fmtValue(v, cfg){ return v === null ? '—' : v.toFixed(cfg.decimals); 
 function statusText(s){ return {ok:'NORMAL', warn:'⚠ ADVERTENCIA', crit:'⛔ CRÍTICO', nodata:'SIN DATO', unset:'SIN CLASIFICAR'}[s] || 'SIN DATO'; }
 function scaleY(v, min, max, h, pad=6){ const c = Math.max(min, Math.min(max, v)); const ratio = (c - min) / (max - min); return h - pad - ratio * (h - 2*pad); }
 
-function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=50){
+function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=56){
   const W = viewW, H = viewH; const [min, max] = cfg.domain;
   const bands = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{ const y1 = scaleY(b.to, min, max, H); const y2 = scaleY(b.from, min, max, H); return `<rect x="0" y="${y1.toFixed(1)}" width="${W}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`; }).join('');
   const valid = points.filter(p=>p.v !== null); let line = '', dot = '';
@@ -932,6 +952,7 @@ function buildMarchaRow(id){
 function renderCards(rows){
   const grid = document.getElementById('cardsGrid');
   const last = rows[rows.length-1];
+  const isFirstRender = grid.children.length === 0;
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
     let currentVal = last ? last.values[id] : null;
@@ -946,10 +967,10 @@ function renderCards(rows){
     }
 
     const res = evalFromBands(currentVal, cfg.bands);
-    const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
-    const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
+    const pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
-    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
+    const changed = !isFirstRender && prevCardValues[id] !== undefined && prevCardValues[id] !== currentVal && currentVal !== null;
+    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value${changed?' value-flash':''}">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, pts, 'trend-main')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
       const sel = document.getElementById('histParamSelect'); if (sel){ sel.value = id; renderHistChart(); }
@@ -957,6 +978,7 @@ function renderCards(rows){
       const chartEl = document.getElementById('histChartContainer'); if (chartEl) chartEl.scrollIntoView({behavior:'smooth', block:'center'});
     });
     grid.appendChild(card);
+    prevCardValues[id] = currentVal;
   }
 }
 function statusDot(cfg, v){ const s = evalFromBands(v, cfg.bands).status; return `<span class="dot dot-${s}"></span>`; }
@@ -974,10 +996,24 @@ function renderQuality(rows, parseStats){
 
 /* RENDER — históricos */
 function populateHistSelect(){ const sel = document.getElementById('histParamSelect'); sel.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join(''); }
+function getHistFilteredRange(){
+  const rangeVal = document.getElementById('histRangeSelect').value;
+  const desdeVal = document.getElementById('histDesde').value;
+  const hastaVal = document.getElementById('histHasta').value;
+  if (desdeVal || hastaVal){
+    const desde = desdeVal ? new Date(desdeVal + 'T00:00:00') : new Date(0);
+    const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59') : new Date();
+    return { desde, hasta };
+  }
+  const now = new Date();
+  if (rangeVal === 'all') return { desde: new Date(0), hasta: now };
+  const days = parseInt(rangeVal, 10);
+  const desde = new Date(now.getTime() - days*24*3600*1000);
+  return { desde, hasta: now };
+}
 function getHistFilteredRows(){
-  const rangeVal = document.getElementById('histRangeSelect').value; if (rangeVal === 'all') return rowsGlobal;
-  const days = parseInt(rangeVal, 10); const cutoff = new Date(Date.now() - days*24*3600*1000);
-  return rowsGlobal.filter(r => r.ts >= cutoff);
+  const { desde, hasta } = getHistFilteredRange();
+  return rowsGlobal.filter(r => r.ts >= desde && r.ts <= hasta);
 }
 function renderHistChart(){
   const id = document.getElementById('histParamSelect').value; const cfg = PARAMS[id];
@@ -1014,7 +1050,12 @@ function renderCorrList(labKey){
   }).join('');
 }
 document.getElementById('histParamSelect').addEventListener('change', renderHistChart);
-document.getElementById('histRangeSelect').addEventListener('change', renderHistChart);
+document.getElementById('histRangeSelect').addEventListener('change', () => {
+  document.getElementById('histDesde').value = '';
+  document.getElementById('histHasta').value = '';
+  renderHistChart();
+});
+document.getElementById('histFiltrarBtn').addEventListener('click', renderHistChart);
 document.getElementById('labVarSelect').addEventListener('change', () => renderCorrList(document.getElementById('labVarSelect').value));
 document.getElementById('labFileInput').addEventListener('change', async (e) => {
   const file = e.target.files[0]; if (!file) return;
@@ -1295,7 +1336,9 @@ function renderPlantState(state){
   }
 
   if (ritmoLabelEl) ritmoLabelEl.textContent = ritmoLabelText;
-  ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
+  const nuevoRitmoTxt = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
+  if (ritmoEl.textContent !== nuevoRitmoTxt && ritmoEl.textContent !== '— tn/h'){ ritmoEl.classList.remove('value-flash'); void ritmoEl.offsetWidth; ritmoEl.classList.add('value-flash'); }
+  ritmoEl.textContent = nuevoRitmoTxt;
 
   if (ritmoDiffEl){
     if (ritmoActual !== null && state.caudalBalanza !== null && state.caudalBalanza !== 0){
