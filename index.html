@@ -154,6 +154,12 @@
   .hist-controls button.apply-btn:hover{opacity:0.9;}
   .trend-full{width:100%; height:300px; display:block;}
   .hist-axis-labels{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:4px;}
+  .hist-range-stats{
+    display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:12px; padding:12px 14px;
+    background:var(--panel-alt); border:1px solid var(--line); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);
+  }
+  .hist-range-stats strong{ color:var(--accent); }
 
   .lab-upload-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
   .upload-btn{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:7px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
@@ -220,7 +226,7 @@
         <span class="ritmo-value" id="plcEstadoGeneral">—</span>
         <span class="ritmo-plc-meta" id="plcMeta"></span>
       </div>
-      <div class="ritmo-item" title="Variación real del totalizador entre dos lecturas cercanas del PLC, llevada a tn/h. Abajo se muestra la diferencia contra el Caudal Balanza instantáneo que manda el PLC — sirve para detectar si ese sensor se está desviando del dato real.">
+      <div class="ritmo-item" title="Variación real del totalizador entre dos lecturas cercanas del PLC, llevada a tn/h. Abajo se muestra la diferencia contra el Caudal Balanza instantáneo que manda el PLC.">
         <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
         <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
         <span class="ritmo-plc-meta" id="plcRitmoDiff"></span>
@@ -229,7 +235,7 @@
         <span class="ritmo-label">Poroto procesado en turno</span>
         <span class="ritmo-value" id="ritmoProj">— tn</span>
       </div>
-      <div class="ritmo-item" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59. Combina dato real + proyección del resto del día.">
+      <div class="ritmo-item" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59.">
         <span class="ritmo-label">Proyección diaria</span>
         <span class="ritmo-value" id="ritmoProjDia">— tn</span>
       </div>
@@ -278,6 +284,7 @@
             </div>
             <div id="histChartContainer"></div>
             <div class="hist-axis-labels" id="histAxisLabels"></div>
+            <div class="hist-range-stats" id="histRangeStats"><span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span></div>
           </div>
           <div class="panel">
             <h2>Registros recientes</h2>
@@ -736,21 +743,129 @@ function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=50){
   } else if (valid.length === 1){ const y = scaleY(valid[0].v, min, max, H); dot = `<circle cx="${W/2}" cy="${y.toFixed(1)}" r="3.2" class="dot-last"></circle>`; }
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg ${extraClass}" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
 }
+
+/* ===== Gráfico histórico con selección de rango arrastrable ===== */
+let histRangeState = null;
+
 function drawTrendSVGWithAxis(cfg, points, viewW=1000, viewH=300){
   const W = viewW, H = viewH, leftPad = 46; const chartW = W - leftPad; const [min, max] = cfg.domain;
   const bands = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{ const y1 = scaleY(b.to, min, max, H); const y2 = scaleY(b.from, min, max, H); return `<rect x="${leftPad}" y="${y1.toFixed(1)}" width="${chartW}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`; }).join('');
-  const valid = points.filter(p=>p.v !== null); let line = '', lastDot = '', hoverDots = '';
+  const valid = points.filter(p=>p.v !== null);
+  let line = '', lastDot = '', hoverDots = '';
+  let coordsArr = [];
   if (valid.length > 0){
     const n = valid.length;
     const coords = valid.map((p,i)=>[ n > 1 ? leftPad + (i/(n-1))*chartW : leftPad + chartW/2, scaleY(p.v, min, max, H) ]);
+    coordsArr = valid.map((p,i)=>({ x: coords[i][0], y: coords[i][1], ts: p.ts, v: p.v }));
     if (n > 1) line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
     const last = coords[coords.length-1]; lastDot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" class="dot-last"></circle>`;
-    hoverDots = valid.map((p,i)=>{ const [x,y] = coords[i]; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="transparent" pointer-events="all" style="cursor:crosshair"><title>${fmtTime(p.ts)}: ${p.v.toFixed(cfg.decimals)} ${cfg.unit}</title></circle>`; }).join('');
+    hoverDots = valid.map((p,i)=>{ const [x,y] = coords[i]; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--text-faint)" opacity="0.4" pointer-events="none"></circle>`; }).join('');
   }
   const ticks = [min, (min+max)/2, max];
   const tickEls = ticks.map(t=>{ const y = scaleY(t, min, max, H); return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`; }).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">${tickEls}${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${hoverDots}${lastDot}</svg>`;
+
+  histRangeState = { points: coordsArr, leftPad, chartW, W, H, cfg };
+
+  return `<svg id="histSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">
+    ${tickEls}${bands}
+    <rect id="histCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${H}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
+    <rect id="histSelectionRect" x="0" y="0" width="0" height="${H}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
+    <line id="histSelLine1" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    <line id="histSelLine2" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    ${line?`<path d="${line}" class="trend-line"></path>`:''}
+    ${hoverDots}${lastDot}
+  </svg>`;
 }
+
+function clientXToSvgX(svgEl, clientX){
+  const rect = svgEl.getBoundingClientRect();
+  const vb = svgEl.viewBox.baseVal;
+  if (!rect.width) return vb.x;
+  const ratio = vb.width / rect.width;
+  return vb.x + (clientX - rect.left) * ratio;
+}
+function findNearestPointIndex(state, svgX){
+  if (!state || !state.points.length) return null;
+  let best = 0, bestDist = Infinity;
+  state.points.forEach((p, i) => { const d = Math.abs(p.x - svgX); if (d < bestDist){ bestDist = d; best = i; } });
+  return best;
+}
+function formatDurationClient(ms){
+  const totalMin = Math.round(ms/60000);
+  if (totalMin < 60) return totalMin + ' min';
+  const h = Math.floor(totalMin/60), m = totalMin % 60;
+  if (h < 24) return h + ' h ' + m + ' min';
+  const d = Math.floor(h/24), rh = h % 24;
+  return d + ' d ' + rh + ' h';
+}
+function updateHistSelection(state, idxA, idxB){
+  if (!state || idxA === null || idxB === null) return;
+  const i0 = Math.min(idxA, idxB), i1 = Math.max(idxA, idxB);
+  const p0 = state.points[i0], p1 = state.points[i1];
+  if (!p0 || !p1) return;
+  const selRect = document.getElementById('histSelectionRect');
+  const line1 = document.getElementById('histSelLine1');
+  const line2 = document.getElementById('histSelLine2');
+  if (selRect){ selRect.setAttribute('x', p0.x); selRect.setAttribute('width', Math.max(0.5, p1.x - p0.x)); selRect.style.display = 'block'; }
+  if (line1){ line1.setAttribute('x1', p0.x); line1.setAttribute('x2', p0.x); line1.style.display='block'; }
+  if (line2){ line2.setAttribute('x1', p1.x); line2.setAttribute('x2', p1.x); line2.style.display='block'; }
+
+  const slice = state.points.slice(i0, i1+1).map(p=>p.v);
+  const statsEl = document.getElementById('histRangeStats');
+  if (!statsEl) return;
+  if (!slice.length){ statsEl.innerHTML = '<span>Sin datos en el rango seleccionado</span>'; return; }
+  const avg = slice.reduce((a,b)=>a+b,0)/slice.length;
+  const max = Math.max(...slice);
+  const min = Math.min(...slice);
+  const cfg = state.cfg;
+  const durMs = p1.ts.getTime() - p0.ts.getTime();
+  statsEl.innerHTML = `
+    <span><strong>${fmtTime(p0.ts)}</strong> → <strong>${fmtTime(p1.ts)}</strong></span>
+    <span>Promedio: <strong>${avg.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
+    <span>Máximo: <strong>${max.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
+    <span>Mínimo: <strong>${min.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
+    <span>Duración: <strong>${formatDurationClient(durMs)}</strong></span>
+  `;
+}
+function clearHistSelection(){
+  const selRect = document.getElementById('histSelectionRect');
+  const line1 = document.getElementById('histSelLine1');
+  const line2 = document.getElementById('histSelLine2');
+  if (selRect) selRect.style.display = 'none';
+  if (line1) line1.style.display = 'none';
+  if (line2) line2.style.display = 'none';
+  const statsEl = document.getElementById('histRangeStats');
+  if (statsEl) statsEl.innerHTML = '<span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span>';
+}
+
+let histDragActive = false;
+let histDragStartIdx = null;
+function histOnCaptureDown(clientX){
+  if (!histRangeState || !histRangeState.points.length) return;
+  const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
+  histDragActive = true;
+  const svgX = clientXToSvgX(svgEl, clientX);
+  histDragStartIdx = findNearestPointIndex(histRangeState, svgX);
+  updateHistSelection(histRangeState, histDragStartIdx, histDragStartIdx);
+}
+function histOnCaptureMove(clientX){
+  if (!histDragActive || !histRangeState) return;
+  const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
+  const svgX = clientXToSvgX(svgEl, clientX);
+  const idx = findNearestPointIndex(histRangeState, svgX);
+  updateHistSelection(histRangeState, histDragStartIdx, idx);
+}
+function histOnCaptureUp(){ histDragActive = false; }
+
+document.addEventListener('mousedown', (e) => { if (e.target && e.target.id === 'histCaptureRect'){ e.preventDefault(); histOnCaptureDown(e.clientX); } });
+document.addEventListener('mousemove', (e) => { if (histDragActive) histOnCaptureMove(e.clientX); });
+document.addEventListener('mouseup', histOnCaptureUp);
+document.addEventListener('touchstart', (e) => { if (e.target && e.target.id === 'histCaptureRect' && e.touches[0]) histOnCaptureDown(e.touches[0].clientX); }, {passive:true});
+document.addEventListener('touchmove', (e) => { if (histDragActive && e.touches[0]){ e.preventDefault(); histOnCaptureMove(e.touches[0].clientX); } }, {passive:false});
+document.addEventListener('touchend', histOnCaptureUp);
+
+/* RENDER — hero */
+/* (sin diagrama de flujo — se eliminó en una versión anterior) */
 
 /* RENDER — ritmo (turno) */
 function renderTurnoInfo(){
@@ -827,10 +942,11 @@ function renderHistChart(){
   const id = document.getElementById('histParamSelect').value; const cfg = PARAMS[id];
   const container = document.getElementById('histChartContainer'); const axis = document.getElementById('histAxisLabels');
   const filtered = getHistFilteredRows();
-  if (!filtered.length || !cfg){ container.innerHTML='<p class="modal-text">Sin datos en el período seleccionado.</p>'; axis.innerHTML=''; return; }
+  if (!filtered.length || !cfg){ container.innerHTML='<p class="modal-text">Sin datos en el período seleccionado.</p>'; axis.innerHTML=''; histRangeState = null; clearHistSelection(); return; }
   const pts = filtered.map(r=>({ts:r.ts, v:r.values[id]}));
   container.innerHTML = drawTrendSVGWithAxis(cfg, pts, 1000, 300);
   axis.innerHTML = `<span>${fmtTime(pts[0].ts)}</span><span>${pts.length} registros</span><span>${fmtTime(pts[pts.length-1].ts)}</span>`;
+  clearHistSelection();
 }
 
 /* RENDER — correlaciones laboratorio */
@@ -1138,7 +1254,6 @@ function renderPlantState(state){
   if (ritmoLabelEl) ritmoLabelEl.textContent = ritmoLabelText;
   ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
 
-  // Diferencia contra el Caudal Balanza instantáneo del PLC
   if (ritmoDiffEl){
     if (ritmoActual !== null && state.caudalBalanza !== null && state.caudalBalanza !== 0){
       const diffTnh = ritmoActual - state.caudalBalanza;
@@ -1150,14 +1265,12 @@ function renderPlantState(state){
     }
   }
 
-  // Poroto procesado en turno (dato real, no proyección)
   if (state.totalizadoActual !== null && state.totalizadoInicioTurno !== null){
     turnoTnEl.textContent = `${((state.totalizadoActual - state.totalizadoInicioTurno)/1000).toFixed(1)} tn`;
   } else {
     turnoTnEl.textContent = '— tn';
   }
 
-  // Producción hoy (real) y proyección diaria (real + proyección del resto del día)
   let producidoHoyTn = null;
   if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){
     producidoHoyTn = (state.totalizadoActual - state.totalizadoMedianoche) / 1000;
