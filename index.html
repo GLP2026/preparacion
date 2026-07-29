@@ -201,17 +201,25 @@
   #qualityList .qty.warn-count, #paradasSummary .qty.warn-count{color:var(--warn);}
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-wrap:wrap;}
-  .hist-controls select, .hist-controls input[type="date"]{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  .hist-controls select, .hist-controls input[type="date"], .hist-controls input[type="datetime-local"]{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  .hist-controls select[multiple]{ min-width:220px; }
   .hist-controls button.apply-btn{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px;}
   .hist-controls button.apply-btn:hover{opacity:0.9;}
-  .trend-full{width:100%; height:300px; display:block;}
-  .hist-axis-labels{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:4px;}
+  .hist-hint{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint);}
+  .trend-full{width:100%; height:320px; display:block;}
+  .hist-legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);}
+  .legend-item{display:flex; align-items:center; gap:6px;}
+  .legend-swatch{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0;}
   .hist-range-stats{
-    display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:12px; padding:12px 14px;
+    margin-top:12px; padding:12px 14px;
     background:var(--panel-alt); border:1px solid var(--line); border-radius:8px;
     font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);
   }
-  .hist-range-stats strong{ color:var(--accent); }
+  .hist-range-time{ margin-bottom:8px; }
+  .hist-range-time strong{ color:var(--accent); }
+  .hist-range-table{ font-size:11.5px; }
+  .hist-range-table th, .hist-range-table td{ padding:5px 8px; }
+  .hist-range-table td:first-child, .hist-range-table th:first-child{ display:flex; align-items:center; gap:6px; }
 
   .lab-upload-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
   .upload-btn{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:7px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
@@ -273,7 +281,7 @@
 
   <main>
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
-      <div class="ritmo-hero estado-desconocido" id="ritmoHero" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
+      <div class="ritmo-hero estado-desconocido" id="ritmoHero" title="En marcha solo si: alguno de los dos alimentadores del laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
         <span class="ritmo-hero-icon" aria-hidden="true"></span>
         <div class="ritmo-hero-text">
           <span class="ritmo-hero-label">Estado de planta</span>
@@ -331,23 +339,31 @@
           <div class="panel">
             <h2>Gráficos históricos</h2>
             <div class="hist-controls">
-              <label for="histParamSelect">Parámetro:</label>
-              <select id="histParamSelect"></select>
-              <label for="histRangeSelect">Período:</label>
-              <select id="histRangeSelect">
-                <option value="7">Últimos 7 días</option>
-                <option value="30" selected>Últimos 30 días</option>
-                <option value="90">Últimos 90 días</option>
+              <label for="histParamSelect">Parámetro(s):</label>
+              <select id="histParamSelect" multiple size="4"></select>
+              <span class="hist-hint">Ctrl/Cmd+clic para elegir varios y superponerlos</span>
+            </div>
+            <div class="hist-controls">
+              <label for="histQuickRange">Rango rápido:</label>
+              <select id="histQuickRange">
+                <option value="6h">Últimas 6 horas</option>
+                <option value="12h">Últimas 12 horas</option>
+                <option value="24h">Últimas 24 horas</option>
+                <option value="2d">Últimos 2 días</option>
+                <option value="7d" selected>Últimos 7 días</option>
+                <option value="30d">Últimos 30 días</option>
+                <option value="90d">Últimos 90 días</option>
                 <option value="all">Todo el histórico</option>
+                <option value="custom">Personalizado</option>
               </select>
               <label for="histDesde">Desde:</label>
-              <input type="date" id="histDesde">
+              <input type="datetime-local" id="histDesde">
               <label for="histHasta">Hasta:</label>
-              <input type="date" id="histHasta">
+              <input type="datetime-local" id="histHasta">
               <button type="button" id="histFiltrarBtn" class="apply-btn">Aplicar</button>
             </div>
+            <div id="histLegend" class="hist-legend"></div>
             <div id="histChartContainer"></div>
-            <div class="hist-axis-labels" id="histAxisLabels"></div>
             <div class="hist-range-stats" id="histRangeStats"><span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span></div>
           </div>
           <div class="panel">
@@ -564,6 +580,8 @@ const CARD_MARCHA_MAP = {
   expander_corriente: [{ key:'marchaAlimExpander', label:'Alim. Expander' }],
   expander_temp: [{ key:'marchaExpander', label:'Expander' }],
 };
+
+const SERIES_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE','#4DBFBF'];
 
 function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
@@ -808,36 +826,139 @@ function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=56){
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg ${extraClass}" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
 }
 
-/* ===== Gráfico histórico con selección de rango arrastrable ===== */
+/* ===== Gráfico histórico: escala de tiempo real, multi-serie, selección arrastrable ===== */
 let histRangeState = null;
+let histDragActive = false;
+let histDragStartX = null;
 
-function drawTrendSVGWithAxis(cfg, points, viewW=1000, viewH=300){
-  const W = viewW, H = viewH, leftPad = 46; const chartW = W - leftPad; const [min, max] = cfg.domain;
-  const bands = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{ const y1 = scaleY(b.to, min, max, H); const y2 = scaleY(b.from, min, max, H); return `<rect x="${leftPad}" y="${y1.toFixed(1)}" width="${chartW}" height="${Math.max(0,y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`; }).join('');
-  const valid = points.filter(p=>p.v !== null);
-  let line = '', lastDot = '', hoverDots = '';
-  let coordsArr = [];
-  if (valid.length > 0){
-    const n = valid.length;
-    const coords = valid.map((p,i)=>[ n > 1 ? leftPad + (i/(n-1))*chartW : leftPad + chartW/2, scaleY(p.v, min, max, H) ]);
-    coordsArr = valid.map((p,i)=>({ x: coords[i][0], y: coords[i][1], ts: p.ts, v: p.v }));
-    if (n > 1) line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
-    const last = coords[coords.length-1]; lastDot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" class="dot-last"></circle>`;
-    hoverDots = valid.map((p,i)=>{ const [x,y] = coords[i]; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--text-faint)" opacity="0.4" pointer-events="none"></circle>`; }).join('');
+function toDatetimeLocalValue(d){
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function applyQuickRange(code){
+  if (code === 'custom') return;
+  const now = new Date();
+  let desde;
+  if (code === 'all'){
+    desde = new Date(0);
+  } else {
+    const map = { '6h':6*3600000, '12h':12*3600000, '24h':24*3600000, '2d':2*86400000, '7d':7*86400000, '30d':30*86400000, '90d':90*86400000 };
+    desde = new Date(now.getTime() - (map[code] || 7*86400000));
   }
-  const ticks = [min, (min+max)/2, max];
-  const tickEls = ticks.map(t=>{ const y = scaleY(t, min, max, H); return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`; }).join('');
+  document.getElementById('histDesde').value = toDatetimeLocalValue(desde);
+  document.getElementById('histHasta').value = toDatetimeLocalValue(now);
+}
+function getHistFilteredRange(){
+  const desdeVal = document.getElementById('histDesde').value;
+  const hastaVal = document.getElementById('histHasta').value;
+  const now = new Date();
+  const desde = desdeVal ? new Date(desdeVal) : new Date(now.getTime() - 7*86400000);
+  const hasta = hastaVal ? new Date(hastaVal) : now;
+  return { desde, hasta };
+}
+function getSelectedHistParamIds(){
+  const sel = document.getElementById('histParamSelect');
+  const ids = Array.from(sel.selectedOptions).map(o => o.value);
+  return ids.length ? ids : [Object.keys(PARAMS)[0]];
+}
+function selectSingleHistParam(id){
+  const sel = document.getElementById('histParamSelect');
+  Array.from(sel.options).forEach(o => { o.selected = (o.value === id); });
+}
 
-  histRangeState = { points: coordsArr, leftPad, chartW, W, H, cfg };
+function buildTimeTicks(desde, hasta, count){
+  const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
+  const ticks = [];
+  for (let i = 0; i < count; i++){ ticks.push(new Date(t0 + (t1-t0) * (i/(count-1)))); }
+  return ticks;
+}
+function fmtTickLabel(d, spanMs){
+  const p = n => String(n).padStart(2,'0');
+  if (spanMs <= 2*24*3600000) return `${p(d.getDate())}/${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${p(d.getDate())}/${p(d.getMonth()+1)}`;
+}
+function formatDurationClient(ms){
+  const totalMin = Math.round(ms/60000);
+  if (totalMin < 60) return totalMin + ' min';
+  const h = Math.floor(totalMin/60), m = totalMin % 60;
+  if (h < 24) return h + ' h ' + m + ' min';
+  const d = Math.floor(h/24), rh = h % 24;
+  return d + ' d ' + rh + ' h';
+}
 
-  return `<svg id="histSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">
-    ${tickEls}${bands}
-    <rect id="histCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${H}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
-    <rect id="histSelectionRect" x="0" y="0" width="0" height="${H}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
-    <line id="histSelLine1" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
-    <line id="histSelLine2" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
-    ${line?`<path d="${line}" class="trend-line"></path>`:''}
-    ${hoverDots}${lastDot}
+function drawMultiTrendChart(ids, dataArrays, desde, hasta, viewW=1000, viewH=320){
+  const W = viewW, H = viewH, leftPad = 46, bottomPad = 26;
+  const chartW = W - leftPad, chartH = H - bottomPad;
+  const multi = ids.length > 1;
+  const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
+  const scaleX = ts => leftPad + ((ts - t0)/(t1 - t0)) * chartW;
+
+  let bandsSvg = '';
+  if (!multi){
+    const cfg = PARAMS[ids[0]];
+    bandsSvg = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{
+      const y1 = chartH - ((b.to - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0])) * chartH;
+      const y2 = chartH - ((b.from - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0])) * chartH;
+      return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
+    }).join('');
+  }
+
+  const seriesList = ids.map((id,i) => {
+    const cfg = PARAMS[id];
+    const pts = dataArrays[i];
+    let min = Infinity, max = -Infinity;
+    pts.forEach(p => { if (p.v < min) min = p.v; if (p.v > max) max = p.v; });
+    if (!isFinite(min)){ min = cfg.domain[0]; max = cfg.domain[1]; }
+    if (min === max){ const pad = Math.abs(min)*0.05 || 1; min -= pad; max += pad; }
+    const domMin = multi ? min : cfg.domain[0];
+    const domMax = multi ? max : cfg.domain[1];
+    const coords = pts.map(p => {
+      const x = scaleX(p.ts.getTime());
+      const ratio = Math.max(0, Math.min(1, (p.v - domMin)/(domMax - domMin)));
+      const y = chartH - ratio*(chartH-12) - 6;
+      return { x, y, ts: p.ts, v: p.v };
+    });
+    return { id, cfg, color: multi ? SERIES_COLORS[i % SERIES_COLORS.length] : 'var(--text)', coords, min, max };
+  });
+
+  let linesSvg = '';
+  seriesList.forEach(s => {
+    if (s.coords.length > 1){
+      const path = 'M ' + s.coords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' L ');
+      linesSvg += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"></path>`;
+    }
+    if (s.coords.length > 0){
+      const last = s.coords[s.coords.length-1];
+      linesSvg += `<circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4" fill="${s.color}" stroke="var(--bg)" stroke-width="1.5"></circle>`;
+    }
+  });
+
+  let yTicksSvg = '';
+  if (!multi){
+    const cfg = seriesList[0].cfg;
+    [cfg.domain[0], (cfg.domain[0]+cfg.domain[1])/2, cfg.domain[1]].forEach(t => {
+      const ratio = (t - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0]);
+      const y = chartH - ratio*(chartH-12) - 6;
+      yTicksSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`;
+    });
+  }
+
+  const spanMs = t1 - t0;
+  const ticks = buildTimeTicks(desde, hasta, 6);
+  const xTicksSvg = ticks.map(d => {
+    const x = scaleX(d.getTime());
+    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+  }).join('');
+
+  histRangeState = { seriesList, leftPad, chartW, chartH, H, multi };
+
+  return `<svg id="histSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico">
+    ${bandsSvg}${yTicksSvg}${xTicksSvg}
+    <rect id="histCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${chartH}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
+    <rect id="histSelectionRect" x="0" y="0" width="0" height="${chartH}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
+    <line id="histSelLine1" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    <line id="histSelLine2" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    ${linesSvg}
   </svg>`;
 }
 
@@ -848,48 +969,37 @@ function clientXToSvgX(svgEl, clientX){
   const ratio = vb.width / rect.width;
   return vb.x + (clientX - rect.left) * ratio;
 }
-function findNearestPointIndex(state, svgX){
-  if (!state || !state.points.length) return null;
-  let best = 0, bestDist = Infinity;
-  state.points.forEach((p, i) => { const d = Math.abs(p.x - svgX); if (d < bestDist){ bestDist = d; best = i; } });
-  return best;
-}
-function formatDurationClient(ms){
-  const totalMin = Math.round(ms/60000);
-  if (totalMin < 60) return totalMin + ' min';
-  const h = Math.floor(totalMin/60), m = totalMin % 60;
-  if (h < 24) return h + ' h ' + m + ' min';
-  const d = Math.floor(h/24), rh = h % 24;
-  return d + ' d ' + rh + ' h';
-}
-function updateHistSelection(state, idxA, idxB){
-  if (!state || idxA === null || idxB === null) return;
-  const i0 = Math.min(idxA, idxB), i1 = Math.max(idxA, idxB);
-  const p0 = state.points[i0], p1 = state.points[i1];
-  if (!p0 || !p1) return;
+
+function updateHistSelection(state, svgX0, svgX1){
+  if (!state) return;
+  const xA = Math.min(svgX0, svgX1), xB = Math.max(svgX0, svgX1);
   const selRect = document.getElementById('histSelectionRect');
   const line1 = document.getElementById('histSelLine1');
   const line2 = document.getElementById('histSelLine2');
-  if (selRect){ selRect.setAttribute('x', p0.x); selRect.setAttribute('width', Math.max(0.5, p1.x - p0.x)); selRect.style.display = 'block'; }
-  if (line1){ line1.setAttribute('x1', p0.x); line1.setAttribute('x2', p0.x); line1.style.display='block'; }
-  if (line2){ line2.setAttribute('x1', p1.x); line2.setAttribute('x2', p1.x); line2.style.display='block'; }
+  if (selRect){ selRect.setAttribute('x', xA); selRect.setAttribute('width', Math.max(0.5, xB-xA)); selRect.style.display = 'block'; }
+  if (line1){ line1.setAttribute('x1', xA); line1.setAttribute('x2', xA); line1.style.display = 'block'; }
+  if (line2){ line2.setAttribute('x1', xB); line2.setAttribute('x2', xB); line2.style.display = 'block'; }
 
-  const slice = state.points.slice(i0, i1+1).map(p=>p.v);
+  let rangeTs0 = null, rangeTs1 = null;
+  const rows = state.seriesList.map(s => {
+    const slice = s.coords.filter(p => p.x >= xA && p.x <= xB);
+    if (!slice.length) return { label: s.cfg.label, color: s.color, empty: true };
+    slice.forEach(p => { if (rangeTs0 === null || p.ts < rangeTs0) rangeTs0 = p.ts; if (rangeTs1 === null || p.ts > rangeTs1) rangeTs1 = p.ts; });
+    const vals = slice.map(p => p.v);
+    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    return { label: s.cfg.label, color: s.color, avg, max: Math.max(...vals), min: Math.min(...vals), unit: s.cfg.unit, decimals: s.cfg.decimals };
+  });
+
   const statsEl = document.getElementById('histRangeStats');
   if (!statsEl) return;
-  if (!slice.length){ statsEl.innerHTML = '<span>Sin datos en el rango seleccionado</span>'; return; }
-  const avg = slice.reduce((a,b)=>a+b,0)/slice.length;
-  const max = Math.max(...slice);
-  const min = Math.min(...slice);
-  const cfg = state.cfg;
-  const durMs = p1.ts.getTime() - p0.ts.getTime();
-  statsEl.innerHTML = `
-    <span><strong>${fmtTime(p0.ts)}</strong> → <strong>${fmtTime(p1.ts)}</strong></span>
-    <span>Promedio: <strong>${avg.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
-    <span>Máximo: <strong>${max.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
-    <span>Mínimo: <strong>${min.toFixed(cfg.decimals)} ${cfg.unit}</strong></span>
-    <span>Duración: <strong>${formatDurationClient(durMs)}</strong></span>
-  `;
+  const timeLine = (rangeTs0 && rangeTs1)
+    ? `<div class="hist-range-time"><strong>${fmtTime(rangeTs0)}</strong> → <strong>${fmtTime(rangeTs1)}</strong> · Duración: <strong>${formatDurationClient(rangeTs1.getTime()-rangeTs0.getTime())}</strong></div>`
+    : '<div class="hist-range-time">Sin datos en el rango seleccionado</div>';
+  const tableRows = rows.map(r => {
+    if (r.empty) return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td colspan="3">Sin datos en el rango</td></tr>`;
+    return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td>${r.avg.toFixed(r.decimals)} ${r.unit}</td><td>${r.max.toFixed(r.decimals)} ${r.unit}</td><td>${r.min.toFixed(r.decimals)} ${r.unit}</td></tr>`;
+  }).join('');
+  statsEl.innerHTML = timeLine + `<table class="hist-range-table"><thead><tr><th>Serie</th><th>Promedio</th><th>Máximo</th><th>Mínimo</th></tr></thead><tbody>${tableRows}</tbody></table>`;
 }
 function clearHistSelection(){
   const selRect = document.getElementById('histSelectionRect');
@@ -902,22 +1012,18 @@ function clearHistSelection(){
   if (statsEl) statsEl.innerHTML = '<span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span>';
 }
 
-let histDragActive = false;
-let histDragStartIdx = null;
 function histOnCaptureDown(clientX){
-  if (!histRangeState || !histRangeState.points.length) return;
+  if (!histRangeState) return;
   const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
   histDragActive = true;
-  const svgX = clientXToSvgX(svgEl, clientX);
-  histDragStartIdx = findNearestPointIndex(histRangeState, svgX);
-  updateHistSelection(histRangeState, histDragStartIdx, histDragStartIdx);
+  histDragStartX = clientXToSvgX(svgEl, clientX);
+  updateHistSelection(histRangeState, histDragStartX, histDragStartX);
 }
 function histOnCaptureMove(clientX){
   if (!histDragActive || !histRangeState) return;
   const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
   const svgX = clientXToSvgX(svgEl, clientX);
-  const idx = findNearestPointIndex(histRangeState, svgX);
-  updateHistSelection(histRangeState, histDragStartIdx, idx);
+  updateHistSelection(histRangeState, histDragStartX, svgX);
 }
 function histOnCaptureUp(){ histDragActive = false; }
 
@@ -973,7 +1079,8 @@ function renderCards(rows){
     card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value${changed?' value-flash':''}">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, pts, 'trend-main')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
-      const sel = document.getElementById('histParamSelect'); if (sel){ sel.value = id; renderHistChart(); }
+      selectSingleHistParam(id);
+      renderHistChart();
       showSupervisorPanel('analisis');
       const chartEl = document.getElementById('histChartContainer'); if (chartEl) chartEl.scrollIntoView({behavior:'smooth', block:'center'});
     });
@@ -995,34 +1102,33 @@ function renderQuality(rows, parseStats){
 }
 
 /* RENDER — históricos */
-function populateHistSelect(){ const sel = document.getElementById('histParamSelect'); sel.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join(''); }
-function getHistFilteredRange(){
-  const rangeVal = document.getElementById('histRangeSelect').value;
-  const desdeVal = document.getElementById('histDesde').value;
-  const hastaVal = document.getElementById('histHasta').value;
-  if (desdeVal || hastaVal){
-    const desde = desdeVal ? new Date(desdeVal + 'T00:00:00') : new Date(0);
-    const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59') : new Date();
-    return { desde, hasta };
-  }
-  const now = new Date();
-  if (rangeVal === 'all') return { desde: new Date(0), hasta: now };
-  const days = parseInt(rangeVal, 10);
-  const desde = new Date(now.getTime() - days*24*3600*1000);
-  return { desde, hasta: now };
+function populateHistSelect(){
+  const sel = document.getElementById('histParamSelect');
+  sel.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
+  if (sel.options.length) sel.options[0].selected = true;
+  applyQuickRange('7d');
 }
-function getHistFilteredRows(){
-  const { desde, hasta } = getHistFilteredRange();
-  return rowsGlobal.filter(r => r.ts >= desde && r.ts <= hasta);
+function renderHistLegend(ids){
+  const legend = document.getElementById('histLegend');
+  if (ids.length <= 1){ legend.innerHTML = ''; return; }
+  legend.innerHTML = ids.map((id,i) => `<span class="legend-item"><span class="legend-swatch" style="background:${SERIES_COLORS[i % SERIES_COLORS.length]}"></span>${PARAMS[id].label}</span>`).join('');
 }
 function renderHistChart(){
-  const id = document.getElementById('histParamSelect').value; const cfg = PARAMS[id];
-  const container = document.getElementById('histChartContainer'); const axis = document.getElementById('histAxisLabels');
-  const filtered = getHistFilteredRows();
-  if (!filtered.length || !cfg){ container.innerHTML='<p class="modal-text">Sin datos en el período seleccionado.</p>'; axis.innerHTML=''; histRangeState = null; clearHistSelection(); return; }
-  const pts = filtered.map(r=>({ts:r.ts, v:r.values[id]}));
-  container.innerHTML = drawTrendSVGWithAxis(cfg, pts, 1000, 300);
-  axis.innerHTML = `<span>${fmtTime(pts[0].ts)}</span><span>${pts.length} registros</span><span>${fmtTime(pts[pts.length-1].ts)}</span>`;
+  const ids = getSelectedHistParamIds();
+  const container = document.getElementById('histChartContainer');
+  const { desde, hasta } = getHistFilteredRange();
+  const dataArrays = ids.map(id => rowsGlobal
+    .filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null)
+    .map(r => ({ ts: r.ts, v: r.values[id] })));
+  const anyData = dataArrays.some(arr => arr.length > 0);
+  if (!anyData){
+    container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>';
+    document.getElementById('histLegend').innerHTML = '';
+    histRangeState = null; clearHistSelection();
+    return;
+  }
+  container.innerHTML = drawMultiTrendChart(ids, dataArrays, desde, hasta, 1000, 320);
+  renderHistLegend(ids);
   clearHistSelection();
 }
 
@@ -1050,9 +1156,8 @@ function renderCorrList(labKey){
   }).join('');
 }
 document.getElementById('histParamSelect').addEventListener('change', renderHistChart);
-document.getElementById('histRangeSelect').addEventListener('change', () => {
-  document.getElementById('histDesde').value = '';
-  document.getElementById('histHasta').value = '';
+document.getElementById('histQuickRange').addEventListener('change', () => {
+  applyQuickRange(document.getElementById('histQuickRange').value);
   renderHistChart();
 });
 document.getElementById('histFiltrarBtn').addEventListener('click', renderHistChart);
