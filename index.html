@@ -136,20 +136,6 @@
   .pill-crit{background:var(--crit-bg); color:var(--crit); font-weight:600;} .pill-nodata, .pill-unset{background:var(--nodata-bg); color:var(--text-faint);}
   .card-value{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:23px; margin:3px 0 6px;}
   .card-value .unit{font-size:12px; font-weight:400; color:var(--text-dim); margin-left:3px;}
-  @media (prefers-reduced-motion: no-preference){
-    .card-value.value-flash{ animation: valueFlash 0.6s ease-out; }
-  }
-  @keyframes valueFlash{
-    0%{ transform:scale(1.08); color:var(--accent); }
-    100%{ transform:scale(1); color:var(--text); }
-  }
-  .ritmo-hero-value.value-flash, .ritmo-stat-value.value-flash{
-    animation: valueFlashAccent 0.6s ease-out;
-  }
-  @keyframes valueFlashAccent{
-    0%{ transform:scale(1.08); }
-    100%{ transform:scale(1); }
-  }
   .trend-svg{width:100%; height:50px; display:block;}
   .band-ok{fill:var(--ok-bg);} .band-warn{fill:var(--warn-bg);} .band-crit{fill:var(--crit-bg);}
   .trend-line{fill:none; stroke:var(--text); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; opacity:0.85;}
@@ -943,11 +929,9 @@ function buildMarchaRow(id){
   }).join('');
   return `<div class="card-marcha-row">${chips}</div>`;
 }
-let prevCardValues = {};
 function renderCards(rows){
   const grid = document.getElementById('cardsGrid');
   const last = rows[rows.length-1];
-  const isFirstRender = grid.children.length === 0;
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(PARAMS)){
     let currentVal = last ? last.values[id] : null;
@@ -965,8 +949,7 @@ function renderCards(rows){
     const ptsSup = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const ptsOp = rows.slice(-OPERATOR_TREND_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
-    const changed = !isFirstRender && prevCardValues[id] !== undefined && prevCardValues[id] !== currentVal && currentVal !== null;
-    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value${changed?' value-flash':''}">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
+    card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, ptsSup, 'trend-supervisor')}${drawTrendSVG(cfg, ptsOp, 'trend-operario')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
       const sel = document.getElementById('histParamSelect'); if (sel){ sel.value = id; renderHistChart(); }
@@ -974,7 +957,6 @@ function renderCards(rows){
       const chartEl = document.getElementById('histChartContainer'); if (chartEl) chartEl.scrollIntoView({behavior:'smooth', block:'center'});
     });
     grid.appendChild(card);
-    prevCardValues[id] = currentVal;
   }
 }
 function statusDot(cfg, v){ const s = evalFromBands(v, cfg.bands).status; return `<span class="dot dot-${s}"></span>`; }
@@ -1313,9 +1295,8 @@ function renderPlantState(state){
   }
 
   if (ritmoLabelEl) ritmoLabelEl.textContent = ritmoLabelText;
-  const nuevoRitmoTxt = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
-  if (ritmoEl.textContent !== nuevoRitmoTxt && ritmoEl.textContent !== '— tn/h'){ ritmoEl.classList.remove('value-flash'); void ritmoEl.offsetWidth; ritmoEl.classList.add('value-flash'); }
-  ritmoEl.textContent = nuevoRitmoTxt;
+  ritmoEl.textContent = (ritmoActual !== null && !Number.isNaN(ritmoActual)) ? `${ritmoActual.toFixed(1)} tn/h` : '— tn/h';
+
   if (ritmoDiffEl){
     if (ritmoActual !== null && state.caudalBalanza !== null && state.caudalBalanza !== 0){
       const diffTnh = ritmoActual - state.caudalBalanza;
