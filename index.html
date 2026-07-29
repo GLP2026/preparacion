@@ -59,21 +59,58 @@
   #loginCancel, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
-  .ritmo-banner{display:flex; align-items:center; gap:24px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius); padding:16px 20px; margin-bottom:24px;}
-  .ritmo-item{display:flex; flex-direction:column; gap:2px; cursor:help;}
-  .ritmo-label{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint);}
-  .ritmo-value{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:26px; color:var(--accent);}
-  body.view-operario .ritmo-value{font-size:38px;}
-  .ritmo-turno{padding-left:20px; border-left:1px solid var(--line-soft); gap:4px;}
-  .ritmo-turno-name{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);}
-  .ritmo-turno-name strong{color:var(--text); font-weight:600;}
-  body.view-operario .ritmo-turno-name{font-size:16px;}
-  .ritmo-plc-meta{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-top:2px;}
-  .ritmo-estado-general .ritmo-value{font-size:30px;}
-  body.view-operario .ritmo-estado-general .ritmo-value{font-size:44px;}
-  #plcEstadoGeneral.estado-marcha{color:var(--ok);}
-  #plcEstadoGeneral.estado-parada{color:var(--crit);}
-  #plcEstadoGeneral.estado-desconocido{color:var(--text-faint);}
+  /* ===== BANNER SUPERIOR REDISEÑADO ===== */
+  .ritmo-banner{
+    display:grid; grid-template-columns:230px 1fr auto; gap:18px; align-items:stretch;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:24px;
+  }
+  @media (max-width:1200px){ .ritmo-banner{ grid-template-columns:1fr; } }
+
+  .ritmo-hero{
+    display:flex; align-items:center; gap:14px; padding:12px 16px; border-radius:10px;
+    background:var(--panel-alt); border:1px solid var(--line); cursor:help;
+    transition:background .3s ease, border-color .3s ease;
+  }
+  .ritmo-hero.estado-marcha{ background:linear-gradient(135deg, rgba(76,174,121,0.18), rgba(76,174,121,0.03)); border-color:rgba(76,174,121,0.45); }
+  .ritmo-hero.estado-parada{ background:linear-gradient(135deg, rgba(225,85,79,0.20), rgba(225,85,79,0.03)); border-color:rgba(225,85,79,0.5); }
+  .ritmo-hero.estado-desconocido{ background:var(--panel-alt); }
+
+  .ritmo-hero-icon{ width:16px; height:16px; border-radius:50%; flex-shrink:0; background:var(--nodata); }
+  .ritmo-hero.estado-marcha .ritmo-hero-icon{ background:var(--ok); box-shadow:0 0 14px rgba(76,174,121,0.75); }
+  .ritmo-hero.estado-parada .ritmo-hero-icon{ background:var(--crit); box-shadow:0 0 14px rgba(225,85,79,0.75); }
+  @media (prefers-reduced-motion: no-preference){
+    .ritmo-hero.estado-marcha .ritmo-hero-icon{ animation:heroPulseOk 2.4s ease-in-out infinite; }
+    .ritmo-hero.estado-parada .ritmo-hero-icon{ animation:heroPulseCrit 1.6s ease-in-out infinite; }
+  }
+  @keyframes heroPulseOk{ 0%,100%{ opacity:1; } 50%{ opacity:0.55; } }
+  @keyframes heroPulseCrit{ 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+
+  .ritmo-hero-text{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .ritmo-hero-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-faint); }
+  .ritmo-hero-value{ font-family:'Oswald',sans-serif; font-weight:700; font-size:25px; letter-spacing:0.01em; color:var(--text-faint); }
+  .ritmo-hero.estado-marcha .ritmo-hero-value{ color:var(--ok); }
+  .ritmo-hero.estado-parada .ritmo-hero-value{ color:var(--crit); }
+  body.view-operario .ritmo-hero-value{ font-size:36px; }
+  .ritmo-hero-meta{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); }
+
+  .ritmo-stats-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:6px 10px; align-content:center; }
+  .ritmo-stat{ display:flex; flex-direction:column; gap:3px; justify-content:center; padding:6px 14px; border-left:2px solid var(--line-soft); cursor:help; }
+  .ritmo-stat-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); }
+  .ritmo-stat-value{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:20px; color:var(--accent); }
+  body.view-operario .ritmo-stat-value{ font-size:26px; }
+  .ritmo-stat-sub{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); }
+
+  .ritmo-turno-strip{ display:flex; flex-direction:column; gap:4px; justify-content:center; padding-left:18px; border-left:1px solid var(--line-soft); min-width:170px; }
+  .ritmo-turno-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); margin-bottom:2px; }
+  .ritmo-turno-name{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-dim); }
+  .ritmo-turno-name strong{ color:var(--text); font-weight:600; }
+  body.view-operario .ritmo-turno-name{ font-size:15px; }
+  @media (max-width:1200px){
+    .ritmo-turno-strip{ border-left:none; padding-left:0; border-top:1px solid var(--line-soft); padding-top:12px; flex-direction:row; gap:20px; flex-wrap:wrap; }
+  }
+  /* ===== FIN BANNER SUPERIOR ===== */
+
   .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--crit-bg); color:var(--crit);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
   .card-marcha-row{display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 6px;}
@@ -221,30 +258,37 @@
 
   <main>
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
-      <div class="ritmo-item ritmo-estado-general" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
-        <span class="ritmo-label">Estado de planta</span>
-        <span class="ritmo-value" id="plcEstadoGeneral">—</span>
-        <span class="ritmo-plc-meta" id="plcMeta"></span>
+      <div class="ritmo-hero estado-desconocido" id="ritmoHero" title="En marcha solo si: algún laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
+        <span class="ritmo-hero-icon" aria-hidden="true"></span>
+        <div class="ritmo-hero-text">
+          <span class="ritmo-hero-label">Estado de planta</span>
+          <span class="ritmo-hero-value" id="plcEstadoGeneral">—</span>
+          <span class="ritmo-hero-meta" id="plcMeta"></span>
+        </div>
       </div>
-      <div class="ritmo-item" title="Variación real del totalizador entre dos lecturas cercanas del PLC, llevada a tn/h. Abajo se muestra la diferencia contra el Caudal Balanza instantáneo que manda el PLC.">
-        <span class="ritmo-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
-        <span class="ritmo-value" id="plcRitmoActual">— tn/h</span>
-        <span class="ritmo-plc-meta" id="plcRitmoDiff"></span>
+
+      <div class="ritmo-stats-grid">
+        <div class="ritmo-stat" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles, muestra el último dato confiable en vez de un número inestable.">
+          <span class="ritmo-stat-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
+          <span class="ritmo-stat-value" id="plcRitmoActual">— tn/h</span>
+          <span class="ritmo-stat-sub" id="plcRitmoDiff"></span>
+        </div>
+        <div class="ritmo-stat" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Dato real, no proyección.">
+          <span class="ritmo-stat-label">Poroto procesado en turno</span>
+          <span class="ritmo-stat-value" id="ritmoProj">— tn</span>
+        </div>
+        <div class="ritmo-stat" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59.">
+          <span class="ritmo-stat-label">Proyección diaria</span>
+          <span class="ritmo-stat-value" id="ritmoProjDia">— tn</span>
+        </div>
+        <div class="ritmo-stat" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy. Dato real, no proyectado.">
+          <span class="ritmo-stat-label">Producción hoy (real, PLC)</span>
+          <span class="ritmo-stat-value" id="plcProdHoy">— tn</span>
+        </div>
       </div>
-      <div class="ritmo-item" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Dato real, no proyección.">
-        <span class="ritmo-label">Poroto procesado en turno</span>
-        <span class="ritmo-value" id="ritmoProj">— tn</span>
-      </div>
-      <div class="ritmo-item" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59.">
-        <span class="ritmo-label">Proyección diaria</span>
-        <span class="ritmo-value" id="ritmoProjDia">— tn</span>
-      </div>
-      <div class="ritmo-item" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy. Dato real, no proyectado.">
-        <span class="ritmo-label">Producción hoy (real, PLC)</span>
-        <span class="ritmo-value" id="plcProdHoy">— tn</span>
-      </div>
-      <div class="ritmo-item ritmo-turno" title="Operario y supervisor de turno según el rotativo de 28 días.">
-        <span class="ritmo-label">Turno actual</span>
+
+      <div class="ritmo-turno-strip" title="Operario y supervisor de turno según el rotativo de 28 días.">
+        <span class="ritmo-turno-label">Turno actual</span>
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
       </div>
@@ -864,9 +908,6 @@ document.addEventListener('touchstart', (e) => { if (e.target && e.target.id ===
 document.addEventListener('touchmove', (e) => { if (histDragActive && e.touches[0]){ e.preventDefault(); histOnCaptureMove(e.touches[0].clientX); } }, {passive:false});
 document.addEventListener('touchend', histOnCaptureUp);
 
-/* RENDER — hero */
-/* (sin diagrama de flujo — se eliminó en una versión anterior) */
-
 /* RENDER — ritmo (turno) */
 function renderTurnoInfo(){
   const assign = getCurrentShiftAssignment(new Date());
@@ -1222,13 +1263,15 @@ function renderPlantState(state){
   const turnoTnEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
   const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
   const ritmoLabelEl = document.getElementById('plcRitmoLabel');
+  const heroEl = document.getElementById('ritmoHero');
   if (!metaEl) return;
 
   if (!state || !state.lastUpdate){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
     if (ritmoDiffEl) ritmoDiffEl.textContent = '';
     turnoTnEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
-    if (estadoGeneralEl){ estadoGeneralEl.textContent = 'SIN DATO'; estadoGeneralEl.className = 'ritmo-value estado-desconocido'; }
+    if (estadoGeneralEl) estadoGeneralEl.textContent = 'SIN DATO';
+    if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido';
     return;
   }
 
@@ -1291,14 +1334,14 @@ function renderPlantState(state){
 
   if (estadoGeneralEl){
     if (stale){
-      estadoGeneralEl.textContent = '⚪ SIN SEÑAL RECIENTE';
-      estadoGeneralEl.className = 'ritmo-value estado-desconocido';
+      estadoGeneralEl.textContent = 'SIN SEÑAL RECIENTE';
+      if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido';
     } else {
       const laminadorEnMarcha = (String(state.marchaLam1) === '1' || String(state.marchaLam2) === '1');
       const caudalConFlujo = (state.caudalBalanza !== null && state.caudalBalanza > CAUDAL_MIN_TN_H);
       const enMarcha = laminadorEnMarcha && caudalConFlujo;
-      estadoGeneralEl.textContent = enMarcha ? '🟢 EN MARCHA' : '🔴 PARADA';
-      estadoGeneralEl.className = 'ritmo-value ' + (enMarcha ? 'estado-marcha' : 'estado-parada');
+      estadoGeneralEl.textContent = enMarcha ? 'EN MARCHA' : 'PARADA';
+      if (heroEl) heroEl.className = 'ritmo-hero ' + (enMarcha ? 'estado-marcha' : 'estado-parada');
     }
   }
 }
