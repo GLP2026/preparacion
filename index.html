@@ -47,7 +47,7 @@
   .modal-overlay{display:none; position:fixed; inset:0; background:rgba(8,10,13,0.78); align-items:center; justify-content:center; z-index:50; padding:16px;}
   .modal-box{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; width:320px; display:flex; flex-direction:column; gap:12px;}
   .modal-box.wide{ width:640px; max-width:92vw; max-height:85vh; overflow-y:auto; }
-  .modal-box.wide-xl{ width:1400px; max-width:97vw; max-height:94vh; overflow-y:auto; }
+  .modal-box.wide-xl{ width:1450px; max-width:97vw; max-height:95vh; overflow-y:auto; }
   .modal-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
   .modal-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
   .modal-box input{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px;}
@@ -60,7 +60,6 @@
   #loginCancel, #configCloseBtn, #advCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
-  /* ===== BANNER SUPERIOR ===== */
   .ritmo-banner{
     display:grid; grid-template-columns:230px 1fr auto; gap:18px; align-items:stretch;
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
@@ -112,22 +111,13 @@
   @media (max-width:1200px){
     .ritmo-turno-strip{ border-left:none; padding-left:0; border-top:1px solid var(--line-soft); padding-top:12px; flex-direction:row; gap:20px; flex-wrap:wrap; }
   }
-  /* ===== FIN BANNER SUPERIOR ===== */
 
-  /* ===== TRANSICIONES SUAVES ===== */
   @media (prefers-reduced-motion: no-preference){
     .card-value.value-flash{ animation: valueFlash 0.6s ease-out; }
     .ritmo-hero-value.value-flash, .ritmo-stat-value.value-flash{ animation: valueFlashAccent 0.6s ease-out; }
   }
-  @keyframes valueFlash{
-    0%{ transform:scale(1.08); color:var(--accent); }
-    100%{ transform:scale(1); color:var(--text); }
-  }
-  @keyframes valueFlashAccent{
-    0%{ transform:scale(1.08); }
-    100%{ transform:scale(1); }
-  }
-  /* ===== FIN TRANSICIONES ===== */
+  @keyframes valueFlash{ 0%{ transform:scale(1.08); color:var(--accent); } 100%{ transform:scale(1); color:var(--text); } }
+  @keyframes valueFlashAccent{ 0%{ transform:scale(1.08); } 100%{ transform:scale(1); } }
 
   .marcha-chip{font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px; background:var(--crit-bg); color:var(--crit);}
   .marcha-chip.on{background:var(--ok-bg); color:var(--ok);}
@@ -209,25 +199,22 @@
   .hist-controls button.apply-btn:hover{opacity:0.9;}
   .hist-hint{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint);}
   .trend-full{width:100%; height:340px; display:block;}
+  .brush-svg{width:100%; height:60px; display:block; margin-top:4px;}
   .hist-legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text);}
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-swatch{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0;}
-  .hist-range-stats{
-    margin-top:12px; padding:12px 14px;
-    background:var(--panel-alt); border:1px solid var(--line); border-radius:8px;
-    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);
-  }
+  .hist-range-stats{ margin-top:12px; padding:12px 14px; background:var(--panel-alt); border:1px solid var(--line); border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); }
   .hist-range-time{ margin-bottom:8px; }
   .hist-range-time strong{ color:var(--accent); }
+  .hist-corr-line{ margin-bottom:10px; padding:8px 10px; background:var(--panel); border-radius:6px; border:1px solid var(--line-soft); color:var(--text); font-weight:600; }
   .hist-range-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
-  .hist-range-table thead th{ background:var(--panel); color:var(--text-faint); text-transform:uppercase; font-size:10px; letter-spacing:0.04em; padding:7px 10px; border-bottom:1px solid var(--line); text-align:right; }
+  .hist-range-table thead th{ background:var(--panel); color:var(--text-dim); text-transform:uppercase; font-size:10px; letter-spacing:0.04em; padding:7px 10px; border-bottom:1px solid var(--line); text-align:right; }
   .hist-range-table thead th:first-child{ text-align:left; }
-  .hist-range-table tbody td{ padding:7px 10px; border-bottom:1px solid var(--line-soft); text-align:right; color:var(--text); }
-  .hist-range-table tbody td:first-child{ text-align:left; display:flex; align-items:center; gap:6px; color:var(--text-dim); }
+  .hist-range-table tbody td{ padding:7px 10px; border-bottom:1px solid var(--line-soft); text-align:right; color:var(--text); font-weight:600; }
+  .hist-range-table tbody td:first-child{ text-align:left; display:flex; align-items:center; gap:6px; color:var(--text-dim); font-weight:400; }
   .hist-range-table tbody tr:nth-child(even){ background:rgba(255,255,255,0.02); }
   .hist-range-table tbody tr:last-child td{ border-bottom:none; }
 
-  /* ===== TOOLBAR / PANELES DEL ANÁLISIS AVANZADO ===== */
   .adv-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
   .adv-toolbar button{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:7px 12px; border-radius:6px; cursor:pointer; background:var(--panel-alt); border:1px solid var(--line); color:var(--text-dim); }
   .adv-toolbar button:hover{ border-color:var(--accent); color:var(--accent); }
@@ -251,7 +238,13 @@
   .adv-param-check-row:last-child{ border-bottom:none; }
   .adv-param-check-row input[type="color"]{ width:32px; height:26px; padding:2px; border-radius:4px; border:1px solid var(--line); background:var(--panel); cursor:pointer; }
   .adv-param-check-row select{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:4px 6px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; }
-  /* ===== FIN TOOLBAR ===== */
+  .adv-annotations-list{ margin-top:8px; max-height:120px; overflow-y:auto; }
+  .adv-annotation-row{ display:flex; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1px solid var(--line-soft); font-size:11px; }
+  .adv-annotation-row button{ background:transparent; border:1px solid var(--line); color:var(--text-faint); border-radius:6px; padding:2px 6px; cursor:pointer; font-size:10px; }
+  .adv-compare-days-form{ display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; }
+  .adv-compare-days-form label{ display:flex; flex-direction:column; gap:3px; font-size:10px; color:var(--text-faint); }
+  .adv-compare-days-form input[type="date"]{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .adv-compare-days-form select{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; }
 
   .lab-upload-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
   .upload-btn{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:7px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
@@ -313,7 +306,7 @@
 
   <main>
     <section class="ritmo-banner" aria-label="Ritmo de turno y estado en vivo">
-      <div class="ritmo-hero estado-desconocido" id="ritmoHero" title="En marcha solo si: alguno de los dos alimentadores del laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h). Si hace más de 5 min que no llega dato nuevo del PLC, se muestra 'sin señal reciente' en vez de arriesgar un estado viejo.">
+      <div class="ritmo-hero estado-desconocido" id="ritmoHero" title="En marcha solo si: alguno de los dos alimentadores del laminador está activo en el PLC Y la balanza tiene caudal (>0.1 tn/h).">
         <span class="ritmo-hero-icon" aria-hidden="true"></span>
         <div class="ritmo-hero-text">
           <span class="ritmo-hero-label">Estado de planta</span>
@@ -323,27 +316,27 @@
       </div>
 
       <div class="ritmo-stats-grid">
-        <div class="ritmo-stat" title="Se calcula con la variación real del totalizador entre dos lecturas cercanas del PLC. Si no hay dos lecturas recientes disponibles, muestra el último dato confiable en vez de un número inestable.">
+        <div class="ritmo-stat" title="Variación real del totalizador entre dos lecturas cercanas del PLC.">
           <span class="ritmo-stat-label" id="plcRitmoLabel">Ritmo actual (PLC, tn/h)</span>
           <span class="ritmo-stat-value" id="plcRitmoActual">— tn/h</span>
           <span class="ritmo-stat-sub" id="plcRitmoDiff"></span>
         </div>
-        <div class="ritmo-stat" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Debajo, la proyección de cómo va a cerrar el turno completo si se mantiene el ritmo actual — verde si cae dentro de la meta configurada, rojo si no.">
+        <div class="ritmo-stat" title="Toneladas procesadas desde el inicio del turno vigente. Debajo, proyección del turno completo — verde/rojo según la meta configurada.">
           <span class="ritmo-stat-label">Poroto procesado en turno</span>
           <span class="ritmo-stat-value" id="ritmoProj">— tn</span>
           <span class="ritmo-stat-sub" id="ritmoProjTurnoCompleto"></span>
         </div>
-        <div class="ritmo-stat" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59.">
+        <div class="ritmo-stat" title="Día operativo: 06:00 a 06:00 del día siguiente. Producido hasta ahora + ritmo actual por las horas que faltan para el cierre del día operativo.">
           <span class="ritmo-stat-label">Proyección diaria</span>
           <span class="ritmo-stat-value" id="ritmoProjDia">— tn</span>
         </div>
-        <div class="ritmo-stat" title="Toneladas realmente acumuladas según el totalizador del PLC, desde las 00:00 de hoy. Dato real, no proyectado.">
+        <div class="ritmo-stat" title="Toneladas reales desde el inicio del día operativo (06:00) hasta el último dato recibido.">
           <span class="ritmo-stat-label">Producción hoy (real, PLC)</span>
           <span class="ritmo-stat-value" id="plcProdHoy">— tn</span>
         </div>
       </div>
 
-      <div class="ritmo-turno-strip" title="Operario y supervisor de turno según el rotativo de 28 días.">
+      <div class="ritmo-turno-strip">
         <span class="ritmo-turno-label">Turno actual</span>
         <span class="ritmo-turno-name">Operario: <strong id="ritmoOperador">—</strong></span>
         <span class="ritmo-turno-name">Supervisor: <strong id="ritmoSupervisor">—</strong></span>
@@ -499,7 +492,7 @@
 <div id="configOverlay" class="modal-overlay">
   <div class="modal-box wide" role="dialog" aria-modal="true">
     <h3>Configuración de umbrales</h3>
-    <p class="modal-text">Ajustá los límites de cada parámetro sin tocar el código. Se guarda en este navegador — usá Exportar/Importar para llevarlo a otra PC.</p>
+    <p class="modal-text">Los que dicen "sin clasificar" no tienen umbrales todavía — completá los 4 campos para definirlos. Se guarda en este navegador.</p>
     <div id="thresholdSettings" class="threshold-scroll"></div>
 
     <div class="threshold-row">
@@ -532,8 +525,10 @@
     <div class="adv-toolbar">
       <button type="button" id="advToggleParams">📈 Parámetros</button>
       <button type="button" id="advToggleAxes">📐 Ejes</button>
-      <button type="button" id="advToggleGrid">▦ Cuadrícula</button>
       <button type="button" id="advToggleCols">☰ Columnas de tabla</button>
+      <button type="button" id="advToggleSettings">⚙ Configuración</button>
+      <button type="button" id="advToggleCompareDays">📅 Comparar días</button>
+      <button type="button" id="advToggleAnnotate">📌 Modo anotación</button>
     </div>
 
     <div class="adv-panel" id="advParamsPanel">
@@ -541,7 +536,7 @@
     </div>
 
     <div class="adv-panel" id="advAxesPanel">
-      <div id="advAxesList"><p class="hist-hint">Todavía no creaste ejes — cada parámetro usa su propia escala automática.</p></div>
+      <div id="advAxesList"><p class="hist-hint">Todavía no creaste ejes.</p></div>
       <div class="adv-axis-form">
         <label>Nombre<input type="text" id="advAxisName" placeholder="Corriente"></label>
         <label>Unidad<input type="text" id="advAxisUnit" placeholder="A"></label>
@@ -562,12 +557,43 @@
       <label class="adv-col-check"><input type="checkbox" id="advColDuration" checked> Duración</label>
     </div>
 
+    <div class="adv-panel" id="advSettingsPanel">
+      <label style="display:flex; align-items:center; gap:8px; flex-direction:row; margin-bottom:10px;">
+        Color de cuadrícula <input type="color" id="advGridColorInput" value="#94A3B8">
+      </label>
+      <label class="adv-col-check"><input type="checkbox" id="advShowParadasCheck" checked> Marcar paradas sobre el gráfico</label>
+      <label class="adv-col-check"><input type="checkbox" id="advMovingAvgCheck"> Suavizar con media móvil</label>
+      <label style="display:flex; align-items:center; gap:8px; flex-direction:row; margin:6px 0 10px 24px;">
+        Ventana (puntos) <input type="number" id="advMovingAvgWindowInput" value="5" min="2" max="30" style="width:70px;">
+      </label>
+      <p class="hist-hint">La configuración se guarda automáticamente en este navegador.</p>
+      <div class="threshold-actions" style="margin-top:10px;">
+        <button type="button" id="advResetConfigBtn">Restablecer configuración guardada</button>
+      </div>
+    </div>
+
+    <div class="adv-panel" id="advCompareDaysPanel">
+      <p class="hist-hint" style="margin-bottom:8px;">Elegí un parámetro y hasta 5 fechas para superponerlas alineadas por hora del día.</p>
+      <div class="adv-compare-days-form">
+        <label>Parámetro<select id="advCompareParamSelect"></select></label>
+        <label>Fecha 1<input type="date" id="advCompareDate1"></label>
+        <label>Fecha 2<input type="date" id="advCompareDate2"></label>
+        <label>Fecha 3<input type="date" id="advCompareDate3"></label>
+        <label>Fecha 4<input type="date" id="advCompareDate4"></label>
+        <label>Fecha 5<input type="date" id="advCompareDate5"></label>
+        <button type="button" id="advCompareDaysBtn" class="apply-btn">Comparar</button>
+      </div>
+      <div id="advCompareDaysLegend" class="hist-legend" style="margin-top:10px;"></div>
+      <div id="advCompareDaysChart"></div>
+    </div>
+
     <div class="hist-controls">
       <label for="advQuickRange">Rango rápido:</label>
       <select id="advQuickRange">
         <option value="6h">Últimas 6 horas</option>
         <option value="12h">Últimas 12 horas</option>
         <option value="24h">Últimas 24 horas</option>
+        <option value="turno">Turno actual</option>
         <option value="2d">Últimos 2 días</option>
         <option value="7d" selected>Últimos 7 días</option>
         <option value="30d">Últimos 30 días</option>
@@ -584,7 +610,10 @@
 
     <div id="advLegend" class="hist-legend"></div>
     <div id="advChartContainer"></div>
-    <div class="hist-range-stats" id="advRangeStats"><span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span></div>
+    <p class="hist-hint" id="advBrushHint" style="margin-top:6px;">Arrastrá sobre la franja de abajo para cambiar el rango visible (zoom):</p>
+    <div id="advBrushContainer"></div>
+    <div id="advAnnotationsList" class="adv-annotations-list"></div>
+    <div class="hist-range-stats" id="advRangeStats"><span class="modal-text">Arrastrá sobre el gráfico principal para seleccionar un rango.</span></div>
 
     <div class="modal-actions">
       <button type="button" id="advCloseBtn">Cerrar</button>
@@ -629,6 +658,14 @@ function getShiftBoundsClient(shift, base){
   else { start = new Date(base.getFullYear(),base.getMonth(),base.getDate(),22,0,0); end = new Date(base.getFullYear(),base.getMonth(),base.getDate()+1,6,0,0); }
   return { start, end };
 }
+function getOperationalDayBoundsClient(d){
+  let base;
+  if (d.getHours() < 6){ const y = new Date(d); y.setDate(y.getDate()-1); base = new Date(y.getFullYear(), y.getMonth(), y.getDate()); }
+  else { base = new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  const start = new Date(base.getFullYear(), base.getMonth(), base.getDate(), 6,0,0);
+  const end = new Date(base.getFullYear(), base.getMonth(), base.getDate()+1, 6,0,0);
+  return { start, end };
+}
 function getCurrentShiftAssignment(date){
   const { shift, base } = getShiftInfo(date);
   let diffDays = Math.round((base - ROSTER_ANCHOR) / 86400000);
@@ -668,19 +705,14 @@ const PARAMS = {
   pesaje_balanza: { label:'Pesaje de balanza', unit:'tn/h', icon:'scale', column:'Pesaje de balanza (tn/hr)', decimals:1, domain:[10,30], bands:[] },
 };
 
-/* Parámetros calculados (no vienen de la planilla ni del PLC directo — se calculan en el navegador) */
 const COMPUTED_PARAMS = {
   potencia_especifica_exp: { label:'Potencia específica Expander', unit:'kWh/tn', icon:'bolt', decimals:2, domain:[0,20], bands:[] }
 };
 const ALL_PARAM_DEFS = Object.assign({}, PARAMS, COMPUTED_PARAMS);
 
-const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(PARAMS).map(([id,cfg]) => [id, cfg.bands]))));
+const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(ALL_PARAM_DEFS).map(([id,cfg]) => [id, cfg.bands]))));
 
-const LIVE_PLC_PARAM_MAP = {
-  expander_corriente: 'corrienteExpander',
-  expander_temp: 'temperaturaExpander',
-};
-
+const LIVE_PLC_PARAM_MAP = { expander_corriente: 'corrienteExpander', expander_temp: 'temperaturaExpander' };
 const CARD_MARCHA_MAP = {
   lam1_izq: [{ key:'marchaLam1', label:'Laminador 1' }],
   lam1_der: [{ key:'marchaLam1', label:'Laminador 1' }],
@@ -689,9 +721,8 @@ const CARD_MARCHA_MAP = {
   expander_corriente: [{ key:'marchaAlimExpander', label:'Alim. Expander' }],
   expander_temp: [{ key:'marchaExpander', label:'Expander' }],
 };
-
 const SERIES_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
-const GRID_STROKE = 'rgba(148,163,184,0.28)';
+const COMPARE_DAY_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE'];
 
 function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
@@ -723,6 +754,8 @@ const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 const THRESHOLD_KEY = 'glp_threshold_overrides';
 const TURNO_META_KEY = 'glp_turno_meta_prep';
+const ADV_CONFIG_KEY = 'glp_adv_chart_config_prep';
+const ADV_ANNOTATIONS_KEY = 'glp_adv_annotations_prep';
 const CAUDAL_MIN_TN_H = 0.1;
 const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
 const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
@@ -741,7 +774,7 @@ const computedParamHistory = { potencia_especifica_exp: [] };
 function pushComputedParamPoint(id, ts, v){
   const buf = computedParamHistory[id]; if (!buf) return;
   buf.push({ ts, v });
-  if (buf.length > 200) buf.shift();
+  if (buf.length > 500) buf.shift();
 }
 function getLatestComputedValue(id){
   const buf = computedParamHistory[id];
@@ -757,11 +790,17 @@ function getParamPointsInRange(id, desde, hasta){
 
 /* ===== Estado del análisis avanzado ===== */
 let advParamIds = [];
-let advAxes = []; // {id, label, unit, min, max, auto}
-let advParamAxisMap = {}; // paramId -> axisId | null(=auto)
-let advParamStyle = {}; // paramId -> {color, width, dash}
+let advAxes = [];
+let advParamAxisMap = {};
+let advParamStyle = {};
 let advShowGrid = true;
 let advTableCols = { min:true, max:true, avg:true, std:true, count:true, duration:true };
+let advGridColor = '#94A3B8';
+let advShowParadas = true;
+let advMovingAvg = false;
+let advMovingAvgWindow = 5;
+let advAnnotations = [];
+let advAnnotationMode = false;
 
 function getOrCreateParamStyle(id){
   if (!advParamStyle[id]){
@@ -770,16 +809,81 @@ function getOrCreateParamStyle(id){
   }
   return advParamStyle[id];
 }
-function dashArrayFor(dash){
-  if (dash === 'dashed') return '8 5';
-  if (dash === 'dotted') return '2 4';
-  return null;
-}
+function dashArrayFor(dash){ if (dash === 'dashed') return '8 5'; if (dash === 'dotted') return '2 4'; return null; }
 function stdDev(vals){
   const n = vals.length; if (n === 0) return 0;
   const mean = vals.reduce((a,b)=>a+b,0)/n;
   const variance = vals.reduce((a,b)=> a + Math.pow(b-mean,2), 0) / n;
   return Math.sqrt(variance);
+}
+function pearson(xs, ys){
+  const n = xs.length; if (n < 3) return null;
+  const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  let num=0, dx2=0, dy2=0;
+  for (let i=0;i<n;i++){ const dx = xs[i]-mx, dy = ys[i]-my; num += dx*dy; dx2 += dx*dx; dy2 += dy*dy; }
+  const denom = Math.sqrt(dx2*dy2); return denom === 0 ? null : num/denom;
+}
+function corrStrength(r){ const a = Math.abs(r); if (a >= 0.6) return 'fuerte'; if (a >= 0.3) return 'moderada'; return 'débil'; }
+function hexToRgba(hex, alpha){
+  const h = (hex||'#94A3B8').replace('#','');
+  const r = parseInt(h.substring(0,2),16)||148, g = parseInt(h.substring(2,4),16)||163, b = parseInt(h.substring(4,6),16)||184;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function gridStrokeColor(){ return hexToRgba(advGridColor, 0.35); }
+function movingAverage(pts, window){
+  if (!pts.length || window < 2) return pts.slice();
+  const out = [];
+  for (let i = 0; i < pts.length; i++){
+    const from = Math.max(0, i - Math.floor(window/2));
+    const to = Math.min(pts.length, from + window);
+    const slice = pts.slice(from, to);
+    const avg = slice.reduce((s,p)=>s+p.v,0) / slice.length;
+    out.push({ ts: pts[i].ts, v: avg });
+  }
+  return out;
+}
+function pairNearest(ptsA, ptsB, maxDiffMs){
+  const pairs = [];
+  ptsA.forEach(a => {
+    let best = null, bestDiff = Infinity;
+    ptsB.forEach(b => { const diff = Math.abs(b.ts.getTime() - a.ts.getTime()); if (diff < bestDiff){ bestDiff = diff; best = b; } });
+    if (best && bestDiff <= maxDiffMs) pairs.push([a.v, best.v]);
+  });
+  return pairs;
+}
+
+function saveAdvConfig(){
+  try{
+    localStorage.setItem(ADV_CONFIG_KEY, JSON.stringify({
+      advParamIds, advAxes, advParamAxisMap, advParamStyle, advShowGrid, advTableCols,
+      advGridColor, advShowParadas, advMovingAvg, advMovingAvgWindow
+    }));
+  } catch(e){}
+}
+function loadAdvConfig(){
+  try{
+    const raw = localStorage.getItem(ADV_CONFIG_KEY);
+    if (!raw) return;
+    const cfg = JSON.parse(raw);
+    if (cfg.advParamIds) advParamIds = cfg.advParamIds;
+    if (cfg.advAxes) advAxes = cfg.advAxes;
+    if (cfg.advParamAxisMap) advParamAxisMap = cfg.advParamAxisMap;
+    if (cfg.advParamStyle) advParamStyle = cfg.advParamStyle;
+    if (typeof cfg.advShowGrid === 'boolean') advShowGrid = cfg.advShowGrid;
+    if (cfg.advTableCols) advTableCols = cfg.advTableCols;
+    if (cfg.advGridColor) advGridColor = cfg.advGridColor;
+    if (typeof cfg.advShowParadas === 'boolean') advShowParadas = cfg.advShowParadas;
+    if (typeof cfg.advMovingAvg === 'boolean') advMovingAvg = cfg.advMovingAvg;
+    if (typeof cfg.advMovingAvgWindow === 'number') advMovingAvgWindow = cfg.advMovingAvgWindow;
+  } catch(e){}
+}
+function saveAdvAnnotations(){ try{ localStorage.setItem(ADV_ANNOTATIONS_KEY, JSON.stringify(advAnnotations)); } catch(e){} }
+function loadAdvAnnotations(){
+  try{
+    const raw = localStorage.getItem(ADV_ANNOTATIONS_KEY);
+    if (!raw) return;
+    advAnnotations = JSON.parse(raw).map(a => ({ id:a.id, ts:a.ts, text:a.text }));
+  } catch(e){}
 }
 
 /* META DE TURNO */
@@ -791,26 +895,49 @@ function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(
 function saveThresholdOverrides(obj){ localStorage.setItem(THRESHOLD_KEY, JSON.stringify(obj)); }
 function applyThresholdOverrides(){
   const overrides = loadThresholdOverrides();
-  for (const [id, cfg] of Object.entries(PARAMS)){
+  for (const [id, cfg] of Object.entries(ALL_PARAM_DEFS)){
     if (!PARAMS_DEFAULTS[id]) continue;
-    cfg.bands = JSON.parse(JSON.stringify(PARAMS_DEFAULTS[id]));
-    const ov = overrides[id]; if (!ov) continue;
+    const baseline = PARAMS_DEFAULTS[id];
+    const ov = overrides[id];
+    if (baseline.length === 0){
+      if (ov && ov.length === 4 && ov.every(v => typeof v === 'number' && !Number.isNaN(v))){
+        cfg.bands = [
+          {status:'crit', to:ov[0], note:'Fuera de rango — bajo'},
+          {status:'warn', to:ov[1], note:'Por debajo del rango normal'},
+          {status:'ok', to:ov[2], note:'Normal'},
+          {status:'warn', to:ov[3], note:'Por encima del rango normal'},
+          {status:'crit', to:Infinity, note:'Fuera de rango — alto'}
+        ];
+      } else { cfg.bands = []; }
+      continue;
+    }
+    cfg.bands = JSON.parse(JSON.stringify(baseline));
+    if (!ov) continue;
     ov.forEach((val, i) => { if (cfg.bands[i] && typeof val === 'number' && !Number.isNaN(val)) cfg.bands[i].to = val; });
   }
 }
 function renderThresholdSettings(){
   const container = document.getElementById('thresholdSettings'); let html = '';
-  for (const [id, cfg] of Object.entries(PARAMS)){
-    if (!cfg.bands || cfg.bands.length <= 1) continue;
-    html += `<div class="threshold-row"><div class="threshold-param-label">${cfg.label} <span class="threshold-unit">(${cfg.unit})</span></div><div class="threshold-inputs">`;
-    for (let i = 0; i < cfg.bands.length - 1; i++){
-      const b = cfg.bands[i], next = cfg.bands[i+1];
-      const label = `${plainStatusLabel(b.status)} → ${plainStatusLabel(next.status)}`;
-      html += `<label class="threshold-input-group"><span>${label}</span><input type="number" step="any" data-param="${id}" data-idx="${i}" value="${b.to}"></label>`;
+  for (const [id, cfg] of Object.entries(ALL_PARAM_DEFS)){
+    const isClassified = cfg.bands && cfg.bands.length > 1;
+    html += `<div class="threshold-row"><div class="threshold-param-label">${cfg.label} <span class="threshold-unit">(${cfg.unit})${!isClassified ? ' — sin clasificar' : ''}</span></div><div class="threshold-inputs">`;
+    if (isClassified){
+      for (let i = 0; i < cfg.bands.length - 1; i++){
+        const b = cfg.bands[i], next = cfg.bands[i+1];
+        const label = `${plainStatusLabel(b.status)} → ${plainStatusLabel(next.status)}`;
+        html += `<label class="threshold-input-group"><span>${label}</span><input type="number" step="any" data-param="${id}" data-idx="${i}" value="${b.to}"></label>`;
+      }
+    } else {
+      const labels = ['Crítico bajo hasta','Advertencia baja hasta','Normal hasta','Advertencia alta hasta'];
+      const domain = cfg.domain;
+      const defaults = [domain[0], domain[0]+(domain[1]-domain[0])*0.25, domain[0]+(domain[1]-domain[0])*0.75, domain[1]];
+      for (let i = 0; i < 4; i++){
+        html += `<label class="threshold-input-group"><span>${labels[i]}</span><input type="number" step="any" data-param="${id}" data-idx="${i}" value="${defaults[i]}"></label>`;
+      }
     }
     html += `</div></div>`;
   }
-  container.innerHTML = html || '<p class="modal-text">No hay parámetros con umbrales editables todavía.</p>';
+  container.innerHTML = html || '<p class="modal-text">No hay parámetros.</p>';
 }
 function rerenderAll(){
   if (!rowsGlobal.length) return;
@@ -967,14 +1094,28 @@ function parseLabWorkbook(workbook){
   rows.sort((a,b)=>a.ts-b.ts);
   return { rows, missing, tsFailed, sheetName };
 }
-function pearson(xs, ys){
-  const n = xs.length; if (n < 3) return null;
-  const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
-  let num=0, dx2=0, dy2=0;
-  for (let i=0;i<n;i++){ const dx = xs[i]-mx, dy = ys[i]-my; num += dx*dy; dx2 += dx*dx; dy2 += dy*dy; }
-  const denom = Math.sqrt(dx2*dy2); return denom === 0 ? null : num/denom;
+function corrLabList(labKey){
+  const list = document.getElementById('corrList');
+  if (!labRows.length){ list.innerHTML = '<li><span>Subí un archivo de laboratorio para ver correlaciones.</span></li>'; return; }
+  const results = [];
+  for (const [id, cfg] of Object.entries(PARAMS)){
+    const pairs = [];
+    for (const lab of labRows){
+      const labVal = lab[labKey]; if (labVal === null || labVal === undefined || Number.isNaN(labVal)) continue;
+      const match = findNearestRow(rowsGlobal, lab.ts, 3*3600*1000); if (!match) continue;
+      const procVal = match.values[id]; if (procVal === null) continue;
+      pairs.push([procVal, labVal]);
+    }
+    if (pairs.length < 5){ results.push({cfg, r:null, n:pairs.length}); continue; }
+    const r = pearson(pairs.map(p=>p[0]), pairs.map(p=>p[1])); results.push({cfg, r, n:pairs.length});
+  }
+  results.sort((a,b) => (b.r===null?-1:Math.abs(b.r)) - (a.r===null?-1:Math.abs(a.r)));
+  list.innerHTML = results.map(res => {
+    if (res.r === null) return `<li><span>${res.cfg.label}</span><span class="qty">datos insuficientes (n=${res.n})</span></li>`;
+    const color = res.r >= 0 ? 'var(--ok)' : 'var(--crit)';
+    return `<li><span>${res.cfg.label}</span><span class="qty" style="color:${color}">r=${res.r.toFixed(2)} · ${corrStrength(res.r)} (n=${res.n})</span></li>`;
+  }).join('');
 }
-function corrStrength(r){ const a = Math.abs(r); if (a >= 0.6) return 'fuerte'; if (a >= 0.3) return 'moderada'; return 'débil'; }
 function findNearestRow(rows, ts, maxDiffMs){
   let best = null, bestDiff = Infinity;
   for (const r of rows){ const diff = Math.abs(r.ts.getTime() - ts.getTime()); if (diff < bestDiff){ bestDiff = diff; best = r; } }
@@ -1024,7 +1165,8 @@ function formatDurationClient(ms){
   return d + ' d ' + rh + ' h';
 }
 
-/* ===== GRÁFICO PRINCIPAL (simple, sin selección de rango) ===== */
+/* ===== GRÁFICO PRINCIPAL (simple) ===== */
+const MAIN_GRID_STROKE = 'rgba(148,163,184,0.28)';
 function drawSingleTimeChart(cfg, points, desde, hasta, viewW=1000, viewH=280){
   const W = viewW, H = viewH, leftPad = 46, bottomPad = 24;
   const chartW = W - leftPad, chartH = H - bottomPad;
@@ -1049,14 +1191,14 @@ function drawSingleTimeChart(cfg, points, desde, hasta, viewW=1000, viewH=280){
 
   const yTicksSvg = [dmin, (dmin+dmax)/2, dmax].map(t => {
     const y = scaleYv(t);
-    return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${MAIN_GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>`;
   }).join('');
 
   const spanMs = t1 - t0;
   const ticks = buildTimeTicks(desde, hasta, 6);
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
-    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${MAIN_GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
 
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">
@@ -1082,12 +1224,13 @@ function renderMainHistChart(){
   container.innerHTML = drawSingleTimeChart(cfg, pts, desde, hasta, 1000, 280);
 }
 
-/* ===== Selección de parámetro (main) ===== */
 function populateParamSelects(){
   const optsHtml = Object.entries(ALL_PARAM_DEFS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
   const mainSel = document.getElementById('mainHistParamSelect');
   mainSel.innerHTML = optsHtml;
   if (mainSel.options.length) mainSel.options[0].selected = true;
+  const cmpSel = document.getElementById('advCompareParamSelect');
+  cmpSel.innerHTML = optsHtml;
 }
 
 /* ===== ANÁLISIS AVANZADO — checklist de parámetros con estilo ===== */
@@ -1123,6 +1266,7 @@ function renderAdvParamsChecklist(){
     const id = cb.dataset.paramId;
     if (cb.checked){ if (!advParamIds.includes(id)) advParamIds.push(id); getOrCreateParamStyle(id); }
     else { advParamIds = advParamIds.filter(x => x !== id); }
+    saveAdvConfig();
     renderAdvParamsChecklist();
     renderAdvAxesPanel();
     renderAdvChart();
@@ -1131,12 +1275,11 @@ function renderAdvParamsChecklist(){
     const id = el.dataset.styleParam, field = el.dataset.styleField;
     const style = getOrCreateParamStyle(id);
     style[field] = field === 'width' ? parseInt(el.value,10) : el.value;
+    saveAdvConfig();
     renderAdvChart();
   }));
 }
-function getSelectedAdvParamIds(){
-  return advParamIds.length ? advParamIds : [Object.keys(ALL_PARAM_DEFS)[0]];
-}
+function getSelectedAdvParamIds(){ return advParamIds.length ? advParamIds : [Object.keys(ALL_PARAM_DEFS)[0]]; }
 
 /* ===== ANÁLISIS AVANZADO — ejes ===== */
 function renderAdvAxesPanel(){
@@ -1156,8 +1299,7 @@ function renderAdvAxesPanel(){
     const axId = btn.dataset.axisId;
     advAxes = advAxes.filter(a => a.id !== axId);
     Object.keys(advParamAxisMap).forEach(pid => { if (advParamAxisMap[pid] === axId) advParamAxisMap[pid] = null; });
-    renderAdvAxesPanel();
-    renderAdvChart();
+    saveAdvConfig(); renderAdvAxesPanel(); renderAdvChart();
   }));
   listEl.querySelectorAll('[data-axis-move]').forEach(btn => btn.addEventListener('click', () => {
     const axId = btn.dataset.axisId;
@@ -1166,16 +1308,12 @@ function renderAdvAxesPanel(){
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= advAxes.length) return;
     const tmp = advAxes[idx]; advAxes[idx] = advAxes[newIdx]; advAxes[newIdx] = tmp;
-    renderAdvAxesPanel();
-    renderAdvChart();
+    saveAdvConfig(); renderAdvAxesPanel(); renderAdvChart();
   }));
 
   const ids = getSelectedAdvParamIds();
   const assignEl = document.getElementById('advAssignList');
-  if (!advAxes.length){
-    assignEl.innerHTML = '<p class="hist-hint">Creá al menos un eje arriba para poder asignárselo a un parámetro.</p>';
-    return;
-  }
+  if (!advAxes.length){ assignEl.innerHTML = '<p class="hist-hint">Creá al menos un eje arriba.</p>'; return; }
   assignEl.innerHTML = ids.map(id => {
     const current = advParamAxisMap[id] || '';
     const options = ['<option value="">Automático</option>'].concat(
@@ -1185,7 +1323,7 @@ function renderAdvAxesPanel(){
   }).join('');
   assignEl.querySelectorAll('.adv-assign-select').forEach(sel => sel.addEventListener('change', () => {
     advParamAxisMap[sel.dataset.paramId] = sel.value || null;
-    renderAdvChart();
+    saveAdvConfig(); renderAdvChart();
   }));
 }
 
@@ -1193,18 +1331,22 @@ function renderAdvAxesPanel(){
 let advRangeState = null;
 let advDragActive = false;
 let advDragStartX = null;
+let advDragMoved = false;
 
 function applyAdvQuickRange(code){
   if (code === 'custom') return;
   const now = new Date();
-  let desde;
+  let desde, hasta = now;
   if (code === 'all'){ desde = new Date(0); }
-  else {
+  else if (code === 'turno'){
+    const info = getShiftInfo(now); const bounds = getShiftBoundsClient(info.shift, info.base);
+    desde = bounds.start; hasta = now < bounds.end ? now : bounds.end;
+  } else {
     const map = { '6h':6*3600000, '12h':12*3600000, '24h':24*3600000, '2d':2*86400000, '7d':7*86400000, '30d':30*86400000, '90d':90*86400000 };
     desde = new Date(now.getTime() - (map[code] || 7*86400000));
   }
   document.getElementById('advDesde').value = toDatetimeLocalValue(desde);
-  document.getElementById('advHasta').value = toDatetimeLocalValue(now);
+  document.getElementById('advHasta').value = toDatetimeLocalValue(hasta);
 }
 function getAdvFilteredRange(){
   const desdeVal = document.getElementById('advDesde').value;
@@ -1222,9 +1364,7 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
   const explicitAxesInUse = advAxes.filter(ax => ids.some(id => advParamAxisMap[id] === ax.id));
   const AXIS_COL_WIDTH = 62;
   const noAxisSingleParam = (explicitAxesInUse.length === 0 && ids.length === 1);
-  const leftPad = explicitAxesInUse.length > 0
-    ? 24 + AXIS_COL_WIDTH * explicitAxesInUse.length
-    : (noAxisSingleParam ? 50 : 30);
+  const leftPad = explicitAxesInUse.length > 0 ? 24 + AXIS_COL_WIDTH * explicitAxesInUse.length : (noAxisSingleParam ? 50 : 30);
   const W = viewW, H = viewH;
   const chartW = W - leftPad, chartH = H - bottomPad;
   const scaleX = ts => leftPad + ((ts - t0)/(t1 - t0)) * chartW;
@@ -1237,45 +1377,50 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
       if (!isFinite(mn)){ mn = ax.min; mx = ax.max; }
       else { const pad = (mx-mn)*0.08 || Math.abs(mn)*0.05 || 1; mn -= pad; mx += pad; }
       axisRangeById[ax.id] = { min: mn, max: mx };
-    } else {
-      axisRangeById[ax.id] = { min: ax.min, max: ax.max };
-    }
+    } else { axisRangeById[ax.id] = { min: ax.min, max: ax.max }; }
   });
 
   const resolved = ids.map((id, i) => {
     const axId = advParamAxisMap[id];
     const axis = axId ? advAxes.find(a => a.id === axId) : null;
-    const pts = dataArrays[i];
+    let pts = dataArrays[i];
     const style = getOrCreateParamStyle(id);
     let min, max, unit, decimals = ALL_PARAM_DEFS[id].decimals, label = ALL_PARAM_DEFS[id].label;
-    if (axis && axisRangeById[axis.id]){
-      min = axisRangeById[axis.id].min; max = axisRangeById[axis.id].max; unit = axis.unit || ALL_PARAM_DEFS[id].unit;
-    } else {
+    if (axis && axisRangeById[axis.id]){ min = axisRangeById[axis.id].min; max = axisRangeById[axis.id].max; unit = axis.unit || ALL_PARAM_DEFS[id].unit; }
+    else {
       let mn = Infinity, mx = -Infinity;
       pts.forEach(p => { if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
       if (!isFinite(mn)){ mn = ALL_PARAM_DEFS[id].domain[0]; mx = ALL_PARAM_DEFS[id].domain[1]; }
-      if (mn === mx){ const pad = Math.abs(mn)*0.08 || 1; mn -= pad; mx += pad; }
-      else { const pad = (mx-mn)*0.08; mn -= pad; mx += pad; }
+      if (mn === mx){ const pad = Math.abs(mn)*0.08 || 1; mn -= pad; mx += pad; } else { const pad = (mx-mn)*0.08; mn -= pad; mx += pad; }
       min = mn; max = mx; unit = ALL_PARAM_DEFS[id].unit;
     }
-    return { id, axisId: axId || null, min, max, unit, decimals, label, style, pts };
+    const rawPts = pts;
+    const drawPts = advMovingAvg ? movingAverage(pts, advMovingAvgWindow) : pts;
+    return { id, axisId: axId || null, min, max, unit, decimals, label, style, pts: rawPts, drawPts };
   });
 
   const seriesList = resolved.map(r => {
-    const coords = r.pts.map(p => {
+    const coords = r.drawPts.map(p => {
       const x = scaleX(p.ts.getTime());
       const ratio = Math.max(0, Math.min(1, (p.v - r.min)/(r.max - r.min)));
       const y = chartH - ratio*(chartH-12) - 6;
       return { x, y, ts: p.ts, v: p.v };
     });
-    return { ...r, coords };
+    const rawCoords = r.pts.map(p => {
+      const x = scaleX(p.ts.getTime());
+      const ratio = Math.max(0, Math.min(1, (p.v - r.min)/(r.max - r.min)));
+      const y = chartH - ratio*(chartH-12) - 6;
+      return { x, y, ts: p.ts, v: p.v };
+    });
+    return { ...r, coords, rawCoords };
   });
 
   const spanMs = t1 - t0;
   const ticks = buildTimeTicks(desde, hasta, 6);
+  const gridStroke = gridStrokeColor();
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
-    const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
+    const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${gridStroke}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
     return `${gridLine}<text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
 
@@ -1287,7 +1432,7 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     [range.min, (range.min+range.max)/2, range.max].forEach(t => {
       const ratio = (t - range.min)/(range.max-range.min);
       const y = chartH - ratio*(chartH-12) - 6;
-      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${gridStroke}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
       axesColsSvg += `<text x="${colRight}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="${colColor}" font-weight="600">${t.toFixed(1)}</text>${gridLine}`;
     });
     const titleX = 24 + AXIS_COL_WIDTH*ai + 14;
@@ -1300,7 +1445,7 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     [s0.min, (s0.min+s0.max)/2, s0.max].forEach(t => {
       const ratio = (t - s0.min)/(s0.max-s0.min);
       const y = chartH - ratio*(chartH-12) - 6;
-      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${gridStroke}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
       axesColsSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text)">${t.toFixed(s0.decimals)}</text>${gridLine}`;
     });
     if (!advParamAxisMap[ids[0]]){
@@ -1312,6 +1457,21 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
       }).join('');
     }
   }
+
+  let paradasSvg = '';
+  if (advShowParadas && paradasListGlobal && paradasListGlobal.length){
+    paradasListGlobal.filter(e => e.ts >= desde && e.ts <= hasta && (e.evento === 'INICIO_PARADA' || e.evento === 'FIN_PARADA')).forEach(e => {
+      const x = scaleX(e.ts.getTime());
+      const color = e.evento === 'INICIO_PARADA' ? 'var(--crit)' : 'var(--ok)';
+      paradasSvg += `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${color}" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.75"><title>${e.evento === 'INICIO_PARADA' ? 'Inicio de parada' : 'Fin de parada'} — ${fmtTime(e.ts)}</title></line>`;
+    });
+  }
+
+  let annotationsSvg = '';
+  advAnnotations.filter(a => a.ts >= t0 && a.ts <= t1).forEach(a => {
+    const x = scaleX(a.ts);
+    annotationsSvg += `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="1 3" opacity="0.6"></line><circle cx="${x.toFixed(1)}" cy="8" r="4" fill="var(--accent)"><title>${a.text}</title></circle>`;
+  });
 
   let linesSvg = '';
   seriesList.forEach(s => {
@@ -1327,10 +1487,10 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     }
   });
 
-  advRangeState = { seriesList, leftPad, chartW, chartH, H };
+  advRangeState = { seriesList, leftPad, chartW, chartH, H, t0, t1 };
 
-  return `<svg id="advSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Análisis avanzado">
-    ${bandsSvg}${axesColsSvg}${xTicksSvg}
+  return `<svg id="advSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Análisis avanzado" style="${advAnnotationMode?'cursor:crosshair;':''}">
+    ${bandsSvg}${axesColsSvg}${xTicksSvg}${paradasSvg}${annotationsSvg}
     <rect id="advCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${chartH}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
     <rect id="advSelectionRect" x="0" y="0" width="0" height="${chartH}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
     <line id="advSelLine1" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
@@ -1340,10 +1500,17 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
 }
 function renderAdvLegend(ids){
   const legend = document.getElementById('advLegend');
-  legend.innerHTML = ids.map(id => {
-    const style = getOrCreateParamStyle(id);
-    return `<span class="legend-item"><span class="legend-swatch" style="background:${style.color}"></span>${ALL_PARAM_DEFS[id].label}</span>`;
-  }).join('');
+  legend.innerHTML = ids.map(id => { const style = getOrCreateParamStyle(id); return `<span class="legend-item"><span class="legend-swatch" style="background:${style.color}"></span>${ALL_PARAM_DEFS[id].label}</span>`; }).join('');
+}
+function renderAnnotationsList(){
+  const el = document.getElementById('advAnnotationsList');
+  if (!advAnnotations.length){ el.innerHTML = ''; return; }
+  const sorted = advAnnotations.slice().sort((a,b)=>a.ts-b.ts);
+  el.innerHTML = sorted.map(a => `<div class="adv-annotation-row"><span>${fmtTime(new Date(a.ts))} — ${a.text}</span><button type="button" data-ann-id="${a.id}">Eliminar</button></div>`).join('');
+  el.querySelectorAll('button[data-ann-id]').forEach(btn => btn.addEventListener('click', () => {
+    advAnnotations = advAnnotations.filter(a => a.id !== btn.dataset.annId);
+    saveAdvAnnotations(); renderAnnotationsList(); renderAdvChart();
+  }));
 }
 function renderAdvChart(){
   if (!advParamIds.length) advParamIds = [Object.keys(ALL_PARAM_DEFS)[0]];
@@ -1356,19 +1523,20 @@ function renderAdvChart(){
     container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>';
     document.getElementById('advLegend').innerHTML = '';
     advRangeState = null; clearAdvSelection();
-    return;
+  } else {
+    container.innerHTML = drawAdvChart(ids, dataArrays, desde, hasta, advShowGrid, 1300, 400);
+    renderAdvLegend(ids);
+    clearAdvSelection();
   }
-  container.innerHTML = drawAdvChart(ids, dataArrays, desde, hasta, advShowGrid, 1300, 400);
-  renderAdvLegend(ids);
-  clearAdvSelection();
+  renderAnnotationsList();
+  renderBrush();
 }
 
 function clientXToSvgX(svgEl, clientX){
   const rect = svgEl.getBoundingClientRect();
   const vb = svgEl.viewBox.baseVal;
   if (!rect.width) return vb.x;
-  const ratio = vb.width / rect.width;
-  return vb.x + (clientX - rect.left) * ratio;
+  return vb.x + (clientX - rect.left) * (vb.width / rect.width);
 }
 function updateAdvSelection(state, svgX0, svgX1){
   if (!state) return;
@@ -1381,25 +1549,30 @@ function updateAdvSelection(state, svgX0, svgX1){
   if (line2){ line2.setAttribute('x1', xB); line2.setAttribute('x2', xB); line2.style.display = 'block'; }
 
   let rangeTs0 = null, rangeTs1 = null;
+  const seriesVals = [];
   const rows = state.seriesList.map(s => {
-    const slice = s.coords.filter(p => p.x >= xA && p.x <= xB);
-    if (!slice.length) return { label: s.label, color: s.style.color, empty: true };
+    const slice = s.rawCoords.filter(p => p.x >= xA && p.x <= xB);
+    if (!slice.length){ seriesVals.push(null); return { label: s.label, color: s.style.color, empty: true }; }
     slice.forEach(p => { if (rangeTs0 === null || p.ts < rangeTs0) rangeTs0 = p.ts; if (rangeTs1 === null || p.ts > rangeTs1) rangeTs1 = p.ts; });
     const vals = slice.map(p => p.v);
-    return {
-      label: s.label, color: s.style.color,
-      avg: vals.reduce((a,b)=>a+b,0)/vals.length,
-      max: Math.max(...vals), min: Math.min(...vals),
-      std: stdDev(vals), count: vals.length,
-      unit: s.unit, decimals: s.decimals
-    };
+    seriesVals.push(slice.map(p => ({ts:p.ts, v:p.v})));
+    return { label: s.label, color: s.style.color, avg: vals.reduce((a,b)=>a+b,0)/vals.length, max: Math.max(...vals), min: Math.min(...vals), std: stdDev(vals), count: vals.length, unit: s.unit, decimals: s.decimals };
   });
 
   const statsEl = document.getElementById('advRangeStats');
   const durationStr = (rangeTs0 && rangeTs1) ? formatDurationClient(rangeTs1.getTime()-rangeTs0.getTime()) : '—';
-  const timeLine = (rangeTs0 && rangeTs1)
-    ? `<div class="hist-range-time"><strong>${fmtTime(rangeTs0)}</strong> → <strong>${fmtTime(rangeTs1)}</strong></div>`
-    : '<div class="hist-range-time">Sin datos en el rango seleccionado</div>';
+  const timeLine = (rangeTs0 && rangeTs1) ? `<div class="hist-range-time"><strong>${fmtTime(rangeTs0)}</strong> → <strong>${fmtTime(rangeTs1)}</strong></div>` : '<div class="hist-range-time">Sin datos en el rango seleccionado</div>';
+
+  let corrLine = '';
+  if (seriesVals.length === 2 && seriesVals[0] && seriesVals[1]){
+    const pairs = pairNearest(seriesVals[0], seriesVals[1], 15*60000);
+    if (pairs.length >= 3){
+      const r = pearson(pairs.map(p=>p[0]), pairs.map(p=>p[1]));
+      if (r !== null){
+        corrLine = `<div class="hist-corr-line">Correlación entre las dos series: r=${r.toFixed(2)} (${corrStrength(r)}, n=${pairs.length})</div>`;
+      }
+    }
+  }
 
   const headers = ['Serie'];
   if (advTableCols.min) headers.push('Mínimo');
@@ -1410,9 +1583,7 @@ function updateAdvSelection(state, svgX0, svgX1){
   if (advTableCols.duration) headers.push('Duración');
 
   const bodyRows = rows.map(r => {
-    if (r.empty){
-      return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td colspan="${headers.length-1}">Sin datos en el rango</td></tr>`;
-    }
+    if (r.empty) return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td colspan="${headers.length-1}">Sin datos en el rango</td></tr>`;
     const cells = [];
     if (advTableCols.min) cells.push(`<td>${r.min.toFixed(r.decimals)} ${r.unit}</td>`);
     if (advTableCols.max) cells.push(`<td>${r.max.toFixed(r.decimals)} ${r.unit}</td>`);
@@ -1423,7 +1594,7 @@ function updateAdvSelection(state, svgX0, svgX1){
     return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td>${cells.join('')}</tr>`;
   }).join('');
 
-  statsEl.innerHTML = timeLine + `<table class="hist-range-table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+  statsEl.innerHTML = timeLine + corrLine + `<table class="hist-range-table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyRows}</tbody></table>`;
 }
 function clearAdvSelection(){
   const selRect = document.getElementById('advSelectionRect');
@@ -1433,12 +1604,12 @@ function clearAdvSelection(){
   if (line1) line1.style.display = 'none';
   if (line2) line2.style.display = 'none';
   const statsEl = document.getElementById('advRangeStats');
-  if (statsEl) statsEl.innerHTML = '<span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span>';
+  if (statsEl) statsEl.innerHTML = '<span class="modal-text">Arrastrá sobre el gráfico principal para seleccionar un rango.</span>';
 }
 function advOnCaptureDown(clientX){
   if (!advRangeState) return;
   const svgEl = document.getElementById('advSvg'); if (!svgEl) return;
-  advDragActive = true;
+  advDragActive = true; advDragMoved = false;
   advDragStartX = clientXToSvgX(svgEl, clientX);
   updateAdvSelection(advRangeState, advDragStartX, advDragStartX);
 }
@@ -1446,15 +1617,143 @@ function advOnCaptureMove(clientX){
   if (!advDragActive || !advRangeState) return;
   const svgEl = document.getElementById('advSvg'); if (!svgEl) return;
   const svgX = clientXToSvgX(svgEl, clientX);
+  if (Math.abs(svgX - advDragStartX) > 3) advDragMoved = true;
   updateAdvSelection(advRangeState, advDragStartX, svgX);
 }
-function advOnCaptureUp(){ advDragActive = false; }
+function advOnCaptureUp(clientX){
+  if (!advDragActive) return;
+  advDragActive = false;
+  if (advAnnotationMode && !advDragMoved && advRangeState){
+    const t0 = advRangeState.t0, t1 = advRangeState.t1;
+    const ratio = (advDragStartX - advRangeState.leftPad) / advRangeState.chartW;
+    const ts = t0 + ratio*(t1-t0);
+    const text = prompt('Texto de la anotación:');
+    if (text && text.trim()){
+      advAnnotations.push({ id: 'ann_'+Date.now(), ts, text: text.trim() });
+      saveAdvAnnotations();
+      renderAdvChart();
+    }
+  }
+}
 document.addEventListener('mousedown', (e) => { if (e.target && e.target.id === 'advCaptureRect'){ e.preventDefault(); advOnCaptureDown(e.clientX); } });
 document.addEventListener('mousemove', (e) => { if (advDragActive) advOnCaptureMove(e.clientX); });
-document.addEventListener('mouseup', advOnCaptureUp);
+document.addEventListener('mouseup', (e) => { advOnCaptureUp(e.clientX); });
 document.addEventListener('touchstart', (e) => { if (e.target && e.target.id === 'advCaptureRect' && e.touches[0]) advOnCaptureDown(e.touches[0].clientX); }, {passive:true});
 document.addEventListener('touchmove', (e) => { if (advDragActive && e.touches[0]){ e.preventDefault(); advOnCaptureMove(e.touches[0].clientX); } }, {passive:false});
-document.addEventListener('touchend', advOnCaptureUp);
+document.addEventListener('touchend', () => advOnCaptureUp());
+
+/* ===== Vista miniatura (brush) para zoom ===== */
+let brushState = null;
+let brushDragActive = false;
+let brushDragStartX = null;
+function getBrushFullRange(){
+  let minTs = null, maxTs = new Date();
+  if (rowsGlobal.length){ minTs = rowsGlobal[0].ts; }
+  if (!minTs) minTs = new Date(Date.now() - 30*86400000);
+  return { desde: minTs, hasta: new Date() };
+}
+function drawBrushChart(id, desdeFull, hastaFull, currentDesde, currentHasta, viewW=1300, viewH=60){
+  const W = viewW, H = viewH;
+  const t0 = desdeFull.getTime(), t1 = Math.max(hastaFull.getTime(), t0+1);
+  const scaleX = ts => ((ts - t0)/(t1-t0)) * W;
+  const pts = getParamPointsInRange(id, desdeFull, hastaFull);
+  let line = '';
+  if (pts.length > 1){
+    let mn = Infinity, mx = -Infinity;
+    pts.forEach(p => { if (p.v<mn) mn=p.v; if (p.v>mx) mx=p.v; });
+    if (mn===mx){ mn-=1; mx+=1; }
+    const coords = pts.map(p => [scaleX(p.ts.getTime()), H - ((p.v-mn)/(mx-mn))*(H-6) - 3]);
+    line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
+  }
+  const selX0 = scaleX(Math.max(t0, currentDesde.getTime()));
+  const selX1 = scaleX(Math.min(t1, currentHasta.getTime()));
+  brushState = { t0, t1, W };
+  return `<svg id="advBrushSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="brush-svg" role="img" aria-label="Selector de rango">
+    <rect x="0" y="0" width="${W}" height="${H}" fill="var(--panel-alt)"></rect>
+    ${line?`<path d="${line}" fill="none" stroke="var(--text-faint)" stroke-width="1.2"></path>`:''}
+    <rect id="advBrushCapture" x="0" y="0" width="${W}" height="${H}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
+    <rect id="advBrushSelection" x="${Math.min(selX0,selX1).toFixed(1)}" y="0" width="${Math.max(1,Math.abs(selX1-selX0)).toFixed(1)}" height="${H}" fill="var(--accent)" opacity="0.25" stroke="var(--accent)" stroke-width="1" pointer-events="none"></rect>
+  </svg>`;
+}
+function renderBrush(){
+  const id = advParamIds.length ? advParamIds[0] : Object.keys(ALL_PARAM_DEFS)[0];
+  const full = getBrushFullRange();
+  const { desde, hasta } = getAdvFilteredRange();
+  document.getElementById('advBrushContainer').innerHTML = drawBrushChart(id, full.desde, full.hasta, desde, hasta, 1300, 60);
+}
+function brushClientXToX(svgEl, clientX){
+  const rect = svgEl.getBoundingClientRect();
+  const vb = svgEl.viewBox.baseVal;
+  if (!rect.width) return 0;
+  return (clientX - rect.left) * (vb.width / rect.width);
+}
+function brushXToDate(x){ if (!brushState) return new Date(); const ratio = x / brushState.W; return new Date(brushState.t0 + ratio*(brushState.t1 - brushState.t0)); }
+document.addEventListener('mousedown', (e) => {
+  if (e.target && e.target.id === 'advBrushCapture'){
+    e.preventDefault();
+    const svgEl = document.getElementById('advBrushSvg');
+    brushDragActive = true;
+    brushDragStartX = brushClientXToX(svgEl, e.clientX);
+  }
+});
+document.addEventListener('mousemove', (e) => {
+  if (!brushDragActive || !brushState) return;
+  const svgEl = document.getElementById('advBrushSvg'); if (!svgEl) return;
+  const x = brushClientXToX(svgEl, e.clientX);
+  const selRect = document.getElementById('advBrushSelection');
+  if (selRect){ selRect.setAttribute('x', Math.min(brushDragStartX, x)); selRect.setAttribute('width', Math.max(1, Math.abs(x-brushDragStartX))); }
+});
+document.addEventListener('mouseup', () => {
+  if (!brushDragActive || !brushState) return;
+  brushDragActive = false;
+  const selRect = document.getElementById('advBrushSelection'); if (!selRect) return;
+  const x0 = parseFloat(selRect.getAttribute('x')); const w = parseFloat(selRect.getAttribute('width'));
+  if (w < 4) return;
+  const d0 = brushXToDate(x0), d1 = brushXToDate(x0+w);
+  document.getElementById('advDesde').value = toDatetimeLocalValue(d0);
+  document.getElementById('advHasta').value = toDatetimeLocalValue(d1);
+  document.getElementById('advQuickRange').value = 'custom';
+  renderAdvChart();
+});
+
+/* ===== Comparar el mismo parámetro en varios días ===== */
+function drawCompareDaysChart(cfg, seriesByDate, viewW=1300, viewH=340){
+  const W = viewW, H = viewH, leftPad = 50, bottomPad = 24;
+  const chartW = W - leftPad, chartH = H - bottomPad;
+  const scaleX = hourFrac => leftPad + (hourFrac/24)*chartW;
+  let mn = cfg.domain[0], mx = cfg.domain[1];
+  const allVals = [];
+  seriesByDate.forEach(s => s.points.forEach(p => allVals.push(p.v)));
+  if (allVals.length){ mn = Math.min(...allVals); mx = Math.max(...allVals); if (mn===mx){ mn-=1; mx+=1; } else { const pad=(mx-mn)*0.08; mn-=pad; mx+=pad; } }
+  const scaleYv = v => chartH - ((v-mn)/(mx-mn))*(chartH-12) - 6;
+
+  const yTicks = [mn,(mn+mx)/2,mx].map(t => `<text x="${leftPad-8}" y="${(scaleYv(t)+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${scaleYv(t).toFixed(1)}" x2="${W}" y2="${scaleYv(t).toFixed(1)}" stroke="${MAIN_GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>`).join('');
+  const xTicks = [0,6,12,18,24].map(h => `<text x="${scaleX(h).toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${String(h).padStart(2,'0')}:00</text><line x1="${scaleX(h).toFixed(1)}" y1="0" x2="${scaleX(h).toFixed(1)}" y2="${chartH}" stroke="${MAIN_GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>`).join('');
+
+  let linesSvg = '';
+  seriesByDate.forEach((s,i) => {
+    const color = COMPARE_DAY_COLORS[i % COMPARE_DAY_COLORS.length];
+    if (s.points.length > 1){
+      const coords = s.points.map(p => [scaleX(p.hourFrac), scaleYv(p.v)]);
+      linesSvg += `<path d="M ${coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"></path>`;
+    }
+  });
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Comparación de días">${yTicks}${xTicks}${linesSvg}</svg>`;
+}
+document.getElementById('advCompareDaysBtn').addEventListener('click', () => {
+  const id = document.getElementById('advCompareParamSelect').value;
+  const cfg = ALL_PARAM_DEFS[id];
+  const dateInputs = [1,2,3,4,5].map(n => document.getElementById('advCompareDate'+n).value).filter(Boolean);
+  const seriesByDate = dateInputs.map(dStr => {
+    const day = new Date(dStr + 'T00:00:00');
+    const dayEnd = new Date(dStr + 'T23:59:59');
+    const pts = getParamPointsInRange(id, day, dayEnd).map(p => ({ hourFrac: p.ts.getHours() + p.ts.getMinutes()/60, v: p.v }));
+    return { date: dStr, points: pts };
+  });
+  document.getElementById('advCompareDaysChart').innerHTML = drawCompareDaysChart(cfg, seriesByDate, 1300, 340);
+  document.getElementById('advCompareDaysLegend').innerHTML = seriesByDate.map((s,i) => `<span class="legend-item"><span class="legend-swatch" style="background:${COMPARE_DAY_COLORS[i % COMPARE_DAY_COLORS.length]}"></span>${s.date}</span>`).join('');
+});
 
 /* ===== Interacciones del modal de análisis avanzado ===== */
 function togglePanel(panelId, btnId){
@@ -1466,12 +1765,13 @@ function togglePanel(panelId, btnId){
 document.getElementById('advToggleParams').addEventListener('click', () => { togglePanel('advParamsPanel','advToggleParams'); renderAdvParamsChecklist(); });
 document.getElementById('advToggleAxes').addEventListener('click', () => { togglePanel('advAxesPanel','advToggleAxes'); renderAdvAxesPanel(); });
 document.getElementById('advToggleCols').addEventListener('click', () => togglePanel('advColsPanel','advToggleCols'));
-document.getElementById('advToggleGrid').addEventListener('click', (e) => {
-  advShowGrid = !advShowGrid;
-  e.currentTarget.classList.toggle('active', advShowGrid);
+document.getElementById('advToggleSettings').addEventListener('click', () => togglePanel('advSettingsPanel','advToggleSettings'));
+document.getElementById('advToggleCompareDays').addEventListener('click', () => togglePanel('advCompareDaysPanel','advToggleCompareDays'));
+document.getElementById('advToggleAnnotate').addEventListener('click', (e) => {
+  advAnnotationMode = !advAnnotationMode;
+  e.currentTarget.classList.toggle('active', advAnnotationMode);
   renderAdvChart();
 });
-document.getElementById('advToggleGrid').classList.add('active');
 
 document.getElementById('advAxisAddBtn').addEventListener('click', () => {
   const name = document.getElementById('advAxisName').value.trim();
@@ -1482,35 +1782,50 @@ document.getElementById('advAxisAddBtn').addEventListener('click', () => {
   if (!name) return;
   if (!auto && (Number.isNaN(min) || Number.isNaN(max) || min >= max)) return;
   advAxes.push({ id: 'axis_' + Date.now(), label: name, unit: unit || '', min: Number.isNaN(min)?0:min, max: Number.isNaN(max)?100:max, auto });
-  document.getElementById('advAxisName').value = '';
-  document.getElementById('advAxisUnit').value = '';
-  document.getElementById('advAxisMin').value = '';
-  document.getElementById('advAxisMax').value = '';
+  document.getElementById('advAxisName').value = ''; document.getElementById('advAxisUnit').value = '';
+  document.getElementById('advAxisMin').value = ''; document.getElementById('advAxisMax').value = '';
   document.getElementById('advAxisAuto').checked = true;
-  renderAdvAxesPanel();
-  renderAdvChart();
+  saveAdvConfig(); renderAdvAxesPanel(); renderAdvChart();
 });
 ['advColMin','advColMax','advColAvg','advColStd','advColCount','advColDuration'].forEach(id => {
   document.getElementById(id).addEventListener('change', (e) => {
     const key = { advColMin:'min', advColMax:'max', advColAvg:'avg', advColStd:'std', advColCount:'count', advColDuration:'duration' }[id];
     advTableCols[key] = e.target.checked;
+    saveAdvConfig();
   });
 });
-document.getElementById('advQuickRange').addEventListener('change', () => {
-  applyAdvQuickRange(document.getElementById('advQuickRange').value);
-  renderAdvChart();
+document.getElementById('advGridColorInput').addEventListener('input', (e) => { advGridColor = e.target.value; saveAdvConfig(); renderAdvChart(); });
+document.getElementById('advShowParadasCheck').addEventListener('change', (e) => { advShowParadas = e.target.checked; saveAdvConfig(); renderAdvChart(); });
+document.getElementById('advMovingAvgCheck').addEventListener('change', (e) => { advMovingAvg = e.target.checked; saveAdvConfig(); renderAdvChart(); });
+document.getElementById('advMovingAvgWindowInput').addEventListener('change', (e) => { advMovingAvgWindow = Math.max(2, parseInt(e.target.value,10)||5); saveAdvConfig(); renderAdvChart(); });
+document.getElementById('advResetConfigBtn').addEventListener('click', () => {
+  localStorage.removeItem(ADV_CONFIG_KEY);
+  advParamIds = []; advAxes = []; advParamAxisMap = {}; advParamStyle = {};
+  advShowGrid = true; advTableCols = { min:true,max:true,avg:true,std:true,count:true,duration:true };
+  advGridColor = '#94A3B8'; advShowParadas = true; advMovingAvg = false; advMovingAvgWindow = 5;
+  document.getElementById('advGridColorInput').value = advGridColor;
+  document.getElementById('advShowParadasCheck').checked = true;
+  document.getElementById('advMovingAvgCheck').checked = false;
+  document.getElementById('advMovingAvgWindowInput').value = 5;
+  const mainId = document.getElementById('mainHistParamSelect').value;
+  advParamIds = [mainId]; getOrCreateParamStyle(mainId);
+  renderAdvParamsChecklist(); renderAdvAxesPanel(); renderAdvChart();
 });
+document.getElementById('advQuickRange').addEventListener('change', () => { applyAdvQuickRange(document.getElementById('advQuickRange').value); renderAdvChart(); });
 document.getElementById('advFiltrarBtn').addEventListener('click', renderAdvChart);
 document.getElementById('advCloseBtn').addEventListener('click', () => { document.getElementById('advChartOverlay').style.display = 'none'; });
 
 document.getElementById('openAdvChartBtn').addEventListener('click', () => {
-  const mainId = document.getElementById('mainHistParamSelect').value;
-  advParamIds = [mainId];
-  getOrCreateParamStyle(mainId);
+  if (!advParamIds.length){
+    const mainId = document.getElementById('mainHistParamSelect').value;
+    advParamIds = [mainId]; getOrCreateParamStyle(mainId);
+  }
+  document.getElementById('advGridColorInput').value = advGridColor;
+  document.getElementById('advShowParadasCheck').checked = advShowParadas;
+  document.getElementById('advMovingAvgCheck').checked = advMovingAvg;
+  document.getElementById('advMovingAvgWindowInput').value = advMovingAvgWindow;
   if (!document.getElementById('advDesde').value) applyAdvQuickRange('7d');
-  renderAdvParamsChecklist();
-  renderAdvAxesPanel();
-  renderAdvChart();
+  renderAdvParamsChecklist(); renderAdvAxesPanel(); renderAdvChart();
   document.getElementById('advChartOverlay').style.display = 'flex';
 });
 
@@ -1524,15 +1839,11 @@ function renderTurnoInfo(){
 function renderRitmo(rows){ renderTurnoInfo(); }
 setInterval(renderTurnoInfo, 60 * 1000);
 
-/* RENDER — cards, tabla, calidad */
+/* RENDER — cards */
 function buildMarchaRow(id){
   const entries = CARD_MARCHA_MAP[id];
   if (!entries) return '';
-  const chips = entries.map(e => {
-    const val = latestPlcState ? latestPlcState[e.key] : null;
-    const isOn = String(val) === '1';
-    return `<span class="marcha-chip${isOn?' on':''}">${e.label}</span>`;
-  }).join('');
+  const chips = entries.map(e => { const val = latestPlcState ? latestPlcState[e.key] : null; const isOn = String(val) === '1'; return `<span class="marcha-chip${isOn?' on':''}">${e.label}</span>`; }).join('');
   return `<div class="card-marcha-row">${chips}</div>`;
 }
 function renderCards(rows){
@@ -1542,7 +1853,6 @@ function renderCards(rows){
   grid.innerHTML = '';
   for (const [id, cfg] of Object.entries(ALL_PARAM_DEFS)){
     let currentVal, footTime, footOperator, pts;
-
     if (COMPUTED_PARAMS[id]){
       const latest = getLatestComputedValue(id);
       currentVal = latest ? latest.v : null;
@@ -1553,16 +1863,13 @@ function renderCards(rows){
       currentVal = last ? last.values[id] : null;
       footTime = last ? fmtTime(last.ts) : '—';
       footOperator = last ? last.operador : '';
-
       const liveKey = LIVE_PLC_PARAM_MAP[id];
       if (liveKey && latestPlcState && latestPlcState[liveKey] !== null && latestPlcState[liveKey] !== undefined && !Number.isNaN(latestPlcState[liveKey])){
-        currentVal = latestPlcState[liveKey];
-        footOperator = 'PLC';
+        currentVal = latestPlcState[liveKey]; footOperator = 'PLC';
         if (latestPlcState.lastUpdate) footTime = fmtTime(latestPlcState.lastUpdate);
       }
       pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     }
-
     const res = evalFromBands(currentVal, cfg.bands);
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
     const changed = !isFirstRender && prevCardValues[id] !== undefined && prevCardValues[id] !== currentVal && currentVal !== null;
@@ -1588,37 +1895,13 @@ function renderQuality(rows, parseStats){
   const list = document.getElementById('qualityList'); const window = rows.slice(-QUALITY_WINDOW); const items = [];
   if (parseStats.missing && parseStats.missing.length) items.push(`<li><span>⚠ Columna no encontrada: ${parseStats.missing.join(', ')}</span><span class="qty warn-count">revisar nombre</span></li>`);
   for (const [id, cfg] of Object.entries(PARAMS)){ const missing = window.filter(r => r.values[id] === null).length; if (missing > 0) items.push(`<li><span>${cfg.label}</span><span class="qty ${missing > window.length*0.15 ? 'warn-count':''}">${missing} sin dato</span></li>`); }
-  if (parseStats.tsFailed > 0) items.push(`<li><span>Filas con fecha/hora ilegible (todo el histórico)</span><span class="qty warn-count">${parseStats.tsFailed}</span></li>`);
-  list.innerHTML = items.length ? items.join('') : '<li><span>Sin problemas detectados en la ventana analizada</span><span class="qty">✓</span></li>';
+  if (parseStats.tsFailed > 0) items.push(`<li><span>Filas con fecha/hora ilegible</span><span class="qty warn-count">${parseStats.tsFailed}</span></li>`);
+  list.innerHTML = items.length ? items.join('') : '<li><span>Sin problemas detectados</span><span class="qty">✓</span></li>';
 }
 
 document.getElementById('mainHistParamSelect').addEventListener('change', renderMainHistChart);
 document.getElementById('mainHistRangeSelect').addEventListener('change', renderMainHistChart);
-
-/* RENDER — correlaciones laboratorio */
-function renderCorrList(labKey){
-  const list = document.getElementById('corrList');
-  if (!labRows.length){ list.innerHTML = '<li><span>Subí un archivo de laboratorio para ver correlaciones.</span></li>'; return; }
-  const results = [];
-  for (const [id, cfg] of Object.entries(PARAMS)){
-    const pairs = [];
-    for (const lab of labRows){
-      const labVal = lab[labKey]; if (labVal === null || labVal === undefined || Number.isNaN(labVal)) continue;
-      const match = findNearestRow(rowsGlobal, lab.ts, 3*3600*1000); if (!match) continue;
-      const procVal = match.values[id]; if (procVal === null) continue;
-      pairs.push([procVal, labVal]);
-    }
-    if (pairs.length < 5){ results.push({cfg, r:null, n:pairs.length}); continue; }
-    const r = pearson(pairs.map(p=>p[0]), pairs.map(p=>p[1])); results.push({cfg, r, n:pairs.length});
-  }
-  results.sort((a,b) => (b.r===null?-1:Math.abs(b.r)) - (a.r===null?-1:Math.abs(a.r)));
-  list.innerHTML = results.map(res => {
-    if (res.r === null) return `<li><span>${res.cfg.label}</span><span class="qty">datos insuficientes (n=${res.n})</span></li>`;
-    const color = res.r >= 0 ? 'var(--ok)' : 'var(--crit)';
-    return `<li><span>${res.cfg.label}</span><span class="qty" style="color:${color}">r=${res.r.toFixed(2)} · ${corrStrength(res.r)} (n=${res.n})</span></li>`;
-  }).join('');
-}
-document.getElementById('labVarSelect').addEventListener('change', () => renderCorrList(document.getElementById('labVarSelect').value));
+document.getElementById('labVarSelect').addEventListener('change', () => corrLabList(document.getElementById('labVarSelect').value));
 document.getElementById('labFileInput').addEventListener('change', async (e) => {
   const file = e.target.files[0]; if (!file) return;
   document.getElementById('labFileStatus').textContent = 'Leyendo archivo…';
@@ -1629,11 +1912,10 @@ document.getElementById('labFileInput').addEventListener('change', async (e) => 
     if (parsed.missing.length) msg += ` — ⚠ no encontradas: ${parsed.missing.join(', ')}`;
     if (parsed.tsFailed > 0) msg += ` — ${parsed.tsFailed} filas con fecha/hora ilegible`;
     document.getElementById('labFileStatus').textContent = msg;
-    renderCorrList(document.getElementById('labVarSelect').value);
+    corrLabList(document.getElementById('labVarSelect').value);
   } catch(err){ console.error(err); document.getElementById('labFileStatus').textContent = 'Error al leer el archivo: ' + err.message; }
 });
 
-/* RENDER — torta operarios */
 function computeOperatorCounts(rows){
   const counts = {};
   for (const r of rows){ if (r.ts < OPERATOR_COUNT_SINCE) continue; const op = (r.operador || '').trim() || '(sin nombre)'; counts[op] = (counts[op]||0) + 1; }
@@ -1660,7 +1942,6 @@ function renderOperatorPie(){
   if (a) a.innerHTML = html; if (b) b.innerHTML = html;
 }
 
-/* VISTA OPERARIO / SUPERVISOR + LOGIN */
 function isAuthed(){ return localStorage.getItem(AUTH_KEY) === '1'; }
 function setAuthed(v){ if (v) localStorage.setItem(AUTH_KEY,'1'); else localStorage.removeItem(AUTH_KEY); }
 function setView(view){ document.body.classList.toggle('view-operario', view === 'operario'); document.getElementById('viewToggle').textContent = view === 'operario' ? 'Vista supervisor' : 'Vista operario'; }
@@ -1679,12 +1960,10 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', () => { setAuthed(false); currentView = 'operario'; setView(currentView); });
 
-/* PANTALLA COMPLETA */
 function updateFullscreenBtn(){ const btn = document.getElementById('fullscreenBtn'); btn.title = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa'; }
 document.getElementById('fullscreenBtn').addEventListener('click', () => { if (!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(err => console.error(err)); } else { document.exitFullscreen(); } });
 document.addEventListener('fullscreenchange', updateFullscreenBtn); updateFullscreenBtn();
 
-/* RECORDATORIO DIARIO 6:00 */
 function todayKey(d){ return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 function checkSiloReminder(){
   const inOperario = document.body.classList.contains('view-operario'); const now = new Date(); const overlay = document.getElementById('siloOverlay');
@@ -1694,7 +1973,6 @@ function checkSiloReminder(){
 document.getElementById('siloAccept').addEventListener('click', () => { localStorage.setItem(SILO_KEY, todayKey(new Date())); document.getElementById('siloOverlay').style.display = 'none'; });
 checkSiloReminder(); setInterval(checkSiloReminder, 60 * 1000);
 
-/* REGISTRO DE PARADAS (solo lectura — la detección corre en Apps Script) */
 async function fetchParadasRemote(){
   try{
     const res = await fetch(PARADAS_SHEET_URL + '&_ts=' + Date.now(), {cache:'no-store'}); if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1702,14 +1980,7 @@ async function fetchParadasRemote(){
     for (let r=1; r<raw.length; r++){
       const row = raw[r]; if (!row || row.every(c=>!c)) continue;
       const ts = parseTimestamp(row[0]); if (!ts) continue;
-      list.push({
-        ts,
-        evento: row[1] || '',
-        criterio: row[2] || '',
-        duracionMin: (row[3] !== undefined && row[3] !== '') ? parseFloat(row[3]) : null,
-        operador: row[4] || '',
-        turno: row[5] || ''
-      });
+      list.push({ ts, evento: row[1] || '', criterio: row[2] || '', duracionMin: (row[3] !== undefined && row[3] !== '') ? parseFloat(row[3]) : null, operador: row[4] || '', turno: row[5] || '' });
     }
     list.sort((a,b)=>a.ts-b.ts); return list;
   } catch(err){ console.error('Error leyendo registro de paradas:', err); return null; }
@@ -1718,87 +1989,38 @@ function getParadasFilteredRange(){
   const rangeVal = document.getElementById('paradasRangeSelect').value;
   const desdeVal = document.getElementById('paradasDesde').value;
   const hastaVal = document.getElementById('paradasHasta').value;
-
-  if (desdeVal || hastaVal){
-    const desde = desdeVal ? new Date(desdeVal + 'T00:00:00') : new Date(0);
-    const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59') : new Date();
-    return { desde, hasta };
-  }
-
+  if (desdeVal || hastaVal){ const desde = desdeVal ? new Date(desdeVal + 'T00:00:00') : new Date(0); const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59') : new Date(); return { desde, hasta }; }
   const now = new Date();
-  if (rangeVal === 'hoy'){
-    const desde = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    return { desde, hasta: now };
-  }
+  if (rangeVal === 'hoy'){ const desde = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0); return { desde, hasta: now }; }
   if (rangeVal === 'all') return { desde: new Date(0), hasta: now };
-  const days = parseInt(rangeVal, 10);
-  const desde = new Date(now.getTime() - days*24*3600*1000);
-  return { desde, hasta: now };
+  const days = parseInt(rangeVal, 10); return { desde: new Date(now.getTime() - days*24*3600*1000), hasta: now };
 }
 function renderParadas(){
-  const summaryEl = document.getElementById('paradasSummary');
-  const tbodyEl = document.getElementById('paradasTbody');
-  if (!summaryEl) return;
-
-  if (paradasFetchFailed && !paradasListGlobal.length){
-    summaryEl.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>';
-    tbodyEl.innerHTML = '';
-    return;
-  }
-  if (!paradasListGlobal.length){
-    summaryEl.innerHTML = '<li><span>Sin eventos registrados todavía.</span></li>';
-    tbodyEl.innerHTML = '<tr><td colspan="5">Sin eventos registrados todavía.</td></tr>';
-    return;
-  }
-
+  const summaryEl = document.getElementById('paradasSummary'); const tbodyEl = document.getElementById('paradasTbody'); if (!summaryEl) return;
+  if (paradasFetchFailed && !paradasListGlobal.length){ summaryEl.innerHTML = '<li><span>No se pudo leer el registro compartido.</span></li>'; tbodyEl.innerHTML = ''; return; }
+  if (!paradasListGlobal.length){ summaryEl.innerHTML = '<li><span>Sin eventos registrados todavía.</span></li>'; tbodyEl.innerHTML = '<tr><td colspan="5">Sin eventos registrados todavía.</td></tr>'; return; }
   const { desde, hasta } = getParadasFilteredRange();
   const filtered = paradasListGlobal.filter(e => e.ts >= desde && e.ts <= hasta);
-
   const inicios = filtered.filter(e => e.evento === 'INICIO_PARADA');
   const fins = filtered.filter(e => e.evento === 'FIN_PARADA');
   const tiempoTotalMin = fins.reduce((s,e)=> s + (e.duracionMin || 0), 0);
-
   let paradaEnCursoMin = null;
   const ultimo = paradasListGlobal[paradasListGlobal.length-1];
   if (ultimo.evento === 'INICIO_PARADA') paradaEnCursoMin = (Date.now() - ultimo.ts.getTime()) / 60000;
-
-  summaryEl.innerHTML = `
-    <li><span>Paradas en el período</span><span class="qty">${inicios.length}</span></li>
-    <li><span>Tiempo detenido (paradas cerradas en el período)</span><span class="qty">${tiempoTotalMin.toFixed(0)} min</span></li>
-    ${paradaEnCursoMin !== null ? `<li><span>Parada en curso (tiempo real, no depende del filtro)</span><span class="qty warn-count">${paradaEnCursoMin.toFixed(0)} min y sigue</span></li>` : ''}
-  `;
-
+  summaryEl.innerHTML = `<li><span>Paradas en el período</span><span class="qty">${inicios.length}</span></li><li><span>Tiempo detenido (paradas cerradas en el período)</span><span class="qty">${tiempoTotalMin.toFixed(0)} min</span></li>${paradaEnCursoMin !== null ? `<li><span>Parada en curso</span><span class="qty warn-count">${paradaEnCursoMin.toFixed(0)} min y sigue</span></li>` : ''}`;
   const recent = filtered.slice(-40).reverse();
-  tbodyEl.innerHTML = recent.length ? recent.map(e => {
-    const tag = e.evento === 'INICIO_PARADA' ? '🔴 Inicio de parada' : (e.evento === 'FIN_PARADA' ? '🟢 Fin de parada' : e.evento);
-    const dur = (e.duracionMin != null) ? `${e.duracionMin.toFixed(0)} min` : '—';
-    return `<tr><td>${fmtTime(e.ts)}</td><td>${tag}</td><td>${e.criterio}</td><td>${dur}</td><td>${e.turno}</td></tr>`;
-  }).join('') : '<tr><td colspan="5">Sin eventos en el período seleccionado.</td></tr>';
+  tbodyEl.innerHTML = recent.length ? recent.map(e => { const tag = e.evento === 'INICIO_PARADA' ? '🔴 Inicio de parada' : (e.evento === 'FIN_PARADA' ? '🟢 Fin de parada' : e.evento); const dur = (e.duracionMin != null) ? `${e.duracionMin.toFixed(0)} min` : '—'; return `<tr><td>${fmtTime(e.ts)}</td><td>${tag}</td><td>${e.criterio}</td><td>${dur}</td><td>${e.turno}</td></tr>`; }).join('') : '<tr><td colspan="5">Sin eventos en el período seleccionado.</td></tr>';
 }
-function refreshParadas(){
-  fetchParadasRemote().then(list => {
-    if (list === null){ paradasFetchFailed = true; }
-    else { paradasFetchFailed = false; paradasListGlobal = list; }
-    renderParadas();
-  });
-}
-document.getElementById('paradasRangeSelect').addEventListener('change', () => {
-  document.getElementById('paradasDesde').value = '';
-  document.getElementById('paradasHasta').value = '';
-  renderParadas();
-});
+function refreshParadas(){ fetchParadasRemote().then(list => { if (list === null){ paradasFetchFailed = true; } else { paradasFetchFailed = false; paradasListGlobal = list; } renderParadas(); }); }
+document.getElementById('paradasRangeSelect').addEventListener('change', () => { document.getElementById('paradasDesde').value = ''; document.getElementById('paradasHasta').value = ''; renderParadas(); });
 document.getElementById('paradasFiltrarBtn').addEventListener('click', renderParadas);
-refreshParadas();
-setInterval(refreshParadas, REFRESH_MS);
+refreshParadas(); setInterval(refreshParadas, REFRESH_MS);
 
-/* ESTADO PLC EN VIVO */
 function parsePlcNumber(v){
   if (v === undefined || v === null || v === '') return null;
-  let s = String(v).trim();
-  if (s === '') return null;
+  let s = String(v).trim(); if (s === '') return null;
   if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
-  const n = parseFloat(s);
-  return Number.isNaN(n) ? null : n;
+  const n = parseFloat(s); return Number.isNaN(n) ? null : n;
 }
 async function fetchPlantState(){
   try{
@@ -1810,7 +2032,7 @@ async function fetchPlantState(){
       marchaExpander: map['Marcha Expander'], marchaAlimExpander: map['Marcha Alim. Expander'],
       marchaLam1: map['Marcha Laminador 1'], marchaLam2: map['Marcha Laminador 2'],
       totalizadoActual: parsePlcNumber(map['Totalizado actual (kg)']),
-      totalizadoMedianoche: parsePlcNumber(map['Totalizado 00:00 de hoy (kg)']),
+      totalizadoInicioDiaOperativo: parsePlcNumber(map['Totalizado inicio día operativo (kg)']),
       totalizadoInicioTurno: parsePlcNumber(map['Totalizado inicio turno (kg)']),
       caudalBalanza: parsePlcNumber(map['Caudal Balanza (tn/h)']),
       corrienteExpander: parsePlcNumber(map['Corriente Expander (A)']), temperaturaExpander: parsePlcNumber(map['Temperatura Expander (°C)']),
@@ -1822,58 +2044,31 @@ function computeRitmoDesdeDelta(totalizadoActual, lastUpdate){
   if (totalizadoActual === null || !lastUpdate) return null;
   let prev = null;
   try { prev = JSON.parse(localStorage.getItem(RITMO_STORAGE_KEY) || 'null'); } catch(e){ prev = null; }
-
-  const nowTs = lastUpdate.getTime();
-  let rate = null;
-
+  const nowTs = lastUpdate.getTime(); let rate = null;
   if (prev && typeof prev.value === 'number' && typeof prev.ts === 'number'){
     const deltaSec = (nowTs - prev.ts) / 1000;
     if (deltaSec >= RITMO_MIN_DELTA_SEC && deltaSec <= RITMO_MAX_DELTA_SEC){
       const deltaKg = totalizadoActual - prev.value;
-      if (deltaKg >= 0){
-        rate = (deltaKg / 1000) / (deltaSec / 3600);
-      }
+      if (deltaKg >= 0) rate = (deltaKg / 1000) / (deltaSec / 3600);
     }
   }
-
-  if (!prev || prev.ts !== nowTs){
-    localStorage.setItem(RITMO_STORAGE_KEY, JSON.stringify({ value: totalizadoActual, ts: nowTs }));
-  }
-
+  if (!prev || prev.ts !== nowTs) localStorage.setItem(RITMO_STORAGE_KEY, JSON.stringify({ value: totalizadoActual, ts: nowTs }));
   return rate;
 }
-
-function computeRitmoPromedioDesdeMedianoche(totalizadoActual, totalizadoMedianoche, lastUpdate){
-  if (totalizadoActual === null || totalizadoMedianoche === null || !lastUpdate) return null;
-  const medianoche = new Date(lastUpdate.getFullYear(), lastUpdate.getMonth(), lastUpdate.getDate(), 0, 0, 0);
-  const horasTranscurridas = (lastUpdate.getTime() - medianoche.getTime()) / 3600000;
-  if (horasTranscurridas < (5/60)) return null;
-  const deltaKg = totalizadoActual - totalizadoMedianoche;
-  if (deltaKg < 0) return null;
-  return (deltaKg/1000) / horasTranscurridas;
-}
-
-function loadLastGoodRitmo(){
-  try { return JSON.parse(localStorage.getItem(RITMO_LASTGOOD_KEY) || 'null'); } catch(e){ return null; }
-}
-function saveLastGoodRitmo(value, ts){
-  localStorage.setItem(RITMO_LASTGOOD_KEY, JSON.stringify({ value, ts }));
-}
+function loadLastGoodRitmo(){ try { return JSON.parse(localStorage.getItem(RITMO_LASTGOOD_KEY) || 'null'); } catch(e){ return null; } }
+function saveLastGoodRitmo(value, ts){ localStorage.setItem(RITMO_LASTGOOD_KEY, JSON.stringify({ value, ts })); }
 
 function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const ritmoDiffEl = document.getElementById('plcRitmoDiff');
   const turnoTnEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
   const projTurnoEl = document.getElementById('ritmoProjTurnoCompleto');
-  const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
-  const ritmoLabelEl = document.getElementById('plcRitmoLabel');
-  const heroEl = document.getElementById('ritmoHero');
+  const estadoGeneralEl = document.getElementById('plcEstadoGeneral'); const ritmoLabelEl = document.getElementById('plcRitmoLabel'); const heroEl = document.getElementById('ritmoHero');
   if (!metaEl) return;
 
   if (!state || !state.lastUpdate){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
-    if (ritmoDiffEl) ritmoDiffEl.textContent = '';
-    turnoTnEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
+    if (ritmoDiffEl) ritmoDiffEl.textContent = ''; turnoTnEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
     if (projTurnoEl){ projTurnoEl.textContent = ''; projTurnoEl.className = 'ritmo-stat-sub'; }
     if (estadoGeneralEl) estadoGeneralEl.textContent = 'SIN DATO';
     if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido';
@@ -1885,17 +2080,17 @@ function renderPlantState(state){
 
   let ritmoActual = computeRitmoDesdeDelta(state.totalizadoActual, state.lastUpdate);
   let ritmoLabelText = 'Ritmo actual (PLC, tn/h)';
-
-  if (ritmoActual !== null && !Number.isNaN(ritmoActual)){
-    saveLastGoodRitmo(ritmoActual, state.lastUpdate.getTime());
-  } else {
+  if (ritmoActual !== null && !Number.isNaN(ritmoActual)){ saveLastGoodRitmo(ritmoActual, state.lastUpdate.getTime()); }
+  else {
     const lastGood = loadLastGoodRitmo();
-    if (lastGood && typeof lastGood.value === 'number'){
-      ritmoActual = lastGood.value;
-      ritmoLabelText = 'Ritmo actual (último dato válido)';
-    } else {
-      ritmoActual = computeRitmoPromedioDesdeMedianoche(state.totalizadoActual, state.totalizadoMedianoche, state.lastUpdate);
-      ritmoLabelText = 'Ritmo actual (promedio del día)';
+    if (lastGood && typeof lastGood.value === 'number'){ ritmoActual = lastGood.value; ritmoLabelText = 'Ritmo actual (último dato válido)'; }
+    else if (state.totalizadoActual !== null && state.totalizadoInicioDiaOperativo !== null){
+      const bounds = getOperationalDayBoundsClient(state.lastUpdate);
+      const horasT = (state.lastUpdate.getTime() - bounds.start.getTime())/3600000;
+      if (horasT >= (5/60)){
+        ritmoActual = ((state.totalizadoActual - state.totalizadoInicioDiaOperativo)/1000) / horasT;
+        ritmoLabelText = 'Ritmo actual (promedio del día)';
+      }
     }
   }
 
@@ -1906,71 +2101,45 @@ function renderPlantState(state){
 
   if (ritmoDiffEl){
     if (ritmoActual !== null && state.caudalBalanza !== null && state.caudalBalanza !== 0){
-      const diffTnh = ritmoActual - state.caudalBalanza;
-      const diffPct = (diffTnh / state.caudalBalanza) * 100;
-      const signo = diffTnh >= 0 ? '+' : '';
+      const diffTnh = ritmoActual - state.caudalBalanza; const diffPct = (diffTnh / state.caudalBalanza) * 100; const signo = diffTnh >= 0 ? '+' : '';
       ritmoDiffEl.textContent = `Δ vs PLC: ${signo}${diffTnh.toFixed(1)} tn/h (${signo}${diffPct.toFixed(0)}%)`;
-    } else {
-      ritmoDiffEl.textContent = '';
-    }
+    } else { ritmoDiffEl.textContent = ''; }
   }
 
   let producidoTurnoTn = null;
-  if (state.totalizadoActual !== null && state.totalizadoInicioTurno !== null){
-    producidoTurnoTn = (state.totalizadoActual - state.totalizadoInicioTurno)/1000;
-    turnoTnEl.textContent = `${producidoTurnoTn.toFixed(1)} tn`;
-  } else {
-    turnoTnEl.textContent = '— tn';
-  }
+  if (state.totalizadoActual !== null && state.totalizadoInicioTurno !== null){ producidoTurnoTn = (state.totalizadoActual - state.totalizadoInicioTurno)/1000; turnoTnEl.textContent = `${producidoTurnoTn.toFixed(1)} tn`; }
+  else { turnoTnEl.textContent = '— tn'; }
 
   if (projTurnoEl){
     if (producidoTurnoTn !== null && ritmoActual !== null){
-      const info = getShiftInfo(state.lastUpdate);
-      const bounds = getShiftBoundsClient(info.shift, info.base);
+      const info = getShiftInfo(state.lastUpdate); const bounds = getShiftBoundsClient(info.shift, info.base);
       const horasRestantesTurno = Math.max(0, (bounds.end.getTime() - state.lastUpdate.getTime())/3600000);
       const proyeccionTurno = producidoTurnoTn + ritmoActual*horasRestantesTurno;
-      const meta = loadTurnoMeta();
-      let cls = '';
-      if (meta && typeof meta.min === 'number' && typeof meta.max === 'number'){
-        cls = (proyeccionTurno >= meta.min && proyeccionTurno <= meta.max) ? 'status-ok' : 'status-crit';
-      }
+      const meta = loadTurnoMeta(); let cls = '';
+      if (meta && typeof meta.min === 'number' && typeof meta.max === 'number'){ cls = (proyeccionTurno >= meta.min && proyeccionTurno <= meta.max) ? 'status-ok' : 'status-crit'; }
       projTurnoEl.textContent = `Proyección turno completo: ${proyeccionTurno.toFixed(0)} tn`;
       projTurnoEl.className = 'ritmo-stat-sub ' + cls;
-    } else {
-      projTurnoEl.textContent = '';
-      projTurnoEl.className = 'ritmo-stat-sub';
-    }
+    } else { projTurnoEl.textContent = ''; projTurnoEl.className = 'ritmo-stat-sub'; }
   }
 
   let producidoHoyTn = null;
-  if (state.totalizadoActual !== null && state.totalizadoMedianoche !== null){
-    producidoHoyTn = (state.totalizadoActual - state.totalizadoMedianoche) / 1000;
-    prodEl.textContent = `${producidoHoyTn.toFixed(1)} tn`;
-  } else {
-    prodEl.textContent = '— tn';
-  }
+  if (state.totalizadoActual !== null && state.totalizadoInicioDiaOperativo !== null){ producidoHoyTn = (state.totalizadoActual - state.totalizadoInicioDiaOperativo) / 1000; prodEl.textContent = `${producidoHoyTn.toFixed(1)} tn`; }
+  else { prodEl.textContent = '— tn'; }
 
   if (producidoHoyTn !== null && ritmoActual !== null){
-    const medianoche = new Date(state.lastUpdate.getFullYear(), state.lastUpdate.getMonth(), state.lastUpdate.getDate(), 0, 0, 0);
-    const horasTranscurridas = (state.lastUpdate.getTime() - medianoche.getTime()) / 3600000;
-    const horasRestantes = Math.max(0, 24 - horasTranscurridas);
-    const proyeccionDiaria = producidoHoyTn + (ritmoActual * horasRestantes);
-    projDiaEl.textContent = `${proyeccionDiaria.toFixed(0)} tn`;
-  } else {
-    projDiaEl.textContent = '— tn';
-  }
+    const bounds = getOperationalDayBoundsClient(state.lastUpdate);
+    const horasRestantes = Math.max(0, (bounds.end.getTime() - state.lastUpdate.getTime())/3600000);
+    projDiaEl.textContent = `${(producidoHoyTn + ritmoActual*horasRestantes).toFixed(0)} tn`;
+  } else { projDiaEl.textContent = '— tn'; }
 
-  // Potencia específica del expander (kWh/tn) — pendiente confirmar rango óptimo
   if (state.corrienteExpander !== null && ritmoActual !== null && ritmoActual > 0.05){
     const potencia = (Math.sqrt(3) * 0.38 * state.corrienteExpander * 0.85) / ritmoActual;
     pushComputedParamPoint('potencia_especifica_exp', state.lastUpdate, potencia);
   }
 
   if (estadoGeneralEl){
-    if (stale){
-      estadoGeneralEl.textContent = 'SIN SEÑAL RECIENTE';
-      if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido';
-    } else {
+    if (stale){ estadoGeneralEl.textContent = 'SIN SEÑAL RECIENTE'; if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido'; }
+    else {
       const laminadorEnMarcha = (String(state.marchaLam1) === '1' || String(state.marchaLam2) === '1');
       const caudalConFlujo = (state.caudalBalanza !== null && state.caudalBalanza > CAUDAL_MIN_TN_H);
       const enMarcha = laminadorEnMarcha && caudalConFlujo;
@@ -1979,17 +2148,9 @@ function renderPlantState(state){
     }
   }
 }
-function refreshPlcState(){
-  fetchPlantState().then(state => {
-    latestPlcState = state;
-    renderPlantState(state);
-    if (rowsGlobal.length) renderCards(rowsGlobal);
-  });
-}
-refreshPlcState();
-setInterval(refreshPlcState, REFRESH_MS);
+function refreshPlcState(){ fetchPlantState().then(state => { latestPlcState = state; renderPlantState(state); if (rowsGlobal.length) renderCards(rowsGlobal); }); }
+refreshPlcState(); setInterval(refreshPlcState, REFRESH_MS);
 
-/* CONEXIÓN Y CARGA */
 function setConn(state, msg){
   const dot = document.getElementById('connDot'); const text = document.getElementById('connText');
   dot.className = 'conn-dot conn-' + state; text.textContent = state==='ok' ? 'en línea' : state==='loading' ? 'actualizando…' : `error de conexión${msg?': '+msg:''}`;
@@ -2003,11 +2164,12 @@ async function loadData(){
     if (rows.length === 0) throw new Error('sin filas válidas');
     rowsGlobal = rows;
     renderRitmo(rows); renderCards(rows); renderRecentTable(rows);
-    renderQuality(rows, {totalSeen, tsFailed, missing}); renderMainHistChart(); renderCorrList(document.getElementById('labVarSelect').value); renderOperatorPie();
+    renderQuality(rows, {totalSeen, tsFailed, missing}); renderMainHistChart(); corrLabList(document.getElementById('labVarSelect').value); renderOperatorPie();
     lastDataTs = rows[rows.length-1].ts; document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs); setConn('ok');
   } catch(err){ console.error(err); setConn('error', err.message); }
 }
 
+loadAdvConfig(); loadAdvAnnotations();
 applyThresholdOverrides(); renderThresholdSettings(); populateParamSelects();
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData(); setInterval(loadData, REFRESH_MS);
