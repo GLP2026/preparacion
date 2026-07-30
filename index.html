@@ -100,7 +100,9 @@
   .ritmo-stat-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); }
   .ritmo-stat-value{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:20px; color:var(--accent); }
   body.view-operario .ritmo-stat-value{ font-size:26px; }
-  .ritmo-stat-sub{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); }
+  .ritmo-stat-sub{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); min-height:12px; }
+  .ritmo-stat-sub.status-ok{ color:var(--ok); font-weight:600; }
+  .ritmo-stat-sub.status-crit{ color:var(--crit); font-weight:600; }
 
   .ritmo-turno-strip{ display:flex; flex-direction:column; gap:4px; justify-content:center; padding-left:18px; border-left:1px solid var(--line-soft); min-width:170px; }
   .ritmo-turno-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-faint); margin-bottom:2px; }
@@ -217,9 +219,13 @@
   }
   .hist-range-time{ margin-bottom:8px; }
   .hist-range-time strong{ color:var(--accent); }
-  .hist-range-table{ font-size:11.5px; }
-  .hist-range-table th, .hist-range-table td{ padding:5px 8px; }
-  .hist-range-table td:first-child, .hist-range-table th:first-child{ display:flex; align-items:center; gap:6px; }
+  .hist-range-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  .hist-range-table thead th{ background:var(--panel); color:var(--text-faint); text-transform:uppercase; font-size:10px; letter-spacing:0.04em; padding:7px 10px; border-bottom:1px solid var(--line); text-align:right; }
+  .hist-range-table thead th:first-child{ text-align:left; }
+  .hist-range-table tbody td{ padding:7px 10px; border-bottom:1px solid var(--line-soft); text-align:right; color:var(--text); }
+  .hist-range-table tbody td:first-child{ text-align:left; display:flex; align-items:center; gap:6px; color:var(--text-dim); }
+  .hist-range-table tbody tr:nth-child(even){ background:rgba(255,255,255,0.02); }
+  .hist-range-table tbody tr:last-child td{ border-bottom:none; }
 
   /* ===== TOOLBAR / PANELES DEL ANÁLISIS AVANZADO ===== */
   .adv-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
@@ -268,7 +274,7 @@
   .threshold-row:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
   .threshold-param-label{ font-family:'Oswald',sans-serif; font-size:12.5px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; letter-spacing:0.02em; }
   .threshold-unit{ color:var(--text-faint); font-weight:400; text-transform:none; }
-  .threshold-inputs{ display:flex; flex-wrap:wrap; gap:10px; }
+  .threshold-inputs{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
   .threshold-input-group{ display:flex; flex-direction:column; gap:3px; font-size:10px; color:var(--text-faint); font-family:'IBM Plex Mono',monospace; }
   .threshold-input-group input{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; width:80px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
   .threshold-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
@@ -322,9 +328,10 @@
           <span class="ritmo-stat-value" id="plcRitmoActual">— tn/h</span>
           <span class="ritmo-stat-sub" id="plcRitmoDiff"></span>
         </div>
-        <div class="ritmo-stat" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Dato real, no proyección.">
+        <div class="ritmo-stat" title="Toneladas realmente procesadas desde el inicio del turno vigente (06-14 / 14-22 / 22-06) hasta ahora. Debajo, la proyección de cómo va a cerrar el turno completo si se mantiene el ritmo actual — verde si cae dentro de la meta configurada, rojo si no.">
           <span class="ritmo-stat-label">Poroto procesado en turno</span>
           <span class="ritmo-stat-value" id="ritmoProj">— tn</span>
+          <span class="ritmo-stat-sub" id="ritmoProjTurnoCompleto"></span>
         </div>
         <div class="ritmo-stat" title="Lo ya producido hoy (00:00 a ahora) más el ritmo actual sostenido durante las horas que faltan para las 23:59:59.">
           <span class="ritmo-stat-label">Proyección diaria</span>
@@ -494,6 +501,16 @@
     <h3>Configuración de umbrales</h3>
     <p class="modal-text">Ajustá los límites de cada parámetro sin tocar el código. Se guarda en este navegador — usá Exportar/Importar para llevarlo a otra PC.</p>
     <div id="thresholdSettings" class="threshold-scroll"></div>
+
+    <div class="threshold-row">
+      <div class="threshold-param-label">Meta de producción por turno (tn)</div>
+      <div class="threshold-inputs">
+        <label class="threshold-input-group"><span>Mínimo</span><input type="number" step="any" id="turnoMetaMinInput"></label>
+        <label class="threshold-input-group"><span>Máximo</span><input type="number" step="any" id="turnoMetaMaxInput"></label>
+        <button type="button" id="turnoMetaSaveBtn" class="apply-btn">Guardar meta</button>
+      </div>
+    </div>
+
     <div class="threshold-actions">
       <button type="button" id="thresholdSaveBtn" class="primary">Guardar cambios</button>
       <button type="button" id="thresholdResetBtn">Restaurar originales</button>
@@ -605,6 +622,13 @@ function getShiftInfo(date){
   else { shift='NOCHE'; const y=new Date(date); y.setDate(y.getDate()-1); base=new Date(y.getFullYear(),y.getMonth(),y.getDate()); }
   return { shift, base };
 }
+function getShiftBoundsClient(shift, base){
+  let start, end;
+  if (shift === 'MAÑANA'){ start = new Date(base.getFullYear(),base.getMonth(),base.getDate(),6,0,0); end = new Date(base.getFullYear(),base.getMonth(),base.getDate(),14,0,0); }
+  else if (shift === 'TARDE'){ start = new Date(base.getFullYear(),base.getMonth(),base.getDate(),14,0,0); end = new Date(base.getFullYear(),base.getMonth(),base.getDate(),22,0,0); }
+  else { start = new Date(base.getFullYear(),base.getMonth(),base.getDate(),22,0,0); end = new Date(base.getFullYear(),base.getMonth(),base.getDate()+1,6,0,0); }
+  return { start, end };
+}
 function getCurrentShiftAssignment(date){
   const { shift, base } = getShiftInfo(date);
   let diffDays = Math.round((base - ROSTER_ANCHOR) / 86400000);
@@ -644,6 +668,12 @@ const PARAMS = {
   pesaje_balanza: { label:'Pesaje de balanza', unit:'tn/h', icon:'scale', column:'Pesaje de balanza (tn/hr)', decimals:1, domain:[10,30], bands:[] },
 };
 
+/* Parámetros calculados (no vienen de la planilla ni del PLC directo — se calculan en el navegador) */
+const COMPUTED_PARAMS = {
+  potencia_especifica_exp: { label:'Potencia específica Expander', unit:'kWh/tn', icon:'bolt', decimals:2, domain:[0,20], bands:[] }
+};
+const ALL_PARAM_DEFS = Object.assign({}, PARAMS, COMPUTED_PARAMS);
+
 const PARAMS_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(PARAMS).map(([id,cfg]) => [id, cfg.bands]))));
 
 const LIVE_PLC_PARAM_MAP = {
@@ -661,6 +691,7 @@ const CARD_MARCHA_MAP = {
 };
 
 const SERIES_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
+const GRID_STROKE = 'rgba(148,163,184,0.28)';
 
 function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
@@ -691,6 +722,7 @@ const SILO_KEY = 'glp_silo_ack_date';
 const OPERATOR_COUNT_SINCE = new Date(2026, 0, 1);
 const PIE_PALETTE = ['#4CAE79','#E8A33D','#5B9BD5','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 const THRESHOLD_KEY = 'glp_threshold_overrides';
+const TURNO_META_KEY = 'glp_turno_meta_prep';
 const CAUDAL_MIN_TN_H = 0.1;
 const RITMO_STORAGE_KEY = 'glp_prev_totalizado_prep';
 const RITMO_LASTGOOD_KEY = 'glp_last_good_ritmo_prep';
@@ -704,6 +736,24 @@ let lastDataTs = null;
 let paradasListGlobal = [];
 let paradasFetchFailed = false;
 let prevCardValues = {};
+const computedParamHistory = { potencia_especifica_exp: [] };
+
+function pushComputedParamPoint(id, ts, v){
+  const buf = computedParamHistory[id]; if (!buf) return;
+  buf.push({ ts, v });
+  if (buf.length > 200) buf.shift();
+}
+function getLatestComputedValue(id){
+  const buf = computedParamHistory[id];
+  return (buf && buf.length) ? buf[buf.length-1] : null;
+}
+function getParamPointsInRange(id, desde, hasta){
+  if (COMPUTED_PARAMS[id]){
+    const buf = computedParamHistory[id] || [];
+    return buf.filter(p => p.ts >= desde && p.ts <= hasta && p.v !== null).map(p => ({ ts:p.ts, v:p.v }));
+  }
+  return rowsGlobal.filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null).map(r => ({ ts:r.ts, v:r.values[id] }));
+}
 
 /* ===== Estado del análisis avanzado ===== */
 let advParamIds = [];
@@ -731,6 +781,10 @@ function stdDev(vals){
   const variance = vals.reduce((a,b)=> a + Math.pow(b-mean,2), 0) / n;
   return Math.sqrt(variance);
 }
+
+/* META DE TURNO */
+function loadTurnoMeta(){ try { return JSON.parse(localStorage.getItem(TURNO_META_KEY) || 'null'); } catch(e){ return null; } }
+function saveTurnoMeta(min, max){ localStorage.setItem(TURNO_META_KEY, JSON.stringify({min, max})); }
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -766,8 +820,21 @@ function rerenderAll(){
   renderMainHistChart();
   renderOperatorPie();
 }
-document.getElementById('navConfigBtn').addEventListener('click', () => { document.getElementById('configOverlay').style.display = 'flex'; });
+document.getElementById('navConfigBtn').addEventListener('click', () => {
+  document.getElementById('configOverlay').style.display = 'flex';
+  const meta = loadTurnoMeta();
+  document.getElementById('turnoMetaMinInput').value = meta ? meta.min : '';
+  document.getElementById('turnoMetaMaxInput').value = meta ? meta.max : '';
+});
 document.getElementById('configCloseBtn').addEventListener('click', () => { document.getElementById('configOverlay').style.display = 'none'; });
+document.getElementById('turnoMetaSaveBtn').addEventListener('click', () => {
+  const min = parseFloat(document.getElementById('turnoMetaMinInput').value);
+  const max = parseFloat(document.getElementById('turnoMetaMaxInput').value);
+  if (Number.isNaN(min) || Number.isNaN(max) || min > max) return;
+  saveTurnoMeta(min, max);
+  document.getElementById('thresholdSaveMsg').textContent = 'Meta de turno guardada — ' + fmtTime(new Date());
+  if (latestPlcState) renderPlantState(latestPlcState);
+});
 document.getElementById('thresholdSaveBtn').addEventListener('click', () => {
   const inputs = document.querySelectorAll('#thresholdSettings input[data-param]');
   const overrides = loadThresholdOverrides(); const grouped = {};
@@ -982,14 +1049,14 @@ function drawSingleTimeChart(cfg, points, desde, hasta, viewW=1000, viewH=280){
 
   const yTicksSvg = [dmin, (dmin+dmax)/2, dmax].map(t => {
     const y = scaleYv(t);
-    return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`;
+    return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>`;
   }).join('');
 
   const spanMs = t1 - t0;
   const ticks = buildTimeTicks(desde, hasta, 6);
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
-    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
 
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">
@@ -1006,18 +1073,18 @@ function getMainHistRange(rangeVal){
 }
 function renderMainHistChart(){
   const id = document.getElementById('mainHistParamSelect').value;
-  const cfg = PARAMS[id];
+  const cfg = ALL_PARAM_DEFS[id];
   const container = document.getElementById('mainHistChartContainer');
   if (!cfg){ container.innerHTML = ''; return; }
   const { desde, hasta } = getMainHistRange(document.getElementById('mainHistRangeSelect').value);
-  const pts = rowsGlobal.filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null).map(r => ({ ts:r.ts, v:r.values[id] }));
+  const pts = getParamPointsInRange(id, desde, hasta);
   if (!pts.length){ container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>'; return; }
   container.innerHTML = drawSingleTimeChart(cfg, pts, desde, hasta, 1000, 280);
 }
 
 /* ===== Selección de parámetro (main) ===== */
 function populateParamSelects(){
-  const optsHtml = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
+  const optsHtml = Object.entries(ALL_PARAM_DEFS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
   const mainSel = document.getElementById('mainHistParamSelect');
   mainSel.innerHTML = optsHtml;
   if (mainSel.options.length) mainSel.options[0].selected = true;
@@ -1027,7 +1094,7 @@ function populateParamSelects(){
 function renderAdvParamsChecklist(){
   const container = document.getElementById('advParamsChecklist');
   const checkedSet = new Set(advParamIds);
-  container.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => {
+  container.innerHTML = Object.entries(ALL_PARAM_DEFS).map(([id,cfg]) => {
     const checked = checkedSet.has(id);
     const style = checked ? getOrCreateParamStyle(id) : null;
     const styleControls = checked ? `
@@ -1068,7 +1135,7 @@ function renderAdvParamsChecklist(){
   }));
 }
 function getSelectedAdvParamIds(){
-  return advParamIds.length ? advParamIds : [Object.keys(PARAMS)[0]];
+  return advParamIds.length ? advParamIds : [Object.keys(ALL_PARAM_DEFS)[0]];
 }
 
 /* ===== ANÁLISIS AVANZADO — ejes ===== */
@@ -1114,7 +1181,7 @@ function renderAdvAxesPanel(){
     const options = ['<option value="">Automático</option>'].concat(
       advAxes.map(ax => `<option value="${ax.id}" ${current===ax.id?'selected':''}>${ax.label}${ax.unit?(' ('+ax.unit+')'):''}</option>`)
     ).join('');
-    return `<div class="adv-assign-row"><span>${PARAMS[id].label}</span><select data-param-id="${id}" class="adv-assign-select">${options}</select></div>`;
+    return `<div class="adv-assign-row"><span>${ALL_PARAM_DEFS[id].label}</span><select data-param-id="${id}" class="adv-assign-select">${options}</select></div>`;
   }).join('');
   assignEl.querySelectorAll('.adv-assign-select').forEach(sel => sel.addEventListener('change', () => {
     advParamAxisMap[sel.dataset.paramId] = sel.value || null;
@@ -1180,16 +1247,16 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     const axis = axId ? advAxes.find(a => a.id === axId) : null;
     const pts = dataArrays[i];
     const style = getOrCreateParamStyle(id);
-    let min, max, unit, decimals = PARAMS[id].decimals, label = PARAMS[id].label;
+    let min, max, unit, decimals = ALL_PARAM_DEFS[id].decimals, label = ALL_PARAM_DEFS[id].label;
     if (axis && axisRangeById[axis.id]){
-      min = axisRangeById[axis.id].min; max = axisRangeById[axis.id].max; unit = axis.unit || PARAMS[id].unit;
+      min = axisRangeById[axis.id].min; max = axisRangeById[axis.id].max; unit = axis.unit || ALL_PARAM_DEFS[id].unit;
     } else {
       let mn = Infinity, mx = -Infinity;
       pts.forEach(p => { if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
-      if (!isFinite(mn)){ mn = PARAMS[id].domain[0]; mx = PARAMS[id].domain[1]; }
+      if (!isFinite(mn)){ mn = ALL_PARAM_DEFS[id].domain[0]; mx = ALL_PARAM_DEFS[id].domain[1]; }
       if (mn === mx){ const pad = Math.abs(mn)*0.08 || 1; mn -= pad; mx += pad; }
       else { const pad = (mx-mn)*0.08; mn -= pad; mx += pad; }
-      min = mn; max = mx; unit = PARAMS[id].unit;
+      min = mn; max = mx; unit = ALL_PARAM_DEFS[id].unit;
     }
     return { id, axisId: axId || null, min, max, unit, decimals, label, style, pts };
   });
@@ -1208,7 +1275,7 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
   const ticks = buildTimeTicks(desde, hasta, 6);
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
-    const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+    const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
     return `${gridLine}<text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
 
@@ -1220,7 +1287,7 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     [range.min, (range.min+range.max)/2, range.max].forEach(t => {
       const ratio = (t - range.min)/(range.max-range.min);
       const y = chartH - ratio*(chartH-12) - 6;
-      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
       axesColsSvg += `<text x="${colRight}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="${colColor}" font-weight="600">${t.toFixed(1)}</text>${gridLine}`;
     });
     const titleX = 24 + AXIS_COL_WIDTH*ai + 14;
@@ -1233,11 +1300,11 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH
     [s0.min, (s0.min+s0.max)/2, s0.max].forEach(t => {
       const ratio = (t - s0.min)/(s0.max-s0.min);
       const y = chartH - ratio*(chartH-12) - 6;
-      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="${GRID_STROKE}" stroke-width="1" stroke-dasharray="3 3"/>` : '';
       axesColsSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text)">${t.toFixed(s0.decimals)}</text>${gridLine}`;
     });
     if (!advParamAxisMap[ids[0]]){
-      const cfg = PARAMS[ids[0]];
+      const cfg = ALL_PARAM_DEFS[ids[0]];
       bandsSvg = bandsToChartBands(cfg.bands, [s0.min, s0.max]).map(b=>{
         const y1 = chartH - ((b.to - s0.min)/(s0.max-s0.min)) * (chartH-12) - 6;
         const y2 = chartH - ((b.from - s0.min)/(s0.max-s0.min)) * (chartH-12) - 6;
@@ -1275,16 +1342,14 @@ function renderAdvLegend(ids){
   const legend = document.getElementById('advLegend');
   legend.innerHTML = ids.map(id => {
     const style = getOrCreateParamStyle(id);
-    return `<span class="legend-item"><span class="legend-swatch" style="background:${style.color}"></span>${PARAMS[id].label}</span>`;
+    return `<span class="legend-item"><span class="legend-swatch" style="background:${style.color}"></span>${ALL_PARAM_DEFS[id].label}</span>`;
   }).join('');
 }
 function renderAdvChart(){
-  if (!advParamIds.length) advParamIds = [Object.keys(PARAMS)[0]];
+  if (!advParamIds.length) advParamIds = [Object.keys(ALL_PARAM_DEFS)[0]];
   const ids = advParamIds;
   const { desde, hasta } = getAdvFilteredRange();
-  const dataArrays = ids.map(id => rowsGlobal
-    .filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null)
-    .map(r => ({ ts: r.ts, v: r.values[id] })));
+  const dataArrays = ids.map(id => getParamPointsInRange(id, desde, hasta));
   const container = document.getElementById('advChartContainer');
   const anyData = dataArrays.some(arr => arr.length > 0);
   if (!anyData){
@@ -1475,20 +1540,30 @@ function renderCards(rows){
   const last = rows[rows.length-1];
   const isFirstRender = grid.children.length === 0;
   grid.innerHTML = '';
-  for (const [id, cfg] of Object.entries(PARAMS)){
-    let currentVal = last ? last.values[id] : null;
-    let footTime = last ? fmtTime(last.ts) : '—';
-    let footOperator = last ? last.operador : '';
+  for (const [id, cfg] of Object.entries(ALL_PARAM_DEFS)){
+    let currentVal, footTime, footOperator, pts;
 
-    const liveKey = LIVE_PLC_PARAM_MAP[id];
-    if (liveKey && latestPlcState && latestPlcState[liveKey] !== null && latestPlcState[liveKey] !== undefined && !Number.isNaN(latestPlcState[liveKey])){
-      currentVal = latestPlcState[liveKey];
-      footOperator = 'PLC';
-      if (latestPlcState.lastUpdate) footTime = fmtTime(latestPlcState.lastUpdate);
+    if (COMPUTED_PARAMS[id]){
+      const latest = getLatestComputedValue(id);
+      currentVal = latest ? latest.v : null;
+      footTime = latest ? fmtTime(latest.ts) : '—';
+      footOperator = 'Calculado';
+      pts = (computedParamHistory[id] || []).slice(-HISTORY_POINTS);
+    } else {
+      currentVal = last ? last.values[id] : null;
+      footTime = last ? fmtTime(last.ts) : '—';
+      footOperator = last ? last.operador : '';
+
+      const liveKey = LIVE_PLC_PARAM_MAP[id];
+      if (liveKey && latestPlcState && latestPlcState[liveKey] !== null && latestPlcState[liveKey] !== undefined && !Number.isNaN(latestPlcState[liveKey])){
+        currentVal = latestPlcState[liveKey];
+        footOperator = 'PLC';
+        if (latestPlcState.lastUpdate) footTime = fmtTime(latestPlcState.lastUpdate);
+      }
+      pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     }
 
     const res = evalFromBands(currentVal, cfg.bands);
-    const pts = rows.slice(-HISTORY_POINTS).map(r=>({ts:r.ts, v:r.values[id]}));
     const card = document.createElement('div'); card.className = `card status-${res.status}`; card.title = res.note;
     const changed = !isFirstRender && prevCardValues[id] !== undefined && prevCardValues[id] !== currentVal && currentVal !== null;
     card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value${changed?' value-flash':''}">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, pts, 'trend-main')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
@@ -1789,6 +1864,7 @@ function renderPlantState(state){
   const metaEl = document.getElementById('plcMeta'); const prodEl = document.getElementById('plcProdHoy');
   const ritmoEl = document.getElementById('plcRitmoActual'); const ritmoDiffEl = document.getElementById('plcRitmoDiff');
   const turnoTnEl = document.getElementById('ritmoProj'); const projDiaEl = document.getElementById('ritmoProjDia');
+  const projTurnoEl = document.getElementById('ritmoProjTurnoCompleto');
   const estadoGeneralEl = document.getElementById('plcEstadoGeneral');
   const ritmoLabelEl = document.getElementById('plcRitmoLabel');
   const heroEl = document.getElementById('ritmoHero');
@@ -1798,6 +1874,7 @@ function renderPlantState(state){
     metaEl.textContent = 'Sin dato del PLC todavía'; prodEl.textContent = '— tn'; ritmoEl.textContent = '— tn/h';
     if (ritmoDiffEl) ritmoDiffEl.textContent = '';
     turnoTnEl.textContent = '— tn'; projDiaEl.textContent = '— tn';
+    if (projTurnoEl){ projTurnoEl.textContent = ''; projTurnoEl.className = 'ritmo-stat-sub'; }
     if (estadoGeneralEl) estadoGeneralEl.textContent = 'SIN DATO';
     if (heroEl) heroEl.className = 'ritmo-hero estado-desconocido';
     return;
@@ -1838,10 +1915,31 @@ function renderPlantState(state){
     }
   }
 
+  let producidoTurnoTn = null;
   if (state.totalizadoActual !== null && state.totalizadoInicioTurno !== null){
-    turnoTnEl.textContent = `${((state.totalizadoActual - state.totalizadoInicioTurno)/1000).toFixed(1)} tn`;
+    producidoTurnoTn = (state.totalizadoActual - state.totalizadoInicioTurno)/1000;
+    turnoTnEl.textContent = `${producidoTurnoTn.toFixed(1)} tn`;
   } else {
     turnoTnEl.textContent = '— tn';
+  }
+
+  if (projTurnoEl){
+    if (producidoTurnoTn !== null && ritmoActual !== null){
+      const info = getShiftInfo(state.lastUpdate);
+      const bounds = getShiftBoundsClient(info.shift, info.base);
+      const horasRestantesTurno = Math.max(0, (bounds.end.getTime() - state.lastUpdate.getTime())/3600000);
+      const proyeccionTurno = producidoTurnoTn + ritmoActual*horasRestantesTurno;
+      const meta = loadTurnoMeta();
+      let cls = '';
+      if (meta && typeof meta.min === 'number' && typeof meta.max === 'number'){
+        cls = (proyeccionTurno >= meta.min && proyeccionTurno <= meta.max) ? 'status-ok' : 'status-crit';
+      }
+      projTurnoEl.textContent = `Proyección turno completo: ${proyeccionTurno.toFixed(0)} tn`;
+      projTurnoEl.className = 'ritmo-stat-sub ' + cls;
+    } else {
+      projTurnoEl.textContent = '';
+      projTurnoEl.className = 'ritmo-stat-sub';
+    }
   }
 
   let producidoHoyTn = null;
@@ -1860,6 +1958,12 @@ function renderPlantState(state){
     projDiaEl.textContent = `${proyeccionDiaria.toFixed(0)} tn`;
   } else {
     projDiaEl.textContent = '— tn';
+  }
+
+  // Potencia específica del expander (kWh/tn) — pendiente confirmar rango óptimo
+  if (state.corrienteExpander !== null && ritmoActual !== null && ritmoActual > 0.05){
+    const potencia = (Math.sqrt(3) * 0.38 * state.corrienteExpander * 0.85) / ritmoActual;
+    pushComputedParamPoint('potencia_especifica_exp', state.lastUpdate, potencia);
   }
 
   if (estadoGeneralEl){
