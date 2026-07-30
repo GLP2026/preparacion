@@ -47,7 +47,7 @@
   .modal-overlay{display:none; position:fixed; inset:0; background:rgba(8,10,13,0.78); align-items:center; justify-content:center; z-index:50; padding:16px;}
   .modal-box{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; width:320px; display:flex; flex-direction:column; gap:12px;}
   .modal-box.wide{ width:640px; max-width:92vw; max-height:85vh; overflow-y:auto; }
-  .modal-box.wide-xl{ width:1150px; max-width:96vw; max-height:92vh; overflow-y:auto; }
+  .modal-box.wide-xl{ width:1400px; max-width:97vw; max-height:94vh; overflow-y:auto; }
   .modal-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
   .modal-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
   .modal-box input{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px;}
@@ -206,8 +206,8 @@
   .hist-controls button.apply-btn{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px;}
   .hist-controls button.apply-btn:hover{opacity:0.9;}
   .hist-hint{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint);}
-  .trend-full{width:100%; height:280px; display:block;}
-  .hist-legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);}
+  .trend-full{width:100%; height:340px; display:block;}
+  .hist-legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text);}
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-swatch{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0;}
   .hist-range-stats{
@@ -231,13 +231,20 @@
   .adv-axis-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line-soft); }
   .adv-axis-row:last-child{ border-bottom:none; }
   .adv-axis-row button{ background:transparent; border:1px solid var(--line); color:var(--text-faint); border-radius:6px; padding:3px 8px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11px; }
-  .adv-axis-row button:hover{ border-color:var(--crit); color:var(--crit); }
+  .adv-axis-row button:hover{ border-color:var(--accent); color:var(--accent); }
+  .adv-axis-row button:disabled{ opacity:0.3; cursor:default; }
+  .adv-axis-row button.adv-axis-del:hover{ border-color:var(--crit); color:var(--crit); }
   .adv-axis-form{ display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-top:10px; padding-top:10px; border-top:1px solid var(--line-soft); }
   .adv-axis-form label{ display:flex; flex-direction:column; gap:3px; font-size:10px; color:var(--text-faint); }
-  .adv-axis-form input{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; width:90px; }
+  .adv-axis-form label.adv-inline-check{ flex-direction:row; align-items:center; gap:6px; }
+  .adv-axis-form input[type="text"], .adv-axis-form input[type="number"]{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; width:90px; }
   .adv-assign-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:5px 0; }
   .adv-assign-row select{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:5px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; }
   .adv-col-check{ display:flex; align-items:center; gap:8px; padding:4px 0; }
+  .adv-param-check-row{ display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--line-soft); flex-wrap:wrap; }
+  .adv-param-check-row:last-child{ border-bottom:none; }
+  .adv-param-check-row input[type="color"]{ width:32px; height:26px; padding:2px; border-radius:4px; border:1px solid var(--line); background:var(--panel); cursor:pointer; }
+  .adv-param-check-row select{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:4px 6px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; }
   /* ===== FIN TOOLBAR ===== */
 
   .lab-upload-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
@@ -513,9 +520,7 @@
     </div>
 
     <div class="adv-panel" id="advParamsPanel">
-      <label for="advParamSelect">Parámetro(s):</label><br>
-      <select id="advParamSelect" multiple size="6" style="width:100%; margin-top:6px;"></select>
-      <p class="hist-hint" style="margin-top:6px;">Ctrl/Cmd+clic para elegir varios y superponerlos</p>
+      <div id="advParamsChecklist" style="max-height:280px; overflow-y:auto;"></div>
     </div>
 
     <div class="adv-panel" id="advAxesPanel">
@@ -525,6 +530,7 @@
         <label>Unidad<input type="text" id="advAxisUnit" placeholder="A"></label>
         <label>Mínimo<input type="number" id="advAxisMin" placeholder="0"></label>
         <label>Máximo<input type="number" id="advAxisMax" placeholder="100"></label>
+        <label class="adv-inline-check"><input type="checkbox" id="advAxisAuto" checked> Auto-ajustar rango</label>
         <button type="button" id="advAxisAddBtn" class="apply-btn">+ Agregar eje</button>
       </div>
       <div id="advAssignList" style="margin-top:12px; padding-top:10px; border-top:1px solid var(--line-soft);"></div>
@@ -654,7 +660,7 @@ const CARD_MARCHA_MAP = {
   expander_temp: [{ key:'marchaExpander', label:'Expander' }],
 };
 
-const SERIES_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE','#4DBFBF'];
+const SERIES_COLORS = ['#E8A33D','#5B9BD5','#4CAE79','#E1554F','#9B7EDE','#4DBFBF','#D98CC0','#B5C24A'];
 
 function evalFromBands(v, bands){
   if (v === null) return {status:'nodata', note:'Sin dato'};
@@ -701,10 +707,30 @@ let prevCardValues = {};
 
 /* ===== Estado del análisis avanzado ===== */
 let advParamIds = [];
-let advAxes = []; // {id, label, unit, min, max}
+let advAxes = []; // {id, label, unit, min, max, auto}
 let advParamAxisMap = {}; // paramId -> axisId | null(=auto)
+let advParamStyle = {}; // paramId -> {color, width, dash}
 let advShowGrid = true;
 let advTableCols = { min:true, max:true, avg:true, std:true, count:true, duration:true };
+
+function getOrCreateParamStyle(id){
+  if (!advParamStyle[id]){
+    const usedCount = Object.keys(advParamStyle).length;
+    advParamStyle[id] = { color: SERIES_COLORS[usedCount % SERIES_COLORS.length], width: 2, dash: 'solid' };
+  }
+  return advParamStyle[id];
+}
+function dashArrayFor(dash){
+  if (dash === 'dashed') return '8 5';
+  if (dash === 'dotted') return '2 4';
+  return null;
+}
+function stdDev(vals){
+  const n = vals.length; if (n === 0) return 0;
+  const mean = vals.reduce((a,b)=>a+b,0)/n;
+  const variance = vals.reduce((a,b)=> a + Math.pow(b-mean,2), 0) / n;
+  return Math.sqrt(variance);
+}
 
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
@@ -930,12 +956,6 @@ function formatDurationClient(ms){
   const d = Math.floor(h/24), rh = h % 24;
   return d + ' d ' + rh + ' h';
 }
-function stdDev(vals){
-  const n = vals.length; if (n === 0) return 0;
-  const mean = vals.reduce((a,b)=>a+b,0)/n;
-  const variance = vals.reduce((a,b)=> a + Math.pow(b-mean,2), 0) / n;
-  return Math.sqrt(variance);
-}
 
 /* ===== GRÁFICO PRINCIPAL (simple, sin selección de rango) ===== */
 function drawSingleTimeChart(cfg, points, desde, hasta, viewW=1000, viewH=280){
@@ -995,26 +1015,118 @@ function renderMainHistChart(){
   container.innerHTML = drawSingleTimeChart(cfg, pts, desde, hasta, 1000, 280);
 }
 
-/* ===== Selección de parámetros (main + adv comparten el mismo listado) ===== */
+/* ===== Selección de parámetro (main) ===== */
 function populateParamSelects(){
   const optsHtml = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
   const mainSel = document.getElementById('mainHistParamSelect');
   mainSel.innerHTML = optsHtml;
   if (mainSel.options.length) mainSel.options[0].selected = true;
-  const advSel = document.getElementById('advParamSelect');
-  advSel.innerHTML = optsHtml;
 }
 
-/* ===== GRÁFICO AVANZADO (multi-serie, multi-eje, selección arrastrable) ===== */
+/* ===== ANÁLISIS AVANZADO — checklist de parámetros con estilo ===== */
+function renderAdvParamsChecklist(){
+  const container = document.getElementById('advParamsChecklist');
+  const checkedSet = new Set(advParamIds);
+  container.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => {
+    const checked = checkedSet.has(id);
+    const style = checked ? getOrCreateParamStyle(id) : null;
+    const styleControls = checked ? `
+      <input type="color" data-style-param="${id}" data-style-field="color" value="${style.color}" title="Color de la línea">
+      <select data-style-param="${id}" data-style-field="width" title="Espesor">
+        <option value="1" ${style.width==1?'selected':''}>Fino</option>
+        <option value="2" ${style.width==2?'selected':''}>Normal</option>
+        <option value="3" ${style.width==3?'selected':''}>Grueso</option>
+        <option value="4" ${style.width==4?'selected':''}>Muy grueso</option>
+      </select>
+      <select data-style-param="${id}" data-style-field="dash" title="Estilo de línea">
+        <option value="solid" ${style.dash==='solid'?'selected':''}>Sólido</option>
+        <option value="dashed" ${style.dash==='dashed'?'selected':''}>Guiones</option>
+        <option value="dotted" ${style.dash==='dotted'?'selected':''}>Punteado</option>
+      </select>` : '';
+    return `<div class="adv-param-check-row">
+      <label style="display:flex; align-items:center; gap:8px; flex:1; min-width:200px; flex-direction:row;">
+        <input type="checkbox" class="adv-param-checkbox" data-param-id="${id}" ${checked?'checked':''}>
+        ${cfg.label}
+      </label>
+      ${styleControls}
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.adv-param-checkbox').forEach(cb => cb.addEventListener('change', () => {
+    const id = cb.dataset.paramId;
+    if (cb.checked){ if (!advParamIds.includes(id)) advParamIds.push(id); getOrCreateParamStyle(id); }
+    else { advParamIds = advParamIds.filter(x => x !== id); }
+    renderAdvParamsChecklist();
+    renderAdvAxesPanel();
+    renderAdvChart();
+  }));
+  container.querySelectorAll('[data-style-param]').forEach(el => el.addEventListener('change', () => {
+    const id = el.dataset.styleParam, field = el.dataset.styleField;
+    const style = getOrCreateParamStyle(id);
+    style[field] = field === 'width' ? parseInt(el.value,10) : el.value;
+    renderAdvChart();
+  }));
+}
+function getSelectedAdvParamIds(){
+  return advParamIds.length ? advParamIds : [Object.keys(PARAMS)[0]];
+}
+
+/* ===== ANÁLISIS AVANZADO — ejes ===== */
+function renderAdvAxesPanel(){
+  const listEl = document.getElementById('advAxesList');
+  listEl.innerHTML = advAxes.length
+    ? advAxes.map((ax,i) => `<div class="adv-axis-row">
+        <span><span class="legend-swatch" style="background:${SERIES_COLORS[i % SERIES_COLORS.length]}"></span> ${ax.label}${ax.unit?(' ('+ax.unit+')'):''} ${ax.auto ? '· auto' : ('· ' + ax.min + ' a ' + ax.max)}</span>
+        <span style="display:flex; gap:4px;">
+          <button type="button" data-axis-move="up" data-axis-id="${ax.id}" ${i===0?'disabled':''}>▲</button>
+          <button type="button" data-axis-move="down" data-axis-id="${ax.id}" ${i===advAxes.length-1?'disabled':''}>▼</button>
+          <button type="button" data-axis-id="${ax.id}" class="adv-axis-del">Eliminar</button>
+        </span>
+      </div>`).join('')
+    : '<p class="hist-hint">Todavía no creaste ejes — cada parámetro usa su propia escala automática.</p>';
+
+  listEl.querySelectorAll('.adv-axis-del').forEach(btn => btn.addEventListener('click', () => {
+    const axId = btn.dataset.axisId;
+    advAxes = advAxes.filter(a => a.id !== axId);
+    Object.keys(advParamAxisMap).forEach(pid => { if (advParamAxisMap[pid] === axId) advParamAxisMap[pid] = null; });
+    renderAdvAxesPanel();
+    renderAdvChart();
+  }));
+  listEl.querySelectorAll('[data-axis-move]').forEach(btn => btn.addEventListener('click', () => {
+    const axId = btn.dataset.axisId;
+    const idx = advAxes.findIndex(a => a.id === axId);
+    const dir = btn.dataset.axisMove === 'up' ? -1 : 1;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= advAxes.length) return;
+    const tmp = advAxes[idx]; advAxes[idx] = advAxes[newIdx]; advAxes[newIdx] = tmp;
+    renderAdvAxesPanel();
+    renderAdvChart();
+  }));
+
+  const ids = getSelectedAdvParamIds();
+  const assignEl = document.getElementById('advAssignList');
+  if (!advAxes.length){
+    assignEl.innerHTML = '<p class="hist-hint">Creá al menos un eje arriba para poder asignárselo a un parámetro.</p>';
+    return;
+  }
+  assignEl.innerHTML = ids.map(id => {
+    const current = advParamAxisMap[id] || '';
+    const options = ['<option value="">Automático</option>'].concat(
+      advAxes.map(ax => `<option value="${ax.id}" ${current===ax.id?'selected':''}>${ax.label}${ax.unit?(' ('+ax.unit+')'):''}</option>`)
+    ).join('');
+    return `<div class="adv-assign-row"><span>${PARAMS[id].label}</span><select data-param-id="${id}" class="adv-assign-select">${options}</select></div>`;
+  }).join('');
+  assignEl.querySelectorAll('.adv-assign-select').forEach(sel => sel.addEventListener('change', () => {
+    advParamAxisMap[sel.dataset.paramId] = sel.value || null;
+    renderAdvChart();
+  }));
+}
+
+/* ===== ANÁLISIS AVANZADO — gráfico multi-eje ===== */
 let advRangeState = null;
 let advDragActive = false;
 let advDragStartX = null;
 
-function getSelectedAdvParamIds(){
-  const sel = document.getElementById('advParamSelect');
-  const ids = Array.from(sel.selectedOptions).map(o => o.value);
-  return ids.length ? ids : (advParamIds.length ? advParamIds : [Object.keys(PARAMS)[0]]);
-}
 function applyAdvQuickRange(code){
   if (code === 'custom') return;
   const now = new Date();
@@ -1036,64 +1148,51 @@ function getAdvFilteredRange(){
   return { desde, hasta };
 }
 
-function renderAdvAxesPanel(){
-  const listEl = document.getElementById('advAxesList');
-  listEl.innerHTML = advAxes.length
-    ? advAxes.map(ax => `<div class="adv-axis-row"><span><span class="legend-swatch" style="background:var(--accent); display:inline-block;"></span> ${ax.label} (${ax.unit}) · ${ax.min} a ${ax.max}</span><button type="button" data-axis-id="${ax.id}" class="adv-axis-del">Eliminar</button></div>`).join('')
-    : '<p class="hist-hint">Todavía no creaste ejes — cada parámetro usa su propia escala automática.</p>';
-  listEl.querySelectorAll('.adv-axis-del').forEach(btn => btn.addEventListener('click', () => {
-    const axId = btn.dataset.axisId;
-    advAxes = advAxes.filter(a => a.id !== axId);
-    Object.keys(advParamAxisMap).forEach(pid => { if (advParamAxisMap[pid] === axId) advParamAxisMap[pid] = null; });
-    renderAdvAxesPanel();
-    renderAdvChart();
-  }));
-
-  const ids = getSelectedAdvParamIds();
-  const assignEl = document.getElementById('advAssignList');
-  if (!advAxes.length){
-    assignEl.innerHTML = '<p class="hist-hint">Creá al menos un eje arriba para poder asignárselo a un parámetro.</p>';
-    return;
-  }
-  assignEl.innerHTML = ids.map(id => {
-    const current = advParamAxisMap[id] || '';
-    const options = ['<option value="">Automático</option>'].concat(
-      advAxes.map(ax => `<option value="${ax.id}" ${current===ax.id?'selected':''}>${ax.label} (${ax.unit})</option>`)
-    ).join('');
-    return `<div class="adv-assign-row"><span>${PARAMS[id].label}</span><select data-param-id="${id}" class="adv-assign-select">${options}</select></div>`;
-  }).join('');
-  assignEl.querySelectorAll('.adv-assign-select').forEach(sel => sel.addEventListener('change', () => {
-    advParamAxisMap[sel.dataset.paramId] = sel.value || null;
-    renderAdvChart();
-  }));
-}
-
-function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1050, viewH=340){
-  const W = viewW, H = viewH, leftPad = 50, bottomPad = 26;
-  const chartW = W - leftPad, chartH = H - bottomPad;
+function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1300, viewH=400){
+  const bottomPad = 26;
   const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
+
+  const explicitAxesInUse = advAxes.filter(ax => ids.some(id => advParamAxisMap[id] === ax.id));
+  const AXIS_COL_WIDTH = 62;
+  const noAxisSingleParam = (explicitAxesInUse.length === 0 && ids.length === 1);
+  const leftPad = explicitAxesInUse.length > 0
+    ? 24 + AXIS_COL_WIDTH * explicitAxesInUse.length
+    : (noAxisSingleParam ? 50 : 30);
+  const W = viewW, H = viewH;
+  const chartW = W - leftPad, chartH = H - bottomPad;
   const scaleX = ts => leftPad + ((ts - t0)/(t1 - t0)) * chartW;
 
-  // Resolver dominio efectivo de cada serie
+  const axisRangeById = {};
+  explicitAxesInUse.forEach(ax => {
+    if (ax.auto){
+      let mn = Infinity, mx = -Infinity;
+      ids.forEach((id,i) => { if (advParamAxisMap[id] === ax.id) dataArrays[i].forEach(p => { if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; }); });
+      if (!isFinite(mn)){ mn = ax.min; mx = ax.max; }
+      else { const pad = (mx-mn)*0.08 || Math.abs(mn)*0.05 || 1; mn -= pad; mx += pad; }
+      axisRangeById[ax.id] = { min: mn, max: mx };
+    } else {
+      axisRangeById[ax.id] = { min: ax.min, max: ax.max };
+    }
+  });
+
   const resolved = ids.map((id, i) => {
     const axId = advParamAxisMap[id];
     const axis = axId ? advAxes.find(a => a.id === axId) : null;
     const pts = dataArrays[i];
+    const style = getOrCreateParamStyle(id);
     let min, max, unit, decimals = PARAMS[id].decimals, label = PARAMS[id].label;
-    if (axis){ min = axis.min; max = axis.max; unit = axis.unit; }
-    else {
+    if (axis && axisRangeById[axis.id]){
+      min = axisRangeById[axis.id].min; max = axisRangeById[axis.id].max; unit = axis.unit || PARAMS[id].unit;
+    } else {
       let mn = Infinity, mx = -Infinity;
       pts.forEach(p => { if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
       if (!isFinite(mn)){ mn = PARAMS[id].domain[0]; mx = PARAMS[id].domain[1]; }
-      if (mn === mx){ const pad = Math.abs(mn)*0.05 || 1; mn -= pad; mx += pad; }
+      if (mn === mx){ const pad = Math.abs(mn)*0.08 || 1; mn -= pad; mx += pad; }
+      else { const pad = (mx-mn)*0.08; mn -= pad; mx += pad; }
       min = mn; max = mx; unit = PARAMS[id].unit;
     }
-    return { id, axisId: axId || null, min, max, unit, decimals, label, color: SERIES_COLORS[i % SERIES_COLORS.length], pts };
+    return { id, axisId: axId || null, min, max, unit, decimals, label, style, pts };
   });
-
-  // ¿Comparten todos la misma escala? (mismo eje asignado, o si hay 1 solo id sin eje)
-  const axisIdsInUse = new Set(resolved.map(r => r.axisId || ('auto:'+r.id)));
-  const singleScale = axisIdsInUse.size === 1;
 
   const seriesList = resolved.map(r => {
     const coords = r.pts.map(p => {
@@ -1105,51 +1204,66 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1050, viewH
     return { ...r, coords };
   });
 
-  let bandsSvg = '';
-  if (singleScale && ids.length === 1 && !advParamAxisMap[ids[0]]){
-    const cfg = PARAMS[ids[0]];
-    bandsSvg = bandsToChartBands(cfg.bands, [seriesList[0].min, seriesList[0].max]).map(b=>{
-      const y1 = chartH - ((b.to - seriesList[0].min)/(seriesList[0].max-seriesList[0].min)) * (chartH-12) - 6;
-      const y2 = chartH - ((b.from - seriesList[0].min)/(seriesList[0].max-seriesList[0].min)) * (chartH-12) - 6;
-      return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
-    }).join('');
-  }
-
-  let linesSvg = '';
-  seriesList.forEach(s => {
-    if (s.coords.length > 1){
-      const path = 'M ' + s.coords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' L ');
-      linesSvg += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"></path>`;
-    }
-    if (s.coords.length > 0){
-      const last = s.coords[s.coords.length-1];
-      linesSvg += `<circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4" fill="${s.color}" stroke="var(--bg)" stroke-width="1.5"></circle>`;
-    }
-  });
-
-  let yTicksSvg = '';
-  if (singleScale){
-    const s0 = seriesList[0];
-    [s0.min, (s0.min+s0.max)/2, s0.max].forEach(t => {
-      const ratio = (t - s0.min)/(s0.max-s0.min);
-      const y = chartH - ratio*(chartH-12) - 6;
-      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
-      yTicksSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(s0.decimals)}</text>${gridLine}`;
-    });
-  }
-
   const spanMs = t1 - t0;
   const ticks = buildTimeTicks(desde, hasta, 6);
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
     const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
-    return `${gridLine}<text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+    return `${gridLine}<text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
+
+  let axesColsSvg = '';
+  explicitAxesInUse.forEach((ax, ai) => {
+    const range = axisRangeById[ax.id];
+    const colColor = SERIES_COLORS[ai % SERIES_COLORS.length];
+    const colRight = 24 + AXIS_COL_WIDTH*(ai+1) - 10;
+    [range.min, (range.min+range.max)/2, range.max].forEach(t => {
+      const ratio = (t - range.min)/(range.max-range.min);
+      const y = chartH - ratio*(chartH-12) - 6;
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+      axesColsSvg += `<text x="${colRight}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="${colColor}" font-weight="600">${t.toFixed(1)}</text>${gridLine}`;
+    });
+    const titleX = 24 + AXIS_COL_WIDTH*ai + 14;
+    axesColsSvg += `<text x="${titleX}" y="${(chartH/2).toFixed(1)}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" font-weight="600" fill="${colColor}" transform="rotate(-90 ${titleX} ${(chartH/2).toFixed(1)})">${ax.label}${ax.unit ? (' ('+ax.unit+')') : ''}</text>`;
+  });
+
+  let bandsSvg = '';
+  if (noAxisSingleParam){
+    const s0 = seriesList[0];
+    [s0.min, (s0.min+s0.max)/2, s0.max].forEach(t => {
+      const ratio = (t - s0.min)/(s0.max-s0.min);
+      const y = chartH - ratio*(chartH-12) - 6;
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+      axesColsSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text)">${t.toFixed(s0.decimals)}</text>${gridLine}`;
+    });
+    if (!advParamAxisMap[ids[0]]){
+      const cfg = PARAMS[ids[0]];
+      bandsSvg = bandsToChartBands(cfg.bands, [s0.min, s0.max]).map(b=>{
+        const y1 = chartH - ((b.to - s0.min)/(s0.max-s0.min)) * (chartH-12) - 6;
+        const y2 = chartH - ((b.from - s0.min)/(s0.max-s0.min)) * (chartH-12) - 6;
+        return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
+      }).join('');
+    }
+  }
+
+  let linesSvg = '';
+  seriesList.forEach(s => {
+    const dash = dashArrayFor(s.style.dash);
+    const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+    if (s.coords.length > 1){
+      const path = 'M ' + s.coords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' L ');
+      linesSvg += `<path d="${path}" fill="none" stroke="${s.style.color}" stroke-width="${s.style.width}" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"${dashAttr}></path>`;
+    }
+    if (s.coords.length > 0){
+      const last = s.coords[s.coords.length-1];
+      linesSvg += `<circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4" fill="${s.style.color}" stroke="var(--bg)" stroke-width="1.5"></circle>`;
+    }
+  });
 
   advRangeState = { seriesList, leftPad, chartW, chartH, H };
 
   return `<svg id="advSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Análisis avanzado">
-    ${bandsSvg}${yTicksSvg}${xTicksSvg}
+    ${bandsSvg}${axesColsSvg}${xTicksSvg}
     <rect id="advCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${chartH}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
     <rect id="advSelectionRect" x="0" y="0" width="0" height="${chartH}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
     <line id="advSelLine1" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
@@ -1159,12 +1273,16 @@ function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1050, viewH
 }
 function renderAdvLegend(ids){
   const legend = document.getElementById('advLegend');
-  legend.innerHTML = ids.map((id,i) => `<span class="legend-item"><span class="legend-swatch" style="background:${SERIES_COLORS[i % SERIES_COLORS.length]}"></span>${PARAMS[id].label}</span>`).join('');
+  legend.innerHTML = ids.map(id => {
+    const style = getOrCreateParamStyle(id);
+    return `<span class="legend-item"><span class="legend-swatch" style="background:${style.color}"></span>${PARAMS[id].label}</span>`;
+  }).join('');
 }
 function renderAdvChart(){
-  advParamIds = getSelectedAdvParamIds();
+  if (!advParamIds.length) advParamIds = [Object.keys(PARAMS)[0]];
+  const ids = advParamIds;
   const { desde, hasta } = getAdvFilteredRange();
-  const dataArrays = advParamIds.map(id => rowsGlobal
+  const dataArrays = ids.map(id => rowsGlobal
     .filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null)
     .map(r => ({ ts: r.ts, v: r.values[id] })));
   const container = document.getElementById('advChartContainer');
@@ -1175,8 +1293,8 @@ function renderAdvChart(){
     advRangeState = null; clearAdvSelection();
     return;
   }
-  container.innerHTML = drawAdvChart(advParamIds, dataArrays, desde, hasta, advShowGrid, 1050, 340);
-  renderAdvLegend(advParamIds);
+  container.innerHTML = drawAdvChart(ids, dataArrays, desde, hasta, advShowGrid, 1300, 400);
+  renderAdvLegend(ids);
   clearAdvSelection();
 }
 
@@ -1200,11 +1318,11 @@ function updateAdvSelection(state, svgX0, svgX1){
   let rangeTs0 = null, rangeTs1 = null;
   const rows = state.seriesList.map(s => {
     const slice = s.coords.filter(p => p.x >= xA && p.x <= xB);
-    if (!slice.length) return { label: s.label, color: s.color, empty: true };
+    if (!slice.length) return { label: s.label, color: s.style.color, empty: true };
     slice.forEach(p => { if (rangeTs0 === null || p.ts < rangeTs0) rangeTs0 = p.ts; if (rangeTs1 === null || p.ts > rangeTs1) rangeTs1 = p.ts; });
     const vals = slice.map(p => p.v);
     return {
-      label: s.label, color: s.color,
+      label: s.label, color: s.style.color,
       avg: vals.reduce((a,b)=>a+b,0)/vals.length,
       max: Math.max(...vals), min: Math.min(...vals),
       std: stdDev(vals), count: vals.length,
@@ -1228,8 +1346,7 @@ function updateAdvSelection(state, svgX0, svgX1){
 
   const bodyRows = rows.map(r => {
     if (r.empty){
-      const cells = ['<td colspan="' + (headers.length-1) + '">Sin datos en el rango</td>'];
-      return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td>${cells.join('')}</tr>`;
+      return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td colspan="${headers.length-1}">Sin datos en el rango</td></tr>`;
     }
     const cells = [];
     if (advTableCols.min) cells.push(`<td>${r.min.toFixed(r.decimals)} ${r.unit}</td>`);
@@ -1281,7 +1398,7 @@ function togglePanel(panelId, btnId){
   panel.classList.toggle('open', willOpen);
   btn.classList.toggle('active', willOpen);
 }
-document.getElementById('advToggleParams').addEventListener('click', () => togglePanel('advParamsPanel','advToggleParams'));
+document.getElementById('advToggleParams').addEventListener('click', () => { togglePanel('advParamsPanel','advToggleParams'); renderAdvParamsChecklist(); });
 document.getElementById('advToggleAxes').addEventListener('click', () => { togglePanel('advAxesPanel','advToggleAxes'); renderAdvAxesPanel(); });
 document.getElementById('advToggleCols').addEventListener('click', () => togglePanel('advColsPanel','advToggleCols'));
 document.getElementById('advToggleGrid').addEventListener('click', (e) => {
@@ -1291,22 +1408,20 @@ document.getElementById('advToggleGrid').addEventListener('click', (e) => {
 });
 document.getElementById('advToggleGrid').classList.add('active');
 
-document.getElementById('advParamSelect').addEventListener('change', () => {
-  advParamIds = getSelectedAdvParamIds();
-  renderAdvAxesPanel();
-  renderAdvChart();
-});
 document.getElementById('advAxisAddBtn').addEventListener('click', () => {
   const name = document.getElementById('advAxisName').value.trim();
   const unit = document.getElementById('advAxisUnit').value.trim();
+  const auto = document.getElementById('advAxisAuto').checked;
   const min = parseFloat(document.getElementById('advAxisMin').value);
   const max = parseFloat(document.getElementById('advAxisMax').value);
-  if (!name || Number.isNaN(min) || Number.isNaN(max) || min >= max) return;
-  advAxes.push({ id: 'axis_' + Date.now(), label: name, unit: unit || '', min, max });
+  if (!name) return;
+  if (!auto && (Number.isNaN(min) || Number.isNaN(max) || min >= max)) return;
+  advAxes.push({ id: 'axis_' + Date.now(), label: name, unit: unit || '', min: Number.isNaN(min)?0:min, max: Number.isNaN(max)?100:max, auto });
   document.getElementById('advAxisName').value = '';
   document.getElementById('advAxisUnit').value = '';
   document.getElementById('advAxisMin').value = '';
   document.getElementById('advAxisMax').value = '';
+  document.getElementById('advAxisAuto').checked = true;
   renderAdvAxesPanel();
   renderAdvChart();
 });
@@ -1325,10 +1440,10 @@ document.getElementById('advCloseBtn').addEventListener('click', () => { documen
 
 document.getElementById('openAdvChartBtn').addEventListener('click', () => {
   const mainId = document.getElementById('mainHistParamSelect').value;
-  const advSel = document.getElementById('advParamSelect');
-  Array.from(advSel.options).forEach(o => { o.selected = (o.value === mainId); });
   advParamIds = [mainId];
+  getOrCreateParamStyle(mainId);
   if (!document.getElementById('advDesde').value) applyAdvQuickRange('7d');
+  renderAdvParamsChecklist();
   renderAdvAxesPanel();
   renderAdvChart();
   document.getElementById('advChartOverlay').style.display = 'flex';
