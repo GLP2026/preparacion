@@ -47,6 +47,7 @@
   .modal-overlay{display:none; position:fixed; inset:0; background:rgba(8,10,13,0.78); align-items:center; justify-content:center; z-index:50; padding:16px;}
   .modal-box{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; width:320px; display:flex; flex-direction:column; gap:12px;}
   .modal-box.wide{ width:640px; max-width:92vw; max-height:85vh; overflow-y:auto; }
+  .modal-box.wide-xl{ width:1150px; max-width:96vw; max-height:92vh; overflow-y:auto; }
   .modal-box h3{margin:0; font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:15px; letter-spacing:0.03em;}
   .modal-box label{display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
   .modal-box input{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px;}
@@ -56,7 +57,7 @@
   .login-error{color:var(--crit); font-size:11.5px; min-height:14px; margin:0;}
   .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px; flex-wrap:wrap;}
   .modal-actions button{font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer;}
-  #loginCancel, #configCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  #loginCancel, #configCloseBtn, #advCloseBtn{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
   .modal-actions button[type="submit"], .modal-actions button.primary{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600;}
 
   /* ===== BANNER SUPERIOR ===== */
@@ -202,11 +203,10 @@
 
   .hist-controls{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-wrap:wrap;}
   .hist-controls select, .hist-controls input[type="date"], .hist-controls input[type="datetime-local"]{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
-  .hist-controls select[multiple]{ min-width:220px; }
   .hist-controls button.apply-btn{background:var(--accent); border:1px solid var(--accent); color:#12171C; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px;}
   .hist-controls button.apply-btn:hover{opacity:0.9;}
   .hist-hint{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint);}
-  .trend-full{width:100%; height:320px; display:block;}
+  .trend-full{width:100%; height:280px; display:block;}
   .hist-legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);}
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-swatch{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0;}
@@ -220,6 +220,25 @@
   .hist-range-table{ font-size:11.5px; }
   .hist-range-table th, .hist-range-table td{ padding:5px 8px; }
   .hist-range-table td:first-child, .hist-range-table th:first-child{ display:flex; align-items:center; gap:6px; }
+
+  /* ===== TOOLBAR / PANELES DEL ANÁLISIS AVANZADO ===== */
+  .adv-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .adv-toolbar button{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:7px 12px; border-radius:6px; cursor:pointer; background:var(--panel-alt); border:1px solid var(--line); color:var(--text-dim); }
+  .adv-toolbar button:hover{ border-color:var(--accent); color:var(--accent); }
+  .adv-toolbar button.active{ background:var(--accent); border-color:var(--accent); color:#12171C; font-weight:600; }
+  .adv-panel{ display:none; background:var(--panel-alt); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); }
+  .adv-panel.open{ display:block; }
+  .adv-axis-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line-soft); }
+  .adv-axis-row:last-child{ border-bottom:none; }
+  .adv-axis-row button{ background:transparent; border:1px solid var(--line); color:var(--text-faint); border-radius:6px; padding:3px 8px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11px; }
+  .adv-axis-row button:hover{ border-color:var(--crit); color:var(--crit); }
+  .adv-axis-form{ display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-top:10px; padding-top:10px; border-top:1px solid var(--line-soft); }
+  .adv-axis-form label{ display:flex; flex-direction:column; gap:3px; font-size:10px; color:var(--text-faint); }
+  .adv-axis-form input{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; width:90px; }
+  .adv-assign-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:5px 0; }
+  .adv-assign-row select{ background:var(--panel); border:1px solid var(--line); color:var(--text); padding:5px 8px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; }
+  .adv-col-check{ display:flex; align-items:center; gap:8px; padding:4px 0; }
+  /* ===== FIN TOOLBAR ===== */
 
   .lab-upload-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
   .upload-btn{background:var(--panel-alt); border:1px solid var(--line); color:var(--text); padding:7px 12px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
@@ -337,34 +356,20 @@
       <div class="content-panel analysis-grid active" data-content="analisis">
         <div class="analysis-col">
           <div class="panel">
-            <h2>Gráficos históricos</h2>
+            <h2>Gráfico histórico</h2>
             <div class="hist-controls">
-              <label for="histParamSelect">Parámetro(s):</label>
-              <select id="histParamSelect" multiple size="4"></select>
-              <span class="hist-hint">Ctrl/Cmd+clic para elegir varios y superponerlos</span>
-            </div>
-            <div class="hist-controls">
-              <label for="histQuickRange">Rango rápido:</label>
-              <select id="histQuickRange">
-                <option value="6h">Últimas 6 horas</option>
-                <option value="12h">Últimas 12 horas</option>
-                <option value="24h">Últimas 24 horas</option>
-                <option value="2d">Últimos 2 días</option>
-                <option value="7d" selected>Últimos 7 días</option>
-                <option value="30d">Últimos 30 días</option>
-                <option value="90d">Últimos 90 días</option>
+              <label for="mainHistParamSelect">Parámetro:</label>
+              <select id="mainHistParamSelect"></select>
+              <label for="mainHistRangeSelect">Período:</label>
+              <select id="mainHistRangeSelect">
+                <option value="7" selected>Últimos 7 días</option>
+                <option value="30">Últimos 30 días</option>
+                <option value="90">Últimos 90 días</option>
                 <option value="all">Todo el histórico</option>
-                <option value="custom">Personalizado</option>
               </select>
-              <label for="histDesde">Desde:</label>
-              <input type="datetime-local" id="histDesde">
-              <label for="histHasta">Hasta:</label>
-              <input type="datetime-local" id="histHasta">
-              <button type="button" id="histFiltrarBtn" class="apply-btn">Aplicar</button>
+              <button type="button" id="openAdvChartBtn" class="apply-btn">⤢ Análisis avanzado</button>
             </div>
-            <div id="histLegend" class="hist-legend"></div>
-            <div id="histChartContainer"></div>
-            <div class="hist-range-stats" id="histRangeStats"><span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span></div>
+            <div id="mainHistChartContainer"></div>
           </div>
           <div class="panel">
             <h2>Registros recientes</h2>
@@ -492,6 +497,74 @@
     <p class="lab-file-status" id="thresholdSaveMsg"></p>
     <div class="modal-actions">
       <button type="button" id="configCloseBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="advChartOverlay" class="modal-overlay">
+  <div class="modal-box wide-xl" role="dialog" aria-modal="true">
+    <h3>Análisis avanzado de variables</h3>
+
+    <div class="adv-toolbar">
+      <button type="button" id="advToggleParams">📈 Parámetros</button>
+      <button type="button" id="advToggleAxes">📐 Ejes</button>
+      <button type="button" id="advToggleGrid">▦ Cuadrícula</button>
+      <button type="button" id="advToggleCols">☰ Columnas de tabla</button>
+    </div>
+
+    <div class="adv-panel" id="advParamsPanel">
+      <label for="advParamSelect">Parámetro(s):</label><br>
+      <select id="advParamSelect" multiple size="6" style="width:100%; margin-top:6px;"></select>
+      <p class="hist-hint" style="margin-top:6px;">Ctrl/Cmd+clic para elegir varios y superponerlos</p>
+    </div>
+
+    <div class="adv-panel" id="advAxesPanel">
+      <div id="advAxesList"><p class="hist-hint">Todavía no creaste ejes — cada parámetro usa su propia escala automática.</p></div>
+      <div class="adv-axis-form">
+        <label>Nombre<input type="text" id="advAxisName" placeholder="Corriente"></label>
+        <label>Unidad<input type="text" id="advAxisUnit" placeholder="A"></label>
+        <label>Mínimo<input type="number" id="advAxisMin" placeholder="0"></label>
+        <label>Máximo<input type="number" id="advAxisMax" placeholder="100"></label>
+        <button type="button" id="advAxisAddBtn" class="apply-btn">+ Agregar eje</button>
+      </div>
+      <div id="advAssignList" style="margin-top:12px; padding-top:10px; border-top:1px solid var(--line-soft);"></div>
+    </div>
+
+    <div class="adv-panel" id="advColsPanel">
+      <label class="adv-col-check"><input type="checkbox" id="advColMin" checked> Mínimo</label>
+      <label class="adv-col-check"><input type="checkbox" id="advColMax" checked> Máximo</label>
+      <label class="adv-col-check"><input type="checkbox" id="advColAvg" checked> Promedio</label>
+      <label class="adv-col-check"><input type="checkbox" id="advColStd" checked> Desvío estándar</label>
+      <label class="adv-col-check"><input type="checkbox" id="advColCount" checked> Número de valores</label>
+      <label class="adv-col-check"><input type="checkbox" id="advColDuration" checked> Duración</label>
+    </div>
+
+    <div class="hist-controls">
+      <label for="advQuickRange">Rango rápido:</label>
+      <select id="advQuickRange">
+        <option value="6h">Últimas 6 horas</option>
+        <option value="12h">Últimas 12 horas</option>
+        <option value="24h">Últimas 24 horas</option>
+        <option value="2d">Últimos 2 días</option>
+        <option value="7d" selected>Últimos 7 días</option>
+        <option value="30d">Últimos 30 días</option>
+        <option value="90d">Últimos 90 días</option>
+        <option value="all">Todo el histórico</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <label for="advDesde">Desde:</label>
+      <input type="datetime-local" id="advDesde">
+      <label for="advHasta">Hasta:</label>
+      <input type="datetime-local" id="advHasta">
+      <button type="button" id="advFiltrarBtn" class="apply-btn">Aplicar</button>
+    </div>
+
+    <div id="advLegend" class="hist-legend"></div>
+    <div id="advChartContainer"></div>
+    <div class="hist-range-stats" id="advRangeStats"><span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span></div>
+
+    <div class="modal-actions">
+      <button type="button" id="advCloseBtn">Cerrar</button>
     </div>
   </div>
 </div>
@@ -626,6 +699,13 @@ let paradasListGlobal = [];
 let paradasFetchFailed = false;
 let prevCardValues = {};
 
+/* ===== Estado del análisis avanzado ===== */
+let advParamIds = [];
+let advAxes = []; // {id, label, unit, min, max}
+let advParamAxisMap = {}; // paramId -> axisId | null(=auto)
+let advShowGrid = true;
+let advTableCols = { min:true, max:true, avg:true, std:true, count:true, duration:true };
+
 /* UMBRALES EDITABLES */
 function loadThresholdOverrides(){ try { return JSON.parse(localStorage.getItem(THRESHOLD_KEY) || '{}'); } catch(e){ return {}; } }
 function saveThresholdOverrides(obj){ localStorage.setItem(THRESHOLD_KEY, JSON.stringify(obj)); }
@@ -657,7 +737,7 @@ function rerenderAll(){
   renderRitmo(rowsGlobal);
   renderCards(rowsGlobal);
   renderRecentTable(rowsGlobal);
-  renderHistChart();
+  renderMainHistChart();
   renderOperatorPie();
 }
 document.getElementById('navConfigBtn').addEventListener('click', () => { document.getElementById('configOverlay').style.display = 'flex'; });
@@ -826,46 +906,11 @@ function drawTrendSVG(cfg, points, extraClass, viewW=300, viewH=56){
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-svg ${extraClass}" role="img" aria-label="Tendencia ${cfg.label}">${bands}${line?`<path d="${line}" class="trend-line"></path>`:''}${dot}</svg>`;
 }
 
-/* ===== Gráfico histórico: escala de tiempo real, multi-serie, selección arrastrable ===== */
-let histRangeState = null;
-let histDragActive = false;
-let histDragStartX = null;
-
+/* ===== Helpers de tiempo compartidos ===== */
 function toDatetimeLocalValue(d){
   const p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-function applyQuickRange(code){
-  if (code === 'custom') return;
-  const now = new Date();
-  let desde;
-  if (code === 'all'){
-    desde = new Date(0);
-  } else {
-    const map = { '6h':6*3600000, '12h':12*3600000, '24h':24*3600000, '2d':2*86400000, '7d':7*86400000, '30d':30*86400000, '90d':90*86400000 };
-    desde = new Date(now.getTime() - (map[code] || 7*86400000));
-  }
-  document.getElementById('histDesde').value = toDatetimeLocalValue(desde);
-  document.getElementById('histHasta').value = toDatetimeLocalValue(now);
-}
-function getHistFilteredRange(){
-  const desdeVal = document.getElementById('histDesde').value;
-  const hastaVal = document.getElementById('histHasta').value;
-  const now = new Date();
-  const desde = desdeVal ? new Date(desdeVal) : new Date(now.getTime() - 7*86400000);
-  const hasta = hastaVal ? new Date(hastaVal) : now;
-  return { desde, hasta };
-}
-function getSelectedHistParamIds(){
-  const sel = document.getElementById('histParamSelect');
-  const ids = Array.from(sel.selectedOptions).map(o => o.value);
-  return ids.length ? ids : [Object.keys(PARAMS)[0]];
-}
-function selectSingleHistParam(id){
-  const sel = document.getElementById('histParamSelect');
-  Array.from(sel.options).forEach(o => { o.selected = (o.value === id); });
-}
-
 function buildTimeTicks(desde, hasta, count){
   const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
   const ticks = [];
@@ -885,41 +930,190 @@ function formatDurationClient(ms){
   const d = Math.floor(h/24), rh = h % 24;
   return d + ' d ' + rh + ' h';
 }
+function stdDev(vals){
+  const n = vals.length; if (n === 0) return 0;
+  const mean = vals.reduce((a,b)=>a+b,0)/n;
+  const variance = vals.reduce((a,b)=> a + Math.pow(b-mean,2), 0) / n;
+  return Math.sqrt(variance);
+}
 
-function drawMultiTrendChart(ids, dataArrays, desde, hasta, viewW=1000, viewH=320){
-  const W = viewW, H = viewH, leftPad = 46, bottomPad = 26;
+/* ===== GRÁFICO PRINCIPAL (simple, sin selección de rango) ===== */
+function drawSingleTimeChart(cfg, points, desde, hasta, viewW=1000, viewH=280){
+  const W = viewW, H = viewH, leftPad = 46, bottomPad = 24;
   const chartW = W - leftPad, chartH = H - bottomPad;
-  const multi = ids.length > 1;
+  const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
+  const scaleX = ts => leftPad + ((ts - t0)/(t1 - t0)) * chartW;
+  const [dmin, dmax] = cfg.domain;
+  const scaleYv = v => { const c = Math.max(dmin, Math.min(dmax, v)); return chartH - ((c - dmin)/(dmax-dmin)) * (chartH-12) - 6; };
+
+  const bandsSvg = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{
+    const y1 = scaleYv(b.to), y2 = scaleYv(b.from);
+    return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
+  }).join('');
+
+  const valid = points.filter(p => p.v !== null);
+  let line = '', lastDot = '';
+  if (valid.length){
+    const coords = valid.map(p => [scaleX(p.ts.getTime()), scaleYv(p.v)]);
+    if (coords.length > 1) line = 'M ' + coords.map(c=>`${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' L ');
+    const last = coords[coords.length-1];
+    lastDot = `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" class="dot-last"></circle>`;
+  }
+
+  const yTicksSvg = [dmin, (dmin+dmax)/2, dmax].map(t => {
+    const y = scaleYv(t);
+    return `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`;
+  }).join('');
+
+  const spanMs = t1 - t0;
+  const ticks = buildTimeTicks(desde, hasta, 6);
+  const xTicksSvg = ticks.map(d => {
+    const x = scaleX(d.getTime());
+    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico ${cfg.label}">
+    ${bandsSvg}${yTicksSvg}${xTicksSvg}
+    ${line?`<path d="${line}" fill="none" stroke="var(--text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"></path>`:''}
+    ${lastDot}
+  </svg>`;
+}
+function getMainHistRange(rangeVal){
+  const now = new Date();
+  if (rangeVal === 'all') return { desde: new Date(0), hasta: now };
+  const days = parseInt(rangeVal, 10);
+  return { desde: new Date(now.getTime() - days*24*3600*1000), hasta: now };
+}
+function renderMainHistChart(){
+  const id = document.getElementById('mainHistParamSelect').value;
+  const cfg = PARAMS[id];
+  const container = document.getElementById('mainHistChartContainer');
+  if (!cfg){ container.innerHTML = ''; return; }
+  const { desde, hasta } = getMainHistRange(document.getElementById('mainHistRangeSelect').value);
+  const pts = rowsGlobal.filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null).map(r => ({ ts:r.ts, v:r.values[id] }));
+  if (!pts.length){ container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>'; return; }
+  container.innerHTML = drawSingleTimeChart(cfg, pts, desde, hasta, 1000, 280);
+}
+
+/* ===== Selección de parámetros (main + adv comparten el mismo listado) ===== */
+function populateParamSelects(){
+  const optsHtml = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
+  const mainSel = document.getElementById('mainHistParamSelect');
+  mainSel.innerHTML = optsHtml;
+  if (mainSel.options.length) mainSel.options[0].selected = true;
+  const advSel = document.getElementById('advParamSelect');
+  advSel.innerHTML = optsHtml;
+}
+
+/* ===== GRÁFICO AVANZADO (multi-serie, multi-eje, selección arrastrable) ===== */
+let advRangeState = null;
+let advDragActive = false;
+let advDragStartX = null;
+
+function getSelectedAdvParamIds(){
+  const sel = document.getElementById('advParamSelect');
+  const ids = Array.from(sel.selectedOptions).map(o => o.value);
+  return ids.length ? ids : (advParamIds.length ? advParamIds : [Object.keys(PARAMS)[0]]);
+}
+function applyAdvQuickRange(code){
+  if (code === 'custom') return;
+  const now = new Date();
+  let desde;
+  if (code === 'all'){ desde = new Date(0); }
+  else {
+    const map = { '6h':6*3600000, '12h':12*3600000, '24h':24*3600000, '2d':2*86400000, '7d':7*86400000, '30d':30*86400000, '90d':90*86400000 };
+    desde = new Date(now.getTime() - (map[code] || 7*86400000));
+  }
+  document.getElementById('advDesde').value = toDatetimeLocalValue(desde);
+  document.getElementById('advHasta').value = toDatetimeLocalValue(now);
+}
+function getAdvFilteredRange(){
+  const desdeVal = document.getElementById('advDesde').value;
+  const hastaVal = document.getElementById('advHasta').value;
+  const now = new Date();
+  const desde = desdeVal ? new Date(desdeVal) : new Date(now.getTime() - 7*86400000);
+  const hasta = hastaVal ? new Date(hastaVal) : now;
+  return { desde, hasta };
+}
+
+function renderAdvAxesPanel(){
+  const listEl = document.getElementById('advAxesList');
+  listEl.innerHTML = advAxes.length
+    ? advAxes.map(ax => `<div class="adv-axis-row"><span><span class="legend-swatch" style="background:var(--accent); display:inline-block;"></span> ${ax.label} (${ax.unit}) · ${ax.min} a ${ax.max}</span><button type="button" data-axis-id="${ax.id}" class="adv-axis-del">Eliminar</button></div>`).join('')
+    : '<p class="hist-hint">Todavía no creaste ejes — cada parámetro usa su propia escala automática.</p>';
+  listEl.querySelectorAll('.adv-axis-del').forEach(btn => btn.addEventListener('click', () => {
+    const axId = btn.dataset.axisId;
+    advAxes = advAxes.filter(a => a.id !== axId);
+    Object.keys(advParamAxisMap).forEach(pid => { if (advParamAxisMap[pid] === axId) advParamAxisMap[pid] = null; });
+    renderAdvAxesPanel();
+    renderAdvChart();
+  }));
+
+  const ids = getSelectedAdvParamIds();
+  const assignEl = document.getElementById('advAssignList');
+  if (!advAxes.length){
+    assignEl.innerHTML = '<p class="hist-hint">Creá al menos un eje arriba para poder asignárselo a un parámetro.</p>';
+    return;
+  }
+  assignEl.innerHTML = ids.map(id => {
+    const current = advParamAxisMap[id] || '';
+    const options = ['<option value="">Automático</option>'].concat(
+      advAxes.map(ax => `<option value="${ax.id}" ${current===ax.id?'selected':''}>${ax.label} (${ax.unit})</option>`)
+    ).join('');
+    return `<div class="adv-assign-row"><span>${PARAMS[id].label}</span><select data-param-id="${id}" class="adv-assign-select">${options}</select></div>`;
+  }).join('');
+  assignEl.querySelectorAll('.adv-assign-select').forEach(sel => sel.addEventListener('change', () => {
+    advParamAxisMap[sel.dataset.paramId] = sel.value || null;
+    renderAdvChart();
+  }));
+}
+
+function drawAdvChart(ids, dataArrays, desde, hasta, showGrid, viewW=1050, viewH=340){
+  const W = viewW, H = viewH, leftPad = 50, bottomPad = 26;
+  const chartW = W - leftPad, chartH = H - bottomPad;
   const t0 = desde.getTime(), t1 = Math.max(hasta.getTime(), t0+1);
   const scaleX = ts => leftPad + ((ts - t0)/(t1 - t0)) * chartW;
 
-  let bandsSvg = '';
-  if (!multi){
-    const cfg = PARAMS[ids[0]];
-    bandsSvg = bandsToChartBands(cfg.bands, cfg.domain).map(b=>{
-      const y1 = chartH - ((b.to - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0])) * chartH;
-      const y2 = chartH - ((b.from - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0])) * chartH;
-      return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
-    }).join('');
-  }
-
-  const seriesList = ids.map((id,i) => {
-    const cfg = PARAMS[id];
+  // Resolver dominio efectivo de cada serie
+  const resolved = ids.map((id, i) => {
+    const axId = advParamAxisMap[id];
+    const axis = axId ? advAxes.find(a => a.id === axId) : null;
     const pts = dataArrays[i];
-    let min = Infinity, max = -Infinity;
-    pts.forEach(p => { if (p.v < min) min = p.v; if (p.v > max) max = p.v; });
-    if (!isFinite(min)){ min = cfg.domain[0]; max = cfg.domain[1]; }
-    if (min === max){ const pad = Math.abs(min)*0.05 || 1; min -= pad; max += pad; }
-    const domMin = multi ? min : cfg.domain[0];
-    const domMax = multi ? max : cfg.domain[1];
-    const coords = pts.map(p => {
+    let min, max, unit, decimals = PARAMS[id].decimals, label = PARAMS[id].label;
+    if (axis){ min = axis.min; max = axis.max; unit = axis.unit; }
+    else {
+      let mn = Infinity, mx = -Infinity;
+      pts.forEach(p => { if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
+      if (!isFinite(mn)){ mn = PARAMS[id].domain[0]; mx = PARAMS[id].domain[1]; }
+      if (mn === mx){ const pad = Math.abs(mn)*0.05 || 1; mn -= pad; mx += pad; }
+      min = mn; max = mx; unit = PARAMS[id].unit;
+    }
+    return { id, axisId: axId || null, min, max, unit, decimals, label, color: SERIES_COLORS[i % SERIES_COLORS.length], pts };
+  });
+
+  // ¿Comparten todos la misma escala? (mismo eje asignado, o si hay 1 solo id sin eje)
+  const axisIdsInUse = new Set(resolved.map(r => r.axisId || ('auto:'+r.id)));
+  const singleScale = axisIdsInUse.size === 1;
+
+  const seriesList = resolved.map(r => {
+    const coords = r.pts.map(p => {
       const x = scaleX(p.ts.getTime());
-      const ratio = Math.max(0, Math.min(1, (p.v - domMin)/(domMax - domMin)));
+      const ratio = Math.max(0, Math.min(1, (p.v - r.min)/(r.max - r.min)));
       const y = chartH - ratio*(chartH-12) - 6;
       return { x, y, ts: p.ts, v: p.v };
     });
-    return { id, cfg, color: multi ? SERIES_COLORS[i % SERIES_COLORS.length] : 'var(--text)', coords, min, max };
+    return { ...r, coords };
   });
+
+  let bandsSvg = '';
+  if (singleScale && ids.length === 1 && !advParamAxisMap[ids[0]]){
+    const cfg = PARAMS[ids[0]];
+    bandsSvg = bandsToChartBands(cfg.bands, [seriesList[0].min, seriesList[0].max]).map(b=>{
+      const y1 = chartH - ((b.to - seriesList[0].min)/(seriesList[0].max-seriesList[0].min)) * (chartH-12) - 6;
+      const y2 = chartH - ((b.from - seriesList[0].min)/(seriesList[0].max-seriesList[0].min)) * (chartH-12) - 6;
+      return `<rect x="${leftPad}" y="${Math.min(y1,y2).toFixed(1)}" width="${chartW}" height="${Math.abs(y2-y1).toFixed(1)}" class="band-${b.status}"></rect>`;
+    }).join('');
+  }
 
   let linesSvg = '';
   seriesList.forEach(s => {
@@ -934,12 +1128,13 @@ function drawMultiTrendChart(ids, dataArrays, desde, hasta, viewW=1000, viewH=32
   });
 
   let yTicksSvg = '';
-  if (!multi){
-    const cfg = seriesList[0].cfg;
-    [cfg.domain[0], (cfg.domain[0]+cfg.domain[1])/2, cfg.domain[1]].forEach(t => {
-      const ratio = (t - cfg.domain[0])/(cfg.domain[1]-cfg.domain[0]);
+  if (singleScale){
+    const s0 = seriesList[0];
+    [s0.min, (s0.min+s0.max)/2, s0.max].forEach(t => {
+      const ratio = (t - s0.min)/(s0.max-s0.min);
       const y = chartH - ratio*(chartH-12) - 6;
-      yTicksSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(cfg.decimals)}</text><line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>`;
+      const gridLine = showGrid ? `<line x1="${leftPad}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+      yTicksSvg += `<text x="${leftPad-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--text-faint)">${t.toFixed(s0.decimals)}</text>${gridLine}`;
     });
   }
 
@@ -947,19 +1142,42 @@ function drawMultiTrendChart(ids, dataArrays, desde, hasta, viewW=1000, viewH=32
   const ticks = buildTimeTicks(desde, hasta, 6);
   const xTicksSvg = ticks.map(d => {
     const x = scaleX(d.getTime());
-    return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/><text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
+    const gridLine = showGrid ? `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${chartH}" stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="2 3"/>` : '';
+    return `${gridLine}<text x="${x.toFixed(1)}" y="${chartH+18}" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="var(--text-faint)">${fmtTickLabel(d, spanMs)}</text>`;
   }).join('');
 
-  histRangeState = { seriesList, leftPad, chartW, chartH, H, multi };
+  advRangeState = { seriesList, leftPad, chartW, chartH, H };
 
-  return `<svg id="histSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Histórico">
+  return `<svg id="advSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="trend-full" role="img" aria-label="Análisis avanzado">
     ${bandsSvg}${yTicksSvg}${xTicksSvg}
-    <rect id="histCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${chartH}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
-    <rect id="histSelectionRect" x="0" y="0" width="0" height="${chartH}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
-    <line id="histSelLine1" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
-    <line id="histSelLine2" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    <rect id="advCaptureRect" x="${leftPad}" y="0" width="${chartW}" height="${chartH}" fill="transparent" style="cursor:crosshair" pointer-events="all"></rect>
+    <rect id="advSelectionRect" x="0" y="0" width="0" height="${chartH}" fill="var(--accent)" opacity="0.15" style="display:none; pointer-events:none;"></rect>
+    <line id="advSelLine1" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
+    <line id="advSelLine2" x1="0" y1="0" x2="0" y2="${chartH}" stroke="var(--accent)" stroke-width="1.5" style="display:none; pointer-events:none;"></line>
     ${linesSvg}
   </svg>`;
+}
+function renderAdvLegend(ids){
+  const legend = document.getElementById('advLegend');
+  legend.innerHTML = ids.map((id,i) => `<span class="legend-item"><span class="legend-swatch" style="background:${SERIES_COLORS[i % SERIES_COLORS.length]}"></span>${PARAMS[id].label}</span>`).join('');
+}
+function renderAdvChart(){
+  advParamIds = getSelectedAdvParamIds();
+  const { desde, hasta } = getAdvFilteredRange();
+  const dataArrays = advParamIds.map(id => rowsGlobal
+    .filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null)
+    .map(r => ({ ts: r.ts, v: r.values[id] })));
+  const container = document.getElementById('advChartContainer');
+  const anyData = dataArrays.some(arr => arr.length > 0);
+  if (!anyData){
+    container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>';
+    document.getElementById('advLegend').innerHTML = '';
+    advRangeState = null; clearAdvSelection();
+    return;
+  }
+  container.innerHTML = drawAdvChart(advParamIds, dataArrays, desde, hasta, advShowGrid, 1050, 340);
+  renderAdvLegend(advParamIds);
+  clearAdvSelection();
 }
 
 function clientXToSvgX(svgEl, clientX){
@@ -969,13 +1187,12 @@ function clientXToSvgX(svgEl, clientX){
   const ratio = vb.width / rect.width;
   return vb.x + (clientX - rect.left) * ratio;
 }
-
-function updateHistSelection(state, svgX0, svgX1){
+function updateAdvSelection(state, svgX0, svgX1){
   if (!state) return;
   const xA = Math.min(svgX0, svgX1), xB = Math.max(svgX0, svgX1);
-  const selRect = document.getElementById('histSelectionRect');
-  const line1 = document.getElementById('histSelLine1');
-  const line2 = document.getElementById('histSelLine2');
+  const selRect = document.getElementById('advSelectionRect');
+  const line1 = document.getElementById('advSelLine1');
+  const line2 = document.getElementById('advSelLine2');
   if (selRect){ selRect.setAttribute('x', xA); selRect.setAttribute('width', Math.max(0.5, xB-xA)); selRect.style.display = 'block'; }
   if (line1){ line1.setAttribute('x1', xA); line1.setAttribute('x2', xA); line1.style.display = 'block'; }
   if (line2){ line2.setAttribute('x1', xB); line2.setAttribute('x2', xB); line2.style.display = 'block'; }
@@ -983,56 +1200,139 @@ function updateHistSelection(state, svgX0, svgX1){
   let rangeTs0 = null, rangeTs1 = null;
   const rows = state.seriesList.map(s => {
     const slice = s.coords.filter(p => p.x >= xA && p.x <= xB);
-    if (!slice.length) return { label: s.cfg.label, color: s.color, empty: true };
+    if (!slice.length) return { label: s.label, color: s.color, empty: true };
     slice.forEach(p => { if (rangeTs0 === null || p.ts < rangeTs0) rangeTs0 = p.ts; if (rangeTs1 === null || p.ts > rangeTs1) rangeTs1 = p.ts; });
     const vals = slice.map(p => p.v);
-    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
-    return { label: s.cfg.label, color: s.color, avg, max: Math.max(...vals), min: Math.min(...vals), unit: s.cfg.unit, decimals: s.cfg.decimals };
+    return {
+      label: s.label, color: s.color,
+      avg: vals.reduce((a,b)=>a+b,0)/vals.length,
+      max: Math.max(...vals), min: Math.min(...vals),
+      std: stdDev(vals), count: vals.length,
+      unit: s.unit, decimals: s.decimals
+    };
   });
 
-  const statsEl = document.getElementById('histRangeStats');
-  if (!statsEl) return;
+  const statsEl = document.getElementById('advRangeStats');
+  const durationStr = (rangeTs0 && rangeTs1) ? formatDurationClient(rangeTs1.getTime()-rangeTs0.getTime()) : '—';
   const timeLine = (rangeTs0 && rangeTs1)
-    ? `<div class="hist-range-time"><strong>${fmtTime(rangeTs0)}</strong> → <strong>${fmtTime(rangeTs1)}</strong> · Duración: <strong>${formatDurationClient(rangeTs1.getTime()-rangeTs0.getTime())}</strong></div>`
+    ? `<div class="hist-range-time"><strong>${fmtTime(rangeTs0)}</strong> → <strong>${fmtTime(rangeTs1)}</strong></div>`
     : '<div class="hist-range-time">Sin datos en el rango seleccionado</div>';
-  const tableRows = rows.map(r => {
-    if (r.empty) return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td colspan="3">Sin datos en el rango</td></tr>`;
-    return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td><td>${r.avg.toFixed(r.decimals)} ${r.unit}</td><td>${r.max.toFixed(r.decimals)} ${r.unit}</td><td>${r.min.toFixed(r.decimals)} ${r.unit}</td></tr>`;
+
+  const headers = ['Serie'];
+  if (advTableCols.min) headers.push('Mínimo');
+  if (advTableCols.max) headers.push('Máximo');
+  if (advTableCols.avg) headers.push('Promedio');
+  if (advTableCols.std) headers.push('Desvío estándar');
+  if (advTableCols.count) headers.push('N° valores');
+  if (advTableCols.duration) headers.push('Duración');
+
+  const bodyRows = rows.map(r => {
+    if (r.empty){
+      const cells = ['<td colspan="' + (headers.length-1) + '">Sin datos en el rango</td>'];
+      return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td>${cells.join('')}</tr>`;
+    }
+    const cells = [];
+    if (advTableCols.min) cells.push(`<td>${r.min.toFixed(r.decimals)} ${r.unit}</td>`);
+    if (advTableCols.max) cells.push(`<td>${r.max.toFixed(r.decimals)} ${r.unit}</td>`);
+    if (advTableCols.avg) cells.push(`<td>${r.avg.toFixed(r.decimals)} ${r.unit}</td>`);
+    if (advTableCols.std) cells.push(`<td>${r.std.toFixed(r.decimals)} ${r.unit}</td>`);
+    if (advTableCols.count) cells.push(`<td>${r.count}</td>`);
+    if (advTableCols.duration) cells.push(`<td>${durationStr}</td>`);
+    return `<tr><td><span class="legend-swatch" style="background:${r.color}"></span>${r.label}</td>${cells.join('')}</tr>`;
   }).join('');
-  statsEl.innerHTML = timeLine + `<table class="hist-range-table"><thead><tr><th>Serie</th><th>Promedio</th><th>Máximo</th><th>Mínimo</th></tr></thead><tbody>${tableRows}</tbody></table>`;
+
+  statsEl.innerHTML = timeLine + `<table class="hist-range-table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyRows}</tbody></table>`;
 }
-function clearHistSelection(){
-  const selRect = document.getElementById('histSelectionRect');
-  const line1 = document.getElementById('histSelLine1');
-  const line2 = document.getElementById('histSelLine2');
+function clearAdvSelection(){
+  const selRect = document.getElementById('advSelectionRect');
+  const line1 = document.getElementById('advSelLine1');
+  const line2 = document.getElementById('advSelLine2');
   if (selRect) selRect.style.display = 'none';
   if (line1) line1.style.display = 'none';
   if (line2) line2.style.display = 'none';
-  const statsEl = document.getElementById('histRangeStats');
+  const statsEl = document.getElementById('advRangeStats');
   if (statsEl) statsEl.innerHTML = '<span class="modal-text">Arrastrá sobre el gráfico para seleccionar un rango.</span>';
 }
-
-function histOnCaptureDown(clientX){
-  if (!histRangeState) return;
-  const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
-  histDragActive = true;
-  histDragStartX = clientXToSvgX(svgEl, clientX);
-  updateHistSelection(histRangeState, histDragStartX, histDragStartX);
+function advOnCaptureDown(clientX){
+  if (!advRangeState) return;
+  const svgEl = document.getElementById('advSvg'); if (!svgEl) return;
+  advDragActive = true;
+  advDragStartX = clientXToSvgX(svgEl, clientX);
+  updateAdvSelection(advRangeState, advDragStartX, advDragStartX);
 }
-function histOnCaptureMove(clientX){
-  if (!histDragActive || !histRangeState) return;
-  const svgEl = document.getElementById('histSvg'); if (!svgEl) return;
+function advOnCaptureMove(clientX){
+  if (!advDragActive || !advRangeState) return;
+  const svgEl = document.getElementById('advSvg'); if (!svgEl) return;
   const svgX = clientXToSvgX(svgEl, clientX);
-  updateHistSelection(histRangeState, histDragStartX, svgX);
+  updateAdvSelection(advRangeState, advDragStartX, svgX);
 }
-function histOnCaptureUp(){ histDragActive = false; }
+function advOnCaptureUp(){ advDragActive = false; }
+document.addEventListener('mousedown', (e) => { if (e.target && e.target.id === 'advCaptureRect'){ e.preventDefault(); advOnCaptureDown(e.clientX); } });
+document.addEventListener('mousemove', (e) => { if (advDragActive) advOnCaptureMove(e.clientX); });
+document.addEventListener('mouseup', advOnCaptureUp);
+document.addEventListener('touchstart', (e) => { if (e.target && e.target.id === 'advCaptureRect' && e.touches[0]) advOnCaptureDown(e.touches[0].clientX); }, {passive:true});
+document.addEventListener('touchmove', (e) => { if (advDragActive && e.touches[0]){ e.preventDefault(); advOnCaptureMove(e.touches[0].clientX); } }, {passive:false});
+document.addEventListener('touchend', advOnCaptureUp);
 
-document.addEventListener('mousedown', (e) => { if (e.target && e.target.id === 'histCaptureRect'){ e.preventDefault(); histOnCaptureDown(e.clientX); } });
-document.addEventListener('mousemove', (e) => { if (histDragActive) histOnCaptureMove(e.clientX); });
-document.addEventListener('mouseup', histOnCaptureUp);
-document.addEventListener('touchstart', (e) => { if (e.target && e.target.id === 'histCaptureRect' && e.touches[0]) histOnCaptureDown(e.touches[0].clientX); }, {passive:true});
-document.addEventListener('touchmove', (e) => { if (histDragActive && e.touches[0]){ e.preventDefault(); histOnCaptureMove(e.touches[0].clientX); } }, {passive:false});
-document.addEventListener('touchend', histOnCaptureUp);
+/* ===== Interacciones del modal de análisis avanzado ===== */
+function togglePanel(panelId, btnId){
+  const panel = document.getElementById(panelId); const btn = document.getElementById(btnId);
+  const willOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open', willOpen);
+  btn.classList.toggle('active', willOpen);
+}
+document.getElementById('advToggleParams').addEventListener('click', () => togglePanel('advParamsPanel','advToggleParams'));
+document.getElementById('advToggleAxes').addEventListener('click', () => { togglePanel('advAxesPanel','advToggleAxes'); renderAdvAxesPanel(); });
+document.getElementById('advToggleCols').addEventListener('click', () => togglePanel('advColsPanel','advToggleCols'));
+document.getElementById('advToggleGrid').addEventListener('click', (e) => {
+  advShowGrid = !advShowGrid;
+  e.currentTarget.classList.toggle('active', advShowGrid);
+  renderAdvChart();
+});
+document.getElementById('advToggleGrid').classList.add('active');
+
+document.getElementById('advParamSelect').addEventListener('change', () => {
+  advParamIds = getSelectedAdvParamIds();
+  renderAdvAxesPanel();
+  renderAdvChart();
+});
+document.getElementById('advAxisAddBtn').addEventListener('click', () => {
+  const name = document.getElementById('advAxisName').value.trim();
+  const unit = document.getElementById('advAxisUnit').value.trim();
+  const min = parseFloat(document.getElementById('advAxisMin').value);
+  const max = parseFloat(document.getElementById('advAxisMax').value);
+  if (!name || Number.isNaN(min) || Number.isNaN(max) || min >= max) return;
+  advAxes.push({ id: 'axis_' + Date.now(), label: name, unit: unit || '', min, max });
+  document.getElementById('advAxisName').value = '';
+  document.getElementById('advAxisUnit').value = '';
+  document.getElementById('advAxisMin').value = '';
+  document.getElementById('advAxisMax').value = '';
+  renderAdvAxesPanel();
+  renderAdvChart();
+});
+['advColMin','advColMax','advColAvg','advColStd','advColCount','advColDuration'].forEach(id => {
+  document.getElementById(id).addEventListener('change', (e) => {
+    const key = { advColMin:'min', advColMax:'max', advColAvg:'avg', advColStd:'std', advColCount:'count', advColDuration:'duration' }[id];
+    advTableCols[key] = e.target.checked;
+  });
+});
+document.getElementById('advQuickRange').addEventListener('change', () => {
+  applyAdvQuickRange(document.getElementById('advQuickRange').value);
+  renderAdvChart();
+});
+document.getElementById('advFiltrarBtn').addEventListener('click', renderAdvChart);
+document.getElementById('advCloseBtn').addEventListener('click', () => { document.getElementById('advChartOverlay').style.display = 'none'; });
+
+document.getElementById('openAdvChartBtn').addEventListener('click', () => {
+  const mainId = document.getElementById('mainHistParamSelect').value;
+  const advSel = document.getElementById('advParamSelect');
+  Array.from(advSel.options).forEach(o => { o.selected = (o.value === mainId); });
+  advParamIds = [mainId];
+  if (!document.getElementById('advDesde').value) applyAdvQuickRange('7d');
+  renderAdvAxesPanel();
+  renderAdvChart();
+  document.getElementById('advChartOverlay').style.display = 'flex';
+});
 
 /* RENDER — ritmo (turno) */
 function renderTurnoInfo(){
@@ -1079,10 +1379,11 @@ function renderCards(rows){
     card.innerHTML = `<div class="card-head"><span class="card-label">${paramIcon(cfg.icon)}${cfg.label}</span><span class="pill pill-${res.status}">${statusText(res.status)}</span></div>${buildMarchaRow(id)}<div class="card-value${changed?' value-flash':''}">${fmtValue(currentVal, cfg)}<span class="unit">${cfg.unit}</span></div>${drawTrendSVG(cfg, pts, 'trend-main')}<div class="card-foot"><span>${footTime}</span><span>${footOperator}</span></div><div class="card-action">${GENERIC_ACTION[res.status] || ''}</div>`;
     card.addEventListener('click', () => {
       if (document.body.classList.contains('view-operario')) return;
-      selectSingleHistParam(id);
-      renderHistChart();
+      const sel = document.getElementById('mainHistParamSelect');
+      Array.from(sel.options).forEach(o => { o.selected = (o.value === id); });
+      renderMainHistChart();
       showSupervisorPanel('analisis');
-      const chartEl = document.getElementById('histChartContainer'); if (chartEl) chartEl.scrollIntoView({behavior:'smooth', block:'center'});
+      const chartEl = document.getElementById('mainHistChartContainer'); if (chartEl) chartEl.scrollIntoView({behavior:'smooth', block:'center'});
     });
     grid.appendChild(card);
     prevCardValues[id] = currentVal;
@@ -1101,36 +1402,8 @@ function renderQuality(rows, parseStats){
   list.innerHTML = items.length ? items.join('') : '<li><span>Sin problemas detectados en la ventana analizada</span><span class="qty">✓</span></li>';
 }
 
-/* RENDER — históricos */
-function populateHistSelect(){
-  const sel = document.getElementById('histParamSelect');
-  sel.innerHTML = Object.entries(PARAMS).map(([id,cfg]) => `<option value="${id}">${cfg.label}</option>`).join('');
-  if (sel.options.length) sel.options[0].selected = true;
-  applyQuickRange('7d');
-}
-function renderHistLegend(ids){
-  const legend = document.getElementById('histLegend');
-  if (ids.length <= 1){ legend.innerHTML = ''; return; }
-  legend.innerHTML = ids.map((id,i) => `<span class="legend-item"><span class="legend-swatch" style="background:${SERIES_COLORS[i % SERIES_COLORS.length]}"></span>${PARAMS[id].label}</span>`).join('');
-}
-function renderHistChart(){
-  const ids = getSelectedHistParamIds();
-  const container = document.getElementById('histChartContainer');
-  const { desde, hasta } = getHistFilteredRange();
-  const dataArrays = ids.map(id => rowsGlobal
-    .filter(r => r.ts >= desde && r.ts <= hasta && r.values[id] !== null)
-    .map(r => ({ ts: r.ts, v: r.values[id] })));
-  const anyData = dataArrays.some(arr => arr.length > 0);
-  if (!anyData){
-    container.innerHTML = '<p class="modal-text">Sin datos en el período seleccionado.</p>';
-    document.getElementById('histLegend').innerHTML = '';
-    histRangeState = null; clearHistSelection();
-    return;
-  }
-  container.innerHTML = drawMultiTrendChart(ids, dataArrays, desde, hasta, 1000, 320);
-  renderHistLegend(ids);
-  clearHistSelection();
-}
+document.getElementById('mainHistParamSelect').addEventListener('change', renderMainHistChart);
+document.getElementById('mainHistRangeSelect').addEventListener('change', renderMainHistChart);
 
 /* RENDER — correlaciones laboratorio */
 function renderCorrList(labKey){
@@ -1155,12 +1428,6 @@ function renderCorrList(labKey){
     return `<li><span>${res.cfg.label}</span><span class="qty" style="color:${color}">r=${res.r.toFixed(2)} · ${corrStrength(res.r)} (n=${res.n})</span></li>`;
   }).join('');
 }
-document.getElementById('histParamSelect').addEventListener('change', renderHistChart);
-document.getElementById('histQuickRange').addEventListener('change', () => {
-  applyQuickRange(document.getElementById('histQuickRange').value);
-  renderHistChart();
-});
-document.getElementById('histFiltrarBtn').addEventListener('click', renderHistChart);
 document.getElementById('labVarSelect').addEventListener('change', () => renderCorrList(document.getElementById('labVarSelect').value));
 document.getElementById('labFileInput').addEventListener('change', async (e) => {
   const file = e.target.files[0]; if (!file) return;
@@ -1517,12 +1784,12 @@ async function loadData(){
     if (rows.length === 0) throw new Error('sin filas válidas');
     rowsGlobal = rows;
     renderRitmo(rows); renderCards(rows); renderRecentTable(rows);
-    renderQuality(rows, {totalSeen, tsFailed, missing}); renderHistChart(); renderCorrList(document.getElementById('labVarSelect').value); renderOperatorPie();
+    renderQuality(rows, {totalSeen, tsFailed, missing}); renderMainHistChart(); renderCorrList(document.getElementById('labVarSelect').value); renderOperatorPie();
     lastDataTs = rows[rows.length-1].ts; document.getElementById('lastLoadTime').textContent = fmtTime(lastDataTs); setConn('ok');
   } catch(err){ console.error(err); setConn('error', err.message); }
 }
 
-applyThresholdOverrides(); renderThresholdSettings(); populateHistSelect();
+applyThresholdOverrides(); renderThresholdSettings(); populateParamSelects();
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData(); setInterval(loadData, REFRESH_MS);
 </script>
